@@ -1,0 +1,44 @@
+# ========================================
+# EchoForge — Docker Compose (Local Test)
+# ========================================
+# Bu dosya yerel test içindir. Coolify kendi compose'unu oluşturur.
+
+services:
+  echoforge-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5035:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=echoforge-db;Database=echoforge;User=root;Password=echoforge123;
+      - Encryption__Key=EchoForge_Secure_Key_Change_In_Production!@#$%
+    depends_on:
+      echoforge-db:
+        condition: service_healthy
+    volumes:
+      - echoforge-output:/app/output
+      - echoforge-updates:/app/wwwroot/updates
+    restart: unless-stopped
+
+  echoforge-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: echoforge123
+      MYSQL_DATABASE: echoforge
+    ports:
+      - "3307:3306"
+    volumes:
+      - echoforge-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  echoforge-mysql:
+  echoforge-output:
+  echoforge-updates:

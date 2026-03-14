@@ -1,0 +1,31 @@
+﻿  Determining projects to restore...
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+  All projects are up-to-date for restore.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+  EchoForge.Core -> D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Core\bin\Debug\net8.0\EchoForge.Core.dll
+  EchoForge.Infrastructure -> D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\bin\Debug\net8.0\EchoForge.Infrastructure.dll
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Views\ChannelsView.xaml(117,46): error MC3072: The property 'ZIndex' does not exist in XML namespace 'http://schemas.microsoft.com/winfx/2006/xaml/presentation'. Line 117 Position 46. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Views\DashboardView.xaml(283,69): error MC3072: The property 'Padding' does not exist in XML namespace 'http://schemas.microsoft.com/winfx/2006/xaml/presentation'. Line 283 Position 69. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]
+  EchoForge.Tests -> D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\bin\Debug\net8.0\EchoForge.Tests.dll
+  EchoForge.API -> D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\bin\Debug\net8.0\EchoForge.API.dll
+
+Build FAILED.
+
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Views\ChannelsView.xaml(117,46): error MC3072: The property 'ZIndex' does not exist in XML namespace 'http://schemas.microsoft.com/winfx/2006/xaml/presentation'. Line 117 Position 46. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Views\DashboardView.xaml(283,69): error MC3072: The property 'Padding' does not exist in XML namespace 'http://schemas.microsoft.com/winfx/2006/xaml/presentation'. Line 283 Position 69. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]
+    6 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:02.33
+
+Workload updates are available. Run `dotnet workload list` for more information.

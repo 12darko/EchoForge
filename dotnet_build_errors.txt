@@ -1,0 +1,8 @@
+﻿MSBUILD : error MSB1008: Only one project can be specified.
+    Full command line: 'C:\Program Files\dotnet\sdk\9.0.201\MSBuild.dll -maxcpucount -verbosity:m -tlp:default=auto -nologo -restore -consoleloggerparameters:Summary d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj 2>1 -distributedlogger:Microsoft.DotNet.Tools.MSBuild.MSBuildLogger,C:\Program Files\dotnet\sdk\9.0.201\dotnet.dll*Microsoft.DotNet.Tools.MSBuild.MSBuildForwardingLogger,C:\Program Files\dotnet\sdk\9.0.201\dotnet.dll'
+  Switches appended by response files:
+Switch: 2>1
+
+For switch syntax, type "MSBuild -help"
+
+Workload updates are available. Run `dotnet workload list` for more information.

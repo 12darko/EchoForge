@@ -1,0 +1,264 @@
+<UserControl x:Class="EchoForge.WPF.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:EchoForge.WPF.Converters"
+             xmlns:loc="clr-namespace:EchoForge.WPF.Localization">
+
+    <UserControl.Resources>
+        <converters:RadioBoolConverter x:Key="RadioBoolConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="AdminVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,32">
+            <TextBlock Text="⚙️ Settings &amp; Preferences" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="Configure your AI studio — API keys, system paths, and preferences" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Two-Panel Layout: Category Tabs + Content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: Category Navigation -->
+            <Border Grid.Column="0" Style="{StaticResource GlassCard}" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="CATEGORIES" FontSize="10" FontWeight="Bold" Foreground="#484F58" Margin="8,4,0,16"/>
+
+                    <!-- Tab Buttons (styled as nav items) -->
+                    <RadioButton x:Name="TabCloud" Content="☁️  Cloud &amp; OAuth" IsChecked="True"
+                                 GroupName="SettingsTab" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" FontWeight="SemiBold"
+                                 Padding="12,10" Margin="0,2" Cursor="Hand"
+                                 Visibility="{Binding IsAdmin, Converter={StaticResource AdminVisibilityConverter}}"/>
+                    <RadioButton x:Name="TabAI" Content="🧠  AI Engines"
+                                 GroupName="SettingsTab" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" FontWeight="SemiBold"
+                                 Padding="12,10" Margin="0,2" Cursor="Hand"
+                                 Visibility="{Binding IsAdmin, Converter={StaticResource AdminVisibilityConverter}}"/>
+                    <RadioButton x:Name="TabPaths" Content="📂  Paths &amp; Media"
+                                 GroupName="SettingsTab" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" FontWeight="SemiBold"
+                                 Padding="12,10" Margin="0,2" Cursor="Hand"/>
+                    <RadioButton x:Name="TabBehavior" Content="⚙️  App Behavior"
+                                 GroupName="SettingsTab" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" FontWeight="SemiBold"
+                                 Padding="12,10" Margin="0,2" Cursor="Hand"/>
+                    <RadioButton x:Name="TabUpdates" Content="🔄  Updates"
+                                 GroupName="SettingsTab" Foreground="{StaticResource TextPrimaryBrush}" FontSize="13" FontWeight="SemiBold"
+                                 Padding="12,10" Margin="0,2" Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+
+            <!-- RIGHT: Content Panels -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <!-- ══════════ Panel: Cloud & OAuth ══════════ -->
+                    <StackPanel Visibility="{Binding IsChecked, ElementName=TabCloud, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="☁️ Cloud &amp; Connection Settings" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+                                
+                                <Border Background="#0A8B5CF6" BorderBrush="#208B5CF6" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,24">
+                                    <StackPanel>
+                                        <TextBlock Text="📺 YouTube API Credentials" Foreground="#8B5CF6" FontSize="14" FontWeight="Bold" Margin="0,0,0,6"/>
+                                        <TextBlock Text="YouTube OAuth settings (Client ID &amp; Client Secret) have moved to the 'YouTube Channels' page for better multi-account management." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Remote API Settings -->
+                                <TextBlock Text="🌐 Remote API / VPS Connection" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,16"/>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="API Base URL (e.g. https://srv1364487.hstgr.cloud)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="The address of the EchoForge API backend. Required for heavy tasks like video rendering and AI generation."/>
+                                </StackPanel>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="🔗 Test Connection" Command="{Binding TestConnectionCommand}" Style="{StaticResource PrimaryButton}" Padding="16,10" Margin="8,0,0,0"/>
+                                    <TextBox Text="{Binding ApiBaseUrl}" Style="{StaticResource ModernTextBox}"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ══════════ Panel: AI Engines ══════════ -->
+                    <StackPanel Visibility="{Binding IsChecked, ElementName=TabAI, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="🧠 AI Engines &amp; APIs" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+
+                                <Border Background="#0A10B981" CornerRadius="10" Padding="16" Margin="0,0,0,24" BorderBrush="#2010B981" BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="🖼️ Image Generation: Pollinations.ai" Foreground="{StaticResource AccentGreenBrush}" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                        <TextBlock Text="✅ Free — no API key required. Images are generated automatically." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Set_GroqKey]}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Go to console.x.ai to get a Groq key"/>
+                                </StackPanel>
+                                <TextBox Text="{Binding GrokApiKey}" Style="{StaticResource ModernTextBox}" Margin="0,0,0,24"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="API Base URL (Internal Engine)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="The local or remote IP where the EchoForge background services are running."/>
+                                </StackPanel>
+                                <TextBox Text="{Binding ApiBaseUrl}" Style="{StaticResource ModernTextBox}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ══════════ Panel: Paths & Media ══════════ -->
+                    <StackPanel Visibility="{Binding IsChecked, ElementName=TabPaths, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="📂 System Paths &amp; Media" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="FFmpeg Path" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Path to the ffmpeg.exe executable. Required for video processing and rendering."/>
+                                </StackPanel>
+                                <DockPanel Margin="0,0,0,20">
+                                    <Button DockPanel.Dock="Right" Content="📂 Browse" Command="{Binding BrowseFfmpegCommand}" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="8,0,0,0"/>
+                                    <TextBox Text="{Binding FfmpegPath}" Style="{StaticResource ModernTextBox}"/>
+                                </DockPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Export / Output Directory" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="The folder where your finished, rendered videos will be saved."/>
+                                </StackPanel>
+                                <DockPanel Margin="0,0,0,20">
+                                    <Button DockPanel.Dock="Right" Content="📂 Browse" Command="{Binding BrowseOutputDirectoryCommand}" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="8,0,0,0"/>
+                                    <TextBox Text="{Binding OutputDirectory}" Style="{StaticResource ModernTextBox}"/>
+                                </DockPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Set_Intro]}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="A short default video clip played at the VERY BEGINNING of every generated video."/>
+                                </StackPanel>
+                                <DockPanel Margin="0,0,0,20">
+                                    <Button DockPanel.Dock="Right" Content="📂 Browse" Command="{Binding BrowseIntroVideoCommand}" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="8,0,0,0"/>
+                                    <TextBox Text="{Binding DefaultIntroVideoPath}" Style="{StaticResource ModernTextBox}"/>
+                                </DockPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Set_Outro]}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="A short default video clip played at the VERY END of every generated video."/>
+                                </StackPanel>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="📂 Browse" Command="{Binding BrowseOutroVideoCommand}" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="8,0,0,0"/>
+                                    <TextBox Text="{Binding DefaultOutroVideoPath}" Style="{StaticResource ModernTextBox}"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- ══════════ Panel: App Behavior ══════════ -->
+                    <StackPanel Visibility="{Binding IsChecked, ElementName=TabBehavior, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="⚙️ Application Behavior" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+
+                                <Grid Margin="0,0,0,24">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <TextBlock Text="🌐 App UI Language" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                            <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Changes the display language of the EchoForge application interface."/>
+                                        </StackPanel>
+                                        <ComboBox ItemsSource="{Binding AvailableAppLanguages}" SelectedItem="{Binding AppLanguage}" Style="{StaticResource ModernComboBox}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="2">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <TextBlock Text="Target SEO Language" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                            <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="The language that the AI will use when writing video titles, descriptions, and tags."/>
+                                        </StackPanel>
+                                        <ComboBox ItemsSource="{Binding AvailableLanguages}" SelectedItem="{Binding SeoLanguage}" Style="{StaticResource ModernComboBox}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,32">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <TextBlock Text="Daily Upload Limit" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                            <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Maximum number of videos the background automation will upload per YouTube API quota."/>
+                                        </StackPanel>
+                                        <TextBox Text="{Binding DailyUploadLimit}" Style="{StaticResource ModernTextBox}"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="2">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                            <TextBlock Text="Video FPS Limit" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                            <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Frames per second for rendered videos. 30 is standard, 60 is smoother but slower to render."/>
+                                        </StackPanel>
+                                        <ComboBox ItemsSource="{Binding AvailableFps}" SelectedItem="{Binding VideoFps}" Style="{StaticResource ModernComboBox}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Save -->
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="14" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+                        <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Set_Save]}"
+                                Command="{Binding SaveSettingsCommand}"
+                                Style="{StaticResource PrimaryButton}"
+                                Height="56" FontSize="16"/>
+
+                        <!-- ═══════ TAB 5: Updates ═══════ -->
+                        <Border Style="{StaticResource GlassCard}" Margin="0,32,0,0" Padding="24"
+                                Visibility="{Binding IsChecked, ElementName=TabUpdates, Converter={StaticResource BoolToVisibility}}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <TextBlock Text="🔄" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Software Updates" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                        <TextBlock FontSize="12" Foreground="{StaticResource TextSecondaryBrush}">
+                                            <Run Text="Current version: v"/><Run Text="{Binding CurrentVersion, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Button Content="🔍 Check for Updates" 
+                                        Command="{Binding CheckForUpdatesCommand}"
+                                        IsEnabled="{Binding IsCheckingUpdate, Converter={StaticResource InverseBool}}"
+                                        Style="{StaticResource SecondaryButton}" 
+                                        Padding="20,12" Margin="0,0,0,16" HorizontalAlignment="Left"/>
+
+                                <TextBlock Text="{Binding UpdateStatusText}" 
+                                           FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" 
+                                           TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+                                <ProgressBar Value="{Binding UpdateProgress}" Maximum="100" Height="8" 
+                                             Background="#15FFFFFF" Foreground="#8B5CF6" 
+                                             Margin="0,0,0,16"
+                                             Visibility="{Binding IsCheckingUpdate, Converter={StaticResource BoolToVisibility}}"/>
+
+                                <Button Content="⬇️ Download &amp; Install Update" 
+                                        Command="{Binding DownloadAndInstallUpdateCommand}"
+                                        Style="{StaticResource PrimaryButton}" 
+                                        Padding="20,12" HorizontalAlignment="Left"
+                                        Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibility}}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</UserControl>

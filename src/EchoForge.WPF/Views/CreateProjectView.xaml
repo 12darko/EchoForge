@@ -1,0 +1,232 @@
+<UserControl x:Class="EchoForge.WPF.Views.CreateProjectView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:EchoForge.WPF.Converters">
+
+    <UserControl.Resources>
+        <converters:RadioBoolConverter x:Key="RadioBoolConverter"/>
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- Header + Progress Steps -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,32">
+            <TextBlock Text="✨ Create New AI Music Video" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="Follow the steps below to generate your video" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+
+            <!-- Wizard Progress Steps -->
+            <Border Margin="0,24,0,0" Padding="0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Connector Lines -->
+                    <Border Grid.Column="0" Grid.ColumnSpan="4" Height="2" Background="#15FFFFFF" VerticalAlignment="Center" Margin="60,0"/>
+
+                    <!-- Step 1 -->
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                        <Border Width="36" Height="36" CornerRadius="18" Background="#8B5CF6" HorizontalAlignment="Center">
+                            <TextBlock Text="1" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Basics" FontSize="11" Foreground="#8B5CF6" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <!-- Step 2 -->
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                        <Border Width="36" Height="36" CornerRadius="18" Background="#3B82F6" HorizontalAlignment="Center">
+                            <TextBlock Text="2" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="AI Setup" FontSize="11" Foreground="#3B82F6" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <!-- Step 3 -->
+                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                        <Border Width="36" Height="36" CornerRadius="18" Background="#10B981" HorizontalAlignment="Center">
+                            <TextBlock Text="3" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Visuals" FontSize="11" Foreground="#10B981" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <!-- Step 4 -->
+                    <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                        <Border Width="36" Height="36" CornerRadius="18" Background="#F59E0B" HorizontalAlignment="Center">
+                            <TextBlock Text="4" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="Publish" FontSize="11" Foreground="#F59E0B" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- Main Content -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,16,0">
+            <Grid MaxWidth="1100" HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="1.5*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT COLUMN: Core Settings & AI -->
+                <StackPanel Grid.Column="0">
+                    
+                    <!-- Step 1: Basics Card -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Border Width="28" Height="28" CornerRadius="14" Background="#8B5CF6" Margin="0,0,12,0">
+                                    <TextBlock Text="1" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Project Basics" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <TextBlock Text="Project Title" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource ModernTextBox}" Margin="0,0,0,20"/>
+
+                            <TextBlock Text="Audio File (.mp3, .wav)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <DockPanel Margin="0,0,0,0">
+                                <Button DockPanel.Dock="Right" Content="📂 Browse" Command="{Binding BrowseAudioCommand}"
+                                        Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="8,0,0,0"/>
+                                <TextBox Text="{Binding AudioFilePath}" Style="{StaticResource ModernTextBox}" IsReadOnly="True" Background="#05FFFFFF"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Step 2: AI Image Setup Card -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Border Width="28" Height="28" CornerRadius="14" Background="#3B82F6" Margin="0,0,12,0">
+                                    <TextBlock Text="2" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="AI Image Generation" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="AI Model" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                                    <ComboBox ItemsSource="{Binding ImageModelOptions}" SelectedValuePath="Value" SelectedValue="{Binding ImageModel}" Style="{StaticResource ModernComboBox}"/>
+                                </StackPanel>
+                                
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Unique Images" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                                    <ComboBox ItemsSource="{Binding UniqueImageCountOptions}" SelectedItem="{Binding UniqueImageCount}" Style="{StaticResource ModernComboBox}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Image Duration / Pacing" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding ImageDurationOptions}" SelectedItem="{Binding SelectedImageDuration}" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
+
+                            <TextBlock Text="🎨 Art Style" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            
+                            <WrapPanel Margin="0,0,0,8">
+                                <Button Content="Anime" Tag="anime" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#A855F7" BorderBrush="#33A855F7"/>
+                                <Button Content="Cyberpunk" Tag="cyberpunk" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#3B82F6" BorderBrush="#333B82F6"/>
+                                <Button Content="Realistic" Tag="realistic photograph" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#10B981" BorderBrush="#3310B981"/>
+                                <Button Content="Watercolor" Tag="watercolor painting" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#F59E0B" BorderBrush="#33F59E0B"/>
+                                <Button Content="Pixel Art" Tag="pixel art" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8"/>
+                                <Button Content="Oil Painting" Tag="oil painting" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#F43F5E" BorderBrush="#33F43F5E"/>
+                            </WrapPanel>
+                            
+                            <TextBox Text="{Binding ImageStyle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- RIGHT COLUMN: Visuals, Target, Actions -->
+                <StackPanel Grid.Column="2">
+                    
+                    <!-- Step 3: Visuals & Template -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Border Width="28" Height="28" CornerRadius="14" Background="#10B981" Margin="0,0,12,0">
+                                    <TextBlock Text="3" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Visuals &amp; Template" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <TextBlock Text="Video Format" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <Border Background="#0AFFFFFF" CornerRadius="10" Padding="6" Margin="0,0,0,20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <RadioButton Grid.Column="0" Content="📱 Shorts (9:16)" GroupName="UploadType" Foreground="{StaticResource TextPrimaryBrush}" Margin="8"
+                                                 IsChecked="{Binding UploadType, Converter={StaticResource RadioBoolConverter}, ConverterParameter=Short}"/>
+                                    <RadioButton Grid.Column="1" Content="📺 Video (16:9)" GroupName="UploadType" Foreground="{StaticResource TextPrimaryBrush}" Margin="8"
+                                                 IsChecked="{Binding UploadType, Converter={StaticResource RadioBoolConverter}, ConverterParameter=Video}"/>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Text="Visual Prompt Template" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" DisplayMemberPath="Name" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
+
+                            <TextBlock Text="Scene Transition" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding TransitionOptions}" SelectedItem="{Binding SelectedTransition}" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
+
+                            <TextBlock Text="✨ Visual Effect (VFX)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding VisualEffectOptions}" SelectedItem="{Binding SelectedVisualEffect}" DisplayMemberPath="Label" Style="{StaticResource ModernComboBox}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Step 4: Publishing & SEO -->
+                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <Border Width="28" Height="28" CornerRadius="14" Background="#F59E0B" Margin="0,0,12,0">
+                                    <TextBlock Text="4" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Publishing &amp; SEO" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <TextBlock Text="Target YouTube Channel" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding AvailableChannels}" SelectedValue="{Binding SelectedChannelId}" SelectedValuePath="Id" DisplayMemberPath="ChannelName" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
+
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Privacy" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                                    <ComboBox ItemsSource="{Binding PrivacyOptions}" SelectedItem="{Binding PrivacyStatus}" Style="{StaticResource ModernComboBox}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Auto-Shorts" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                                    <CheckBox Content="Extract Best 60s" IsChecked="{Binding ExtractAutoShorts}" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Custom SEO Instructions" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
+                            <TextBox Text="{Binding CustomInstructions, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Final Action -->
+                    <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource AccentOrangeBrush}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,16" Visibility="{Binding StatusText, Converter={StaticResource StringToVisibility}}"/>
+
+                    <Button Content="🚀 Start AI Generation Pipeline"
+                            Command="{Binding CreateProjectCommand}"
+                            IsEnabled="{Binding IsCreating, Converter={StaticResource InverseBool}}"
+                            Style="{StaticResource PrimaryButton}"
+                            Height="56" FontSize="16"/>
+
+                </StackPanel>
+
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,17 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+**/out
+**/*.user
+**/*.suo
+**/TestResults
+**/crash_log*.txt
+**/logs.txt
+*.md
+*.ico
+*.png
+src/EchoForge.WPF/
+src/IconConverter/

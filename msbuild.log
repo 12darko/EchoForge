@@ -1,0 +1,1 @@
+   1:7>d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Views\EditorView.xaml(810,15): error MC3000: 'The 'Canvas' start tag on line 798 position 22 does not match the end tag of 'DockPanel'. Line 810, position 15.' XML is not valid. [d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]

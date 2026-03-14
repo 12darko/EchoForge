@@ -1,0 +1,19 @@
+﻿D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(112,55): error CS0246: The type or namespace name 'AppDbContext' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+
+Build FAILED.
+
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(112,55): error CS0246: The type or namespace name 'AppDbContext' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+    4 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.51
+
+Workload updates are available. Run `dotnet workload list` for more information.

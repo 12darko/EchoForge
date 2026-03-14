@@ -1,0 +1,5 @@
+﻿D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\bin\Debug\net8.0\uploads\audio\2f7a44a6-49e8-4615-b6ab-946c18fecb2b.mp3
+EXISTS=TRUE
+SIZE=5416532
+FULLPATH=D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\bin\Debug\net8.0\uploads\audio\2f7a44a6-49e8-4615-b6ab-946c18fecb2b.mp3
+EXT=.mp3

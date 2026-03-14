@@ -1,0 +1,31 @@
+﻿  Determining projects to restore...
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+  All projects are up-to-date for restore.
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+  EchoForge.Core -> D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Core\bin\Debug\net8.0\EchoForge.Core.dll
+  EchoForge.Infrastructure -> D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\bin\Debug\net8.0\EchoForge.Infrastructure.dll
+  EchoForge.WPF -> D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\bin\Debug\net8.0-windows\EchoForge.WPF.dll
+  EchoForge.Tests -> D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\bin\Debug\net8.0\EchoForge.Tests.dll
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Controllers\YouTubeController.cs(27,35): error CS7036: There is no argument given that corresponds to the required parameter 'channelId' of 'IYouTubeUploadService.ConnectAsync(string, CancellationToken)' [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Controllers\YouTubeController.cs(40,42): error CS7036: There is no argument given that corresponds to the required parameter 'channelId' of 'IYouTubeUploadService.GetChannelNameAsync(string, CancellationToken)' [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+
+Build FAILED.
+
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\EchoForge.sln]
+D:\Gemini\Projects\YoutubeOtomation\tests\EchoForge.Tests\EchoForge.Tests.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Controllers\YouTubeController.cs(27,35): error CS7036: There is no argument given that corresponds to the required parameter 'channelId' of 'IYouTubeUploadService.ConnectAsync(string, CancellationToken)' [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Controllers\YouTubeController.cs(40,42): error CS7036: There is no argument given that corresponds to the required parameter 'channelId' of 'IYouTubeUploadService.GetChannelNameAsync(string, CancellationToken)' [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+    6 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:01.29
+
+Workload updates are available. Run `dotnet workload list` for more information.

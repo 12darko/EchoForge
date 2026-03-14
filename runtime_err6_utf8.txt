@@ -1,0 +1,17 @@
+﻿D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Themes\DarkTheme.xaml(201,29): error MC4005: Cannot find the Style Property 'CornerRadius' on the type 'System.Windows.Controls.ComboBoxItem'. Line 201 Position 29. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]
+dotnet : 
+At line:1 char:1
++ dotnet run --project src\Ech
+oForge.WPF > runtime_err6.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~
+    + CategoryInfo          : 
+    NotSpecified: (:String)   
+  [], RemoteException
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+The build failed. Fix the buil
+d errors and run again.

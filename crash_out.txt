@@ -1,0 +1,69 @@
+﻿dotnet : Unhandled exception. 
+System.Windows.Markup.XamlPars
+eException: 'Set property 'Sys
+tem.Windows.ResourceDictionary
+.DeferrableContent' threw an e
+xception.' Line number '2' and
+ line position '21'.
+At line:1 char:1
++ dotnet run --project src\Ech
+oForge.WPF 2>&1 | Out-File -Fi
+lePath cras ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          : 
+NotS    pecified: (Unhandled e
+xcep...     position '21'.:Str
+ing) [], Rem    oteException
+    + FullyQualifiedErrorId : 
+Nati    veCommandError
+ 
+ ---> System.ArgumentException
+: Item has already been added.
+ Key in dictionary: 'System.Wi
+ndows.Controls.ToolTip'  Key b
+eing added: 'System.Windows.Co
+ntrols.ToolTip'
+   at System.Collections.Hasht
+able.Insert(Object key, Object
+ nvalue, Boolean add)
+   at System.Windows.ResourceD
+ictionary.SetKeys(IList`1 keyC
+ollection, IServiceProvider se
+rviceProvider)
+   at MS.Internal.Xaml.Runtime
+.ClrObjectRuntime.SetValue(Obj
+ect inst, XamlMember property,
+ Object value)
+   --- End of inner exception 
+stack trace ---
+   at System.Windows.Markup.Xa
+mlReader.RewrapException(Excep
+tion e, IXamlLineInfo lineInfo
+, Uri baseUri)
+   at System.Windows.Markup.Wp
+fXamlLoader.Load(XamlReader xa
+mlReader, IXamlObjectWriterFac
+tory writerFactory, Boolean sk
+ipJournaledProperties, Object 
+rootObject, XamlObjectWriterSe
+ttings settings, Uri baseUri)
+   at System.Windows.Markup.Wp
+fXamlLoader.LoadBaml(XamlReade
+r xamlReader, Boolean skipJour
+naledProperties, Object rootOb
+ject, XamlAccessLevel accessLe
+vel, Uri baseUri)
+   at System.Windows.Markup.Xa
+mlReader.LoadBaml(Stream strea
+m, ParserContext parserContext
+, Object parent, Boolean close
+Stream)
+   at System.Windows.Applicati
+on.LoadComponent(Object compon
+ent, Uri resourceLocator)
+   at EchoForge.WPF.App.Initia
+lizeComponent() in D:\Gemini\P
+rojects\YoutubeOtomation\src\E
+choForge.WPF\App.xaml:line 1
+   at EchoForge.WPF.App.Main()

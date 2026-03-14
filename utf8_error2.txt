@@ -1,0 +1,27 @@
+﻿D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(112,11): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(115,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(116,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(117,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(118,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+
+Build FAILED.
+
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead. [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj : warning NU1603: EchoForge.Infrastructure depends on Google.Apis.YouTube.v3 (>= 1.68.0.3662) but Google.Apis.YouTube.v3 1.68.0.3662 was not found. Google.Apis.YouTube.v3 1.69.0.3674 was resolved instead.
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(112,11): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(115,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(116,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(117,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\Program.cs(118,17): error CS0103: The name 'db' does not exist in the current context [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.API\EchoForge.API.csproj]
+    4 Warning(s)
+    5 Error(s)
+
+Time Elapsed 00:00:01.85
+
+Workload updates are available. Run `dotnet workload list` for more information.

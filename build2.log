@@ -1,0 +1,1 @@
+   1:7>d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Views\DashboardView.xaml(142,58): error MC3072: The property 'Padding' does not exist in XML namespace 'http://schemas.microsoft.com/winfx/2006/xaml/presentation'. Line 142 Position 58. [d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]

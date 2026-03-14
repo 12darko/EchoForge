@@ -1,0 +1,10 @@
+﻿     1>C:\Program Files\dotnet\sdk\9.0.201\Microsoft.Common.CurrentVersion.targets(5063,5): error MSB3027: Could not copy "d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Core\bin\Debug\net8.0\EchoForge.Core.dll" to "bin\Debug\net8.0-windows\EchoForge.Core.dll". Exceeded retry count of 10. Failed. The file is locked by: "EchoForge.WPF (31396)" [d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]
+     1>C:\Program Files\dotnet\sdk\9.0.201\Microsoft.Common.CurrentVersion.targets(5063,5): error MSB3021: Unable to copy file "d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.Core\bin\Debug\net8.0\EchoForge.Core.dll" to "bin\Debug\net8.0-windows\EchoForge.Core.dll". The process cannot access the file 'd:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\bin\Debug\net8.0-windows\EchoForge.Core.dll' because it is being used by another process. [d:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF.csproj]
+
+Build FAILED.
+    19 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:15.89
+
+Workload updates are available. Run `dotnet workload list` for more information.

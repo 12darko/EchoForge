@@ -1,0 +1,32 @@
+## Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+## IDE
+.vs/
+.vscode/
+*.user
+*.suo
+*.csproj.user
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## Logs & crash
+logs.txt
+crash_log*.txt
+
+## Sensitive
+**/appsettings.Development.json
+
+## Misc
+TestResults/
+*.nupkg
+
+## Large Binaries
+**/Tools/ffmpeg/*.exe
+**/Tools/ffmpeg/*.dll

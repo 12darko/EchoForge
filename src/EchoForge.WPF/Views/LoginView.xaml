@@ -1,0 +1,75 @@
+<UserControl x:Class="EchoForge.WPF.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <!-- Full-screen gradient background -->
+        <Border>
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#0B0F19" Offset="0"/>
+                    <GradientStop Color="#1A0D2E" Offset="0.5"/>
+                    <GradientStop Color="#0B0F19" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <!-- Centered login card -->
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="420" Padding="40" CornerRadius="20"
+                BorderBrush="#25FFFFFF" BorderThickness="1">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#CC161B22" Offset="0"/>
+                    <GradientStop Color="#BB0D1117" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="#8B5CF6" Opacity="0.2" BlurRadius="40" ShadowDepth="0"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Logo -->
+                <TextBlock Text="⚡" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="EchoForge" FontSize="32" FontWeight="Bold" Foreground="#8B5CF6" 
+                           HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                <TextBlock Text="AI Content Studio" FontSize="13" Foreground="#94A3B8" 
+                           HorizontalAlignment="Center" Margin="0,0,0,32"/>
+
+                <!-- Username -->
+                <TextBlock Text="Username" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <TextBox x:Name="TxtUsername" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" 
+                         Style="{StaticResource ModernTextBox}" Margin="0,0,0,20" Height="44"/>
+
+                <!-- Password -->
+                <TextBlock Text="Password" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <PasswordBox x:Name="TxtPassword" Height="44" Margin="0,0,0,8"
+                             Background="#0AFFFFFF" Foreground="#F8FAFC" FontSize="14"
+                             BorderBrush="#20FFFFFF" BorderThickness="1"
+                             Padding="12,10">
+                    <PasswordBox.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </PasswordBox.Resources>
+                </PasswordBox>
+
+                <!-- Remember Me -->
+                <CheckBox Content="Remember me" IsChecked="{Binding RememberMe}" 
+                          Style="{StaticResource ModernToggleSwitch}" Margin="0,6,0,32"/>
+
+                <!-- Error -->
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#F43F5E" FontSize="13" FontWeight="SemiBold"
+                           TextWrapping="Wrap" Margin="0,0,0,16"
+                           Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                <!-- Login Button -->
+                <Button Content="🚀 Sign In" Command="{Binding LoginCommand}"
+                        Style="{StaticResource PrimaryButton}" Height="50" FontSize="16"/>
+
+                <!-- Version -->
+                <TextBlock Text="v2.0.0" FontSize="10" Foreground="#484F58" HorizontalAlignment="Center" Margin="0,20,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
