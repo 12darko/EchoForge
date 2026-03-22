@@ -45,6 +45,9 @@
         <DataTemplate DataType="{x:Type vm:LoginViewModel}">
             <views:LoginView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UsersViewModel}">
+            <views:UsersView/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -270,6 +273,20 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🤖" FontSize="16" Margin="0,0,14,0"/>
                                 <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Cat_AIAssistant]}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- ──── CATEGORY: Admin (only visible for admins) ──── -->
+                        <TextBlock Text="ADMİN" FontSize="10" FontWeight="Bold" Foreground="#484F58" 
+                                   Margin="16,20,0,8"
+                                   Visibility="{Binding IsCurrentUserAdmin, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                        <Button Command="{Binding NavigateToUsersCommand}" Margin="0,2"
+                                Style="{StaticResource NavButton}"
+                                Visibility="{Binding IsCurrentUserAdmin, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="👥" FontSize="16" Margin="0,0,14,0"/>
+                                <TextBlock Text="Kullanıcılar"/>
                             </StackPanel>
                         </Button>
 

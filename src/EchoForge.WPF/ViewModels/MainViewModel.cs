@@ -32,6 +32,7 @@ public partial class MainViewModel : ObservableObject
     private ChannelsViewModel? _channelsVm;
     private EditorViewModel? _editorVm;
     private YouTubeVideosViewModel? _youtubeVideosVm;
+    private UsersViewModel? _usersVm;
     private LoginViewModel? _loginVm;
 
     [ObservableProperty]
@@ -161,6 +162,16 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void NavigateToUsers()
+    {
+        if (!IsCurrentUserAdmin) return;
+        CurrentPage = "Users";
+        _usersVm ??= new UsersViewModel(_apiClient);
+        CurrentView = _usersVm;
+        _usersVm.LoadUsersCommand.Execute(null);
+    }
+
+    [RelayCommand]
     private void ToggleTutorial()
     {
         if (IsTutorialVisible)
@@ -201,6 +212,11 @@ public partial class MainViewModel : ObservableObject
                 TutorialTitle = "Your Uploaded VODs";
                 TutorialText = "See what you've uploaded historically to the active channel.\n\n• The AI uses YouTube Data APIs to fetch Thumbnails, Titles, and View Counts directly.\n• Refresh the page if a video just finished uploading by clicking the sidebar.";
                 TutorialIcon = "📽️";
+                break;
+            case "Users":
+                TutorialTitle = "Kullanıcı Yönetimi";
+                TutorialText = "Bu panel sadece Admin kullanıcılarına açıktır.\n\n• Sol taraftaki formdan yeni kullanıcı hesabı oluşturabilirsiniz.\n• Sağ taraftaki listeden mevcut kullanıcıları görüntüleyebilir, devre dışı bırakabilir veya silebilirsiniz.\n• Admin hesabı silinemez.";
+                TutorialIcon = "👥";
                 break;
             default:
                 TutorialTitle = "Need Help?";

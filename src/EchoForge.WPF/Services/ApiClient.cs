@@ -230,6 +230,30 @@ public class ApiClient
         return null;
     }
 
+    // Users (Admin)
+    public async Task<List<UserDto>> GetUsersAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<UserDto>>("api/users") ?? new();
+    }
+
+    public async Task<bool> CreateUserAsync(string username, string password)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/auth/register", new LoginRequest { Username = username, Password = password });
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> ToggleUserActiveAsync(int id)
+    {
+        var response = await _httpClient.PutAsync($"api/users/{id}/toggle-active", null);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DeleteUserAsync(int id)
+    {
+        var response = await _httpClient.DeleteAsync($"api/users/{id}");
+        return response.IsSuccessStatusCode;
+    }
+
     // Templates
     public async Task<List<Template>> GetTemplatesAsync()
     {

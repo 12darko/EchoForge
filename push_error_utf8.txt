@@ -1,0 +1,97 @@
+﻿git : remote: error: GH
+013: Repository rule vi
+olations found for refs
+/heads/main.        
+At line:1 char:1
++ git push -u origin ma
+in --force 2> push_erro
+r.txt; cat push_error.t
+xt
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (remote: error   
+ : ...s/main.          
+  :String) [], Rem    o
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+remote: 
+remote: - GITHUB PUSH P
+ROTECTION        
+remote:   ÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö
+ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö
+ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö     
+   
+remote:     Resolve the
+ following violations b
+efore pushing again    
+    
+remote: 
+remote:     - Push cann
+ot contain secrets     
+   
+remote: 
+remote:             
+remote:      (?) Learn 
+how to resolve a blocke
+d push        
+remote:      https://do
+cs.github.com/code-secu
+rity/secret-scanning/wo
+rking-with-secret-scann
+ing-and-push-protection
+/working-with-push-prot
+ection-from-the-command
+-line#resolving-a-block
+ed-push        
+remote:             
+remote:             
+remote:       ÔÇöÔÇö Hu
+gging Face User Access 
+Token ÔÇöÔÇöÔÇöÔÇöÔÇöÔÇ
+öÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔ
+ÇöÔÇöÔÇöÔÇöÔÇöÔÇöÔÇö   
+     
+remote:        location
+s:        
+remote:          - comm
+it: ffeb5979839ee7efc2c
+69d80967d2789414a71f5  
+      
+remote:            path
+: src/EchoForge.API/app
+settings.json:27       
+ 
+remote:             
+remote:        (?) To p
+ush, remove secret from
+ commit(s) or follow th
+is URL to allow the sec
+ret.        
+remote:        https://
+github.com/12darko/Echo
+Forge/security/secret-s
+canning/unblock-secret/
+3AwiSqSZheY9AN7mzaBc6pI
+UgEE        
+remote:             
+remote: 
+remote: 
+To https://github.com/1
+2darko/EchoForge.git
+ ! [remote rejected] ma
+in -> main (push declin
+ed due to repository ru
+le violations)
+error: failed to push s
+ome refs to 'https://gi
+thub.com/12darko/EchoFo
+rge.git'
