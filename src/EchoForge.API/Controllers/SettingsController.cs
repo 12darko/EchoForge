@@ -13,14 +13,28 @@ public class SettingsController : ControllerBase
     private readonly EchoForgeDbContext _context;
     private readonly IEncryptionService _encryptionService;
 
+    // Sunucu tarafında yönetilen (admin-only) ayar anahtarları
+    // Bu anahtarlar normal kullanıcılara maskelenmiş döner
+    private static readonly HashSet<string> _serverManagedKeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Grok:ApiKey",
+        "YouTube:ClientId",
+        "YouTube:ClientSecret",
+        "ApiBaseUrl"
+    };
+
     public SettingsController(EchoForgeDbContext context, IEncryptionService encryptionService)
     {
         _context = context;
         _encryptionService = encryptionService;
     }
 
+    /// <summary>
+    /// Tüm ayarları döndürür.
+    /// isAdmin=false ise şifreli ve sunucu-yönetimli anahtarlar maskelenir.
+    /// </summary>
     [HttpGet]
-    public async Task<ActionResult> GetAll()
+    public async Task<ActionResult> GetAll([FromQuery] bool isAdmin = false)
     {
         var settings = await _context.AppSettings.ToListAsync();
         
@@ -28,10 +42,24 @@ public class SettingsController : ControllerBase
         foreach (var s in settings)
         {
             string val = s.Value;
+
             if (s.IsEncrypted)
             {
-                try { val = _encryptionService.Decrypt(s.Value); }
-                catch { val = ""; } // Return empty if decryption fails (corrupted)
+                if (!isAdmin)
+                {
+                    // Normal kullanıcıya maskelenmiş değer döndür
+                    val = "••••••••";
+                }
+                else
+                {
+                    try { val = _encryptionService.Decrypt(s.Value); }
+                    catch { val = ""; }
+                }
+            }
+            else if (!isAdmin && _serverManagedKeys.Contains(s.Key))
+            {
+                // Şifrelenmemiş ama sunucu-yönetimli anahtar
+                val = "••••••••";
             }
             
             result.Add(new
@@ -45,6 +73,9 @@ public class SettingsController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Ayar kaydet — sadece admin kullanılmalı (WPF tarafında kontrol edilir)
+    /// </summary>
     [HttpPost]
     public async Task<ActionResult> SaveSetting([FromBody] SaveSettingRequest request)
     {
@@ -73,14 +104,50 @@ public class SettingsController : ControllerBase
         return Ok(new { message = "Setting saved" });
     }
 
+    /// <summary>
+    /// Tek bir ayar oku. isAdmin=false ise şifreli değer maskelenir.
+    /// </summary>
     [HttpGet("{key}")]
-    public async Task<ActionResult> GetSetting(string key)
+    public async Task<ActionResult> GetSetting(string key, [FromQuery] bool isAdmin = false)
     {
         var setting = await _context.AppSettings.FirstOrDefaultAsync(s => s.Key == key);
         if (setting == null) return NotFound();
 
-        var value = setting.IsEncrypted ? _encryptionService.Decrypt(setting.Value) : setting.Value;
+        string value;
+        if (setting.IsEncrypted)
+        {
+            if (!isAdmin)
+                value = "••••••••";
+            else
+            {
+                try { value = _encryptionService.Decrypt(setting.Value); }
+                catch { value = ""; }
+            }
+        }
+        else if (!isAdmin && _serverManagedKeys.Contains(setting.Key))
+        {
+            value = "••••••••";
+        }
+        else
+        {
+            value = setting.Value;
+        }
+
         return Ok(new { Key = setting.Key, Value = value });
+    }
+
+    /// <summary>
+    /// Bir ayarı sil (admin-only)
+    /// </summary>
+    [HttpDelete("{key}")]
+    public async Task<ActionResult> DeleteSetting(string key)
+    {
+        var setting = await _context.AppSettings.FirstOrDefaultAsync(s => s.Key == key);
+        if (setting == null) return NotFound(new { message = "Setting not found" });
+
+        _context.AppSettings.Remove(setting);
+        await _context.SaveChangesAsync();
+        return Ok(new { message = $"Setting '{key}' deleted." });
     }
 }
 

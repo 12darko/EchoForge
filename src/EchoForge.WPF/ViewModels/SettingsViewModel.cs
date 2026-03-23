@@ -73,7 +73,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            var settings = await _apiClient.GetAllSettingsAsync();
+            var settings = await _apiClient.GetAllSettingsAsync(_isAdmin);
             if (settings.Count > 0)
             {
                 var grokKey = settings.FirstOrDefault(s => s.Key == "Grok:ApiKey")?.Value;

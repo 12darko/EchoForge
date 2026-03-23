@@ -279,9 +279,15 @@ public class ApiClient
         catch { return null; }
     }
 
-    public async Task<List<SettingDto>> GetAllSettingsAsync()
+    public async Task<List<SettingDto>> GetAllSettingsAsync(bool isAdmin = false)
     {
-        return await _httpClient.GetFromJsonAsync<List<SettingDto>>("api/settings") ?? new();
+        return await _httpClient.GetFromJsonAsync<List<SettingDto>>($"api/settings?isAdmin={isAdmin}") ?? new();
+    }
+
+    public async Task<bool> DeleteSettingAsync(string key)
+    {
+        var response = await _httpClient.DeleteAsync($"api/settings/{key}");
+        return response.IsSuccessStatusCode;
     }
 
     public class SettingDto { public string Key { get; set; } = string.Empty; public string Value { get; set; } = string.Empty; }

@@ -26,7 +26,25 @@ public partial class LoginViewModel : ObservableObject
     public string Password
     {
         get => _password;
-        set => SetProperty(ref _password, value);
+        set 
+        { 
+            SetProperty(ref _password, value); 
+            ClearError();
+        }
+    }
+
+    partial void OnUsernameChanged(string value)
+    {
+        ClearError();
+    }
+
+    private void ClearError()
+    {
+        if (HasError)
+        {
+            HasError = false;
+            ErrorMessage = string.Empty;
+        }
     }
 
     /// <summary>
@@ -66,6 +84,12 @@ public partial class LoginViewModel : ObservableObject
                 SaveCredentials();
             else
                 ClearSavedCredentials();
+
+            // Force IsAdmin if the user is the default admin
+            if (Username.ToLower() == "admin")
+            {
+                response.IsAdmin = true;
+            }
 
             LoginSucceeded?.Invoke(response.IsAdmin);
         }

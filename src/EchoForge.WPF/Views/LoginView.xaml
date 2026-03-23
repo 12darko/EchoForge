@@ -46,7 +46,8 @@
                 <PasswordBox x:Name="TxtPassword" Height="44" Margin="0,0,0,8"
                              Background="#0AFFFFFF" Foreground="#F8FAFC" FontSize="14"
                              BorderBrush="#20FFFFFF" BorderThickness="1"
-                             Padding="12,10">
+                             VerticalContentAlignment="Center"
+                             Padding="16,0">
                     <PasswordBox.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="10"/>

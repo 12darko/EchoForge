@@ -7,24 +7,35 @@ namespace EchoForge.WPF.Services;
 
 /// <summary>
 /// Gömülü sunucu yapılandırması.
-/// Sunucu adresi AES ile şifrelenmiş olarak binary'e gömülüdür.
+/// Sunucu adresi AES-256 ile şifrelenmiş olarak binary'e gömülüdür.
 /// Admin olmayan kullanıcılar için otomatik bağlantı sağlar.
 /// Admin kullanıcılar Ayarlar'dan değiştirebilir.
 /// </summary>
 public static class ServerConfig
 {
-    // ── AES-256 şifreleme anahtarı (32 byte) ve IV (16 byte) ──
-    // Bu key sadece URL'yi obfuscate etmek için kullanılır.
-    private static readonly byte[] _key = Convert.FromBase64String("RWNob0ZvcmdlU2VydmVyS2V5MjAyNiE=".PadRight(44, '=')[..44]);
-    private static readonly byte[] _iv  = Convert.FromBase64String("RWNob0ZJVjIwMjZLZXk=".PadRight(24, '=')[..24]);
-
     // ── Şifreli sunucu URL'si ──
-    // Orijinal: https://srv1364487.hstgr.cloud
-    // Base64 ile encode edilmiş AES-CBC ciphertext
-    private static readonly string _encryptedUrl = EncryptForEmbedding("https://srv1364487.hstgr.cloud");
+    // Orijinal: http://io0sgwg80co48ok8o488w8wk.187.77.67.123.sslip.io
+    // DeriveKey + DeriveIV ile AES-CBC şifreleme yapılır.
+    // Bu değer uygulama ilk yüklendiğinde hesaplanır.
+    private static readonly string _encryptedUrl;
 
     // Fallback localhost (geliştirme ortamı için)
     private const string _fallbackUrl = "http://localhost:5035";
+
+    /// <summary>
+    /// Static constructor — şifreli URL'yi bir kez hesaplar
+    /// </summary>
+    static ServerConfig()
+    {
+        try
+        {
+            _encryptedUrl = EncryptForEmbedding("http://io0sgwg80co48ok8o488w8wk.187.77.67.123.sslip.io");
+        }
+        catch
+        {
+            _encryptedUrl = string.Empty;
+        }
+    }
 
     /// <summary>
     /// Şifresi çözülmüş sunucu adresini döndürür.
@@ -59,6 +70,9 @@ public static class ServerConfig
     {
         try
         {
+            if (string.IsNullOrEmpty(_encryptedUrl))
+                return _fallbackUrl;
+
             var cipherBytes = Convert.FromBase64String(_encryptedUrl);
             using var aes = Aes.Create();
             aes.Key = DeriveKey();
