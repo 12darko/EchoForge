@@ -63,10 +63,13 @@ public partial class DashboardViewModel : ObservableObject
                         var items = System.Text.Json.JsonSerializer.Deserialize<List<TimelineItemDto>>(p.TimelineJson);
                         if (items != null)
                         {
-                            foreach (var item in items) p.Scenes.Add(item);
+                            foreach (var item in items) 
+                            {
+                                if (item != null) p.Scenes.Add(item);
+                            }
                         }
                     }
-                    catch { } // ignore bad json
+                    catch { /* ignore bad json completely */ }
                 }
                 Projects.Add(p);
             }
