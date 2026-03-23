@@ -116,9 +116,18 @@ public partial class ChannelsViewModel : ObservableObject
     [RelayCommand]
     public async Task ConnectChannelAsync()
     {
-        if (string.IsNullOrWhiteSpace(YouTubeClientId) || string.IsNullOrWhiteSpace(YouTubeClientSecret))
+        var cid = YouTubeClientId?.Trim();
+        var csecret = YouTubeClientSecret?.Trim();
+
+        if (string.IsNullOrWhiteSpace(cid) || string.IsNullOrWhiteSpace(csecret))
         {
             EchoForge.WPF.Views.EchoMessageBox.Show("Lütfen önce Ayarlar'dan YouTube API Kimlik Bilgilerini (Client ID & Client Secret) kaydedin.", "Credentials Required", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Warning);
+            return;
+        }
+
+        if (cid == "••••••••" || csecret == "••••••••")
+        {
+            EchoForge.WPF.Views.EchoMessageBox.Show("Sunucu YouTube kimlik bilgilerini tam olarak döndürmüyor (gizlenmiş).\nLütfen yöneticiyle iletişime geçin veya test için kendi API anahtarınızı girin.", "Bağlantı Engellendi", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Warning);
             return;
         }
 
