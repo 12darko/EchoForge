@@ -30,3 +30,7 @@ TestResults/
 ## Large Binaries
 **/Tools/ffmpeg/*.exe
 **/Tools/ffmpeg/*.dll
+
+publish/
+installer_output/
+
