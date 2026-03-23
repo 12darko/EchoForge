@@ -100,6 +100,67 @@ public class UpdateController : ControllerBase
         }
         await _context.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// Temporary endpoint to rescue the deleted Projects table.
+    /// </summary>
+    [HttpGet("fix-db")]
+    public async Task<IActionResult> FixDb()
+    {
+        var sql = @"
+        CREATE TABLE IF NOT EXISTS `Projects` (
+          `Id` int NOT NULL AUTO_INCREMENT,
+          `Title` varchar(200) NOT NULL,
+          `AudioPath` varchar(500) NOT NULL,
+          `TemplateId` int NOT NULL,
+          `BPM` double DEFAULT NULL,
+          `Duration` double DEFAULT NULL,
+          `SceneCount` int DEFAULT NULL,
+          `SceneDuration` double DEFAULT NULL,
+          `FormatType` int NOT NULL DEFAULT '0',
+          `ExtractAutoShorts` tinyint(1) NOT NULL DEFAULT '0',
+          `ImageModel` varchar(50) NOT NULL DEFAULT 'flux',
+          `UniqueImageCount` int NOT NULL DEFAULT '8',
+          `ManualImageDurationSec` double DEFAULT NULL,
+          `ImageStyle` varchar(200) NOT NULL DEFAULT '',
+          `CustomWidth` int DEFAULT NULL,
+          `CustomHeight` int DEFAULT NULL,
+          `TransitionStyle` varchar(50) DEFAULT NULL,
+          `VisualEffect` varchar(50) DEFAULT NULL,
+          `Status` int NOT NULL DEFAULT '0',
+          `PipelineProgress` int DEFAULT NULL,
+          `PrivacyStatus` varchar(20) NOT NULL DEFAULT 'private',
+          `OutputVideoPath` varchar(500) DEFAULT NULL,
+          `YouTubeVideoId` varchar(50) DEFAULT NULL,
+          `SeoTitle` varchar(200) DEFAULT NULL,
+          `SeoDescription` text,
+          `SeoTags` varchar(2000) DEFAULT NULL,
+          `SeoHashtags` varchar(1000) DEFAULT NULL,
+          `CustomInstructions` varchar(1000) DEFAULT NULL,
+          `TargetPlatforms` varchar(200) DEFAULT NULL,
+          `TargetChannelId` int DEFAULT NULL,
+          `ErrorMessage` varchar(2000) DEFAULT NULL,
+          `CreatedAt` datetime(6) NOT NULL,
+          `UpdatedAt` datetime(6) DEFAULT NULL,
+          `CompletedAt` datetime(6) DEFAULT NULL,
+          `TimelineJson` text,
+          PRIMARY KEY (`Id`),
+          KEY `IX_Projects_TemplateId` (`TemplateId`),
+          KEY `IX_Projects_TargetChannelId` (`TargetChannelId`),
+          CONSTRAINT `FK_Projects_Templates` FOREIGN KEY (`TemplateId`) REFERENCES `Templates` (`Id`) ON DELETE CASCADE,
+          CONSTRAINT `FK_Projects_YouTubeChannels` FOREIGN KEY (`TargetChannelId`) REFERENCES `YouTubeChannels` (`Id`) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;";
+
+        try 
+        {
+            await _context.Database.ExecuteSqlRawAsync(sql);
+            return Ok("Projects table has been successfully recreated with all modern columns! You can now load the Dashboard. \n(Note: Old project data is gone because the table was manually dropped earlier.)");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error recreating table: " + ex.Message);
+        }
+    }
 }
 
 public class UpdateCheckResponse
