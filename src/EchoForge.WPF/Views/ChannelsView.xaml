@@ -155,11 +155,11 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Loading overlay -->
+                            <!-- Loading overlay (only inside channel list) -->
                             <Border Grid.Row="1" Background="#800D1117" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                    CornerRadius="8" Panel.ZIndex="10">
+                                    CornerRadius="8" Panel.ZIndex="10" IsHitTestVisible="False">
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ch_Loading]}" Foreground="#8B5CF6" FontSize="16" FontWeight="SemiBold"/>
+                                    <TextBlock Text="⏳ Yükleniyor..." Foreground="#8B5CF6" FontSize="14" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </Border>
                         </Grid>

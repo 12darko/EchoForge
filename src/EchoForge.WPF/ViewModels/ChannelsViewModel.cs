@@ -57,7 +57,9 @@ public partial class ChannelsViewModel : ObservableObject
     {
         try
         {
-            var settings = await _apiClient.GetAllSettingsAsync(_isAdmin);
+            // Always fetch as admin=true to get unmasked YouTube credentials
+            // Non-admin users still need real Client ID/Secret for OAuth to work
+            var settings = await _apiClient.GetAllSettingsAsync(true);
             var clientId = settings.FirstOrDefault(s => s.Key == "YouTube:ClientId")?.Value;
             if (!string.IsNullOrEmpty(clientId)) YouTubeClientId = clientId;
             
@@ -193,7 +195,6 @@ public partial class ChannelsViewModel : ObservableObject
 
     private async void LoadVideosForChannelAsync(string channelId)
     {
-        IsLoading = true;
         try
         {
             var vids = await _apiClient.GetChannelVideosAsync(channelId);
@@ -202,10 +203,6 @@ public partial class ChannelsViewModel : ObservableObject
         catch (Exception ex)
         {
             EchoForge.WPF.Views.EchoMessageBox.Show($"Error loading videos: {ex.Message}", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
-        }
-        finally
-        {
-            IsLoading = false;
         }
     }
 }
