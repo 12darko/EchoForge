@@ -45,8 +45,8 @@ public partial class App : Application
     {
         try
         {
-            // Dynamically construct update URL from ApiClient's base address
-            var apiBase = Services.ApiClient.Instance?.BaseUrl?.TrimEnd('/') ?? "http://localhost:5035";
+            // Dynamically construct update URL from ServerConfig instead of ApiClient.Instance which might be null early on
+            var apiBase = Services.ServerConfig.GetServerUrl().TrimEnd('/');
             var updateUrl = $"{apiBase}/api/update/check"; 
             
             var updater = new Services.UpdateService(updateUrl);
