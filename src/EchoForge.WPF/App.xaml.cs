@@ -73,9 +73,10 @@ public partial class App : Application
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Silent fail if update check fails (no internet right on startup)
+            // Show error so we know why it's failing during test
+            Views.EchoMessageBox.Show("Update check failed: " + ex.Message, "Debug Error", Views.EchoMessageBox.EchoMessageType.Error);
         }
     }
 }

@@ -138,6 +138,20 @@ using (var scope = app.Services.CreateScope())
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "TransitionStyle", "VARCHAR(50) NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "CustomInstructions", "VARCHAR(1000) NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "TargetPlatforms", "VARCHAR(200) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "VisualEffect", "VARCHAR(50) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "ManualImageDurationSec", "DOUBLE NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "ImageStyle", "VARCHAR(200) NULL");
+
+    // TEMPORARY DB SCHEMA PATCH FOR PHASE 5 AND LATER
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "PipelineProgress", "INT NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "PrivacyStatus", "VARCHAR(20) NOT NULL DEFAULT 'private'");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "OutputVideoPath", "VARCHAR(500) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "YouTubeVideoId", "VARCHAR(50) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "SeoTitle", "VARCHAR(200) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "SeoDescription", "TEXT NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "SeoTags", "VARCHAR(2000) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "SeoHashtags", "VARCHAR(1000) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "ErrorMessage", "VARCHAR(2000) NULL");
 
     // TEMPORARY DB SCHEMA PATCH FOR PHASE 6
     try { await db.Database.ExecuteSqlRawAsync("CREATE TABLE IF NOT EXISTS YouTubeChannels (Id INT AUTO_INCREMENT PRIMARY KEY, ChannelName VARCHAR(200) NOT NULL, ChannelId VARCHAR(100) NOT NULL, AccessToken TEXT NULL, RefreshToken TEXT NULL, TokenExpiration DATETIME NULL, CreatedAt DATETIME NOT NULL, UNIQUE (ChannelId));"); } catch { }
