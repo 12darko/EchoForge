@@ -281,10 +281,25 @@ public class AudioAnalysisService : IAudioService
             }
         };
 
+        var errorBuffer = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        process.ErrorDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                errorBuffer.Enqueue(e.Data);
+                if (errorBuffer.Count > 30) errorBuffer.TryDequeue(out _);
+            }
+        };
+
         process.Start();
-        var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var error = await process.StandardError.ReadToEndAsync(cancellationToken);
+        process.BeginErrorReadLine();
+        
+        var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        
         await process.WaitForExitAsync(cancellationToken);
+        
+        var output = await outputTask;
+        var error = string.Join(Environment.NewLine, errorBuffer);
 
         return string.IsNullOrEmpty(output) ? error : output;
     }

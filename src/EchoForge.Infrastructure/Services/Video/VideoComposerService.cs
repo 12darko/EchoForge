@@ -305,14 +305,25 @@ public class VideoComposerService : IVideoComposerService
             }
         };
 
+        var errorBuffer = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        process.ErrorDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                errorBuffer.Enqueue(e.Data);
+                if (errorBuffer.Count > 30) errorBuffer.TryDequeue(out _);
+            }
+        };
+
         process.Start();
+        process.BeginErrorReadLine();
+        
         var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
         
         await process.WaitForExitAsync(cancellationToken);
         
         var output = await outputTask;
-        var error = await errorTask;
+        var error = string.Join(Environment.NewLine, errorBuffer);
 
         if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
         {
@@ -342,12 +353,14 @@ public class VideoComposerService : IVideoComposerService
             }
         };
 
-        var errorOutput = new System.Text.StringBuilder();
+        var errorBuffer = new System.Collections.Concurrent.ConcurrentQueue<string>();
 
         process.ErrorDataReceived += (sender, e) =>
         {
             if (e.Data == null) return;
-            errorOutput.AppendLine(e.Data);
+            
+            errorBuffer.Enqueue(e.Data);
+            if (errorBuffer.Count > 30) errorBuffer.TryDequeue(out _);
             
             // FFmpeg progress format: frame=  123 fps=... time=00:00:15.34 ...
             if (e.Data.Contains("time="))
@@ -377,12 +390,13 @@ public class VideoComposerService : IVideoComposerService
 
         if (process.ExitCode != 0)
         {
+            var errorOutput = string.Join(Environment.NewLine, errorBuffer);
             throw new InvalidOperationException($"FFmpeg error: {errorOutput}");
         }
         
         // Ensure 100% on success
         progressCallback(100);
 
-        return string.IsNullOrEmpty(output) ? errorOutput.ToString() : output;
+        return string.IsNullOrEmpty(output) ? string.Join(Environment.NewLine, errorBuffer) : output;
     }
 }
