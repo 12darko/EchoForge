@@ -1,7 +1,8 @@
 <UserControl x:Class="EchoForge.WPF.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:EchoForge.WPF.Converters">
+             xmlns:converters="clr-namespace:EchoForge.WPF.Converters"
+             xmlns:loc="clr-namespace:EchoForge.WPF.Localization">
 
     <UserControl.Resources>
         <converters:StatusToProgressConverter x:Key="StatusToProgress"/>
@@ -15,10 +16,10 @@
             <!-- ═══════════════ HEADER ═══════════════ -->
             <DockPanel Margin="0,0,0,32">
                 <StackPanel>
-                    <TextBlock Text="Good Evening, Creator 👋" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                    <TextBlock Text="Welcome to your AI Studio. Ready to create some magic?" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_Greeting]}" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_Subtitle]}" FontSize="16" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
                 </StackPanel>
-                <Button Content="🔄 Refresh Studio" Command="{Binding RefreshProjectsCommand}"
+                <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_Refresh]}" Command="{Binding RefreshProjectsCommand}"
                         Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right"
                         VerticalAlignment="Center" Padding="16,10" Foreground="{StaticResource TextSecondaryBrush}"/>
             </DockPanel>
@@ -46,11 +47,11 @@
                     <!-- Route this to NavigateToCreateCommand via MainWindow context -->
                     <DockPanel>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="✨ Create New AI Music Video" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
-                            <TextBlock Text="Turn audio into a fully rendered, AI-generated music video with effects, subtitles, and YouTube SEO in seconds." 
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_CreateHeroTitle]}" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_CreateHeroDesc]}" 
                                        FontSize="14" Foreground="#D1FAE5" TextWrapping="Wrap" MaxWidth="400" HorizontalAlignment="Left" LineHeight="20"/>
                             
-                            <Button Content="🚀 Launch Creator" Style="{StaticResource PrimaryButton}" Margin="0,24,0,0" HorizontalAlignment="Left" Padding="32,14" FontSize="16" FontWeight="Bold" Background="#059669" BorderThickness="0"
+                            <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_LaunchCreator]}" Style="{StaticResource PrimaryButton}" Margin="0,24,0,0" HorizontalAlignment="Left" Padding="32,14" FontSize="16" FontWeight="Bold" Background="#059669" BorderThickness="0"
                                     Command="{Binding DataContext.NavigateToCreateCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
                         </StackPanel>
                         <!-- Decorative Hero Icon -->
@@ -61,7 +62,7 @@
                 <!-- Quick Stats 1: Projects Overview -->
                 <Border Grid.Column="1" Style="{StaticResource GlassCard}" Margin="0,0,24,0" Padding="24">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="📦 Total Projects" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_TotalProjects]}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
                         <TextBlock Text="{Binding TotalProjects}" FontSize="42" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
                         <Border Background="#1A10B981" CornerRadius="8" Padding="12,6" Margin="0,16,0,0">
                             <TextBlock Text="{Binding TotalCompleted, StringFormat='{}✅ {0} Completed'}" FontSize="13" Foreground="{StaticResource AccentGreenBrush}" FontWeight="SemiBold"/>
@@ -73,7 +74,7 @@
                 <!-- Quick Stats 2: Active Renders -->
                 <Border Grid.Column="2" Style="{StaticResource GlassCard}" Padding="24">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="⚙️ Active rendering" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_ActiveRender]}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
                         <TextBlock Text="{Binding TotalProcessing}" FontSize="42" FontWeight="Bold" Foreground="{StaticResource AccentOrangeBrush}" HorizontalAlignment="Center"/>
                         <Border Background="#1A3B82F6" CornerRadius="8" Padding="12,6" Margin="0,16,0,0">
                             <TextBlock Text="{Binding RecentProjectsCount, StringFormat='{}📈 {0} Last 7 Days'}" FontSize="13" Foreground="{StaticResource AccentBlueBrush}" FontWeight="SemiBold"/>
@@ -84,7 +85,7 @@
             </Grid>
 
             <!-- ═══════════════ RECENT PROJECTS VIEW ═══════════════ -->
-            <TextBlock Text="Your Recent Creations" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,24"/>
+            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_RecentCreations]}" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,24"/>
             
             <ItemsControl ItemsSource="{Binding Projects}">
                 <ItemsControl.ItemsPanel>
@@ -169,7 +170,7 @@
                                 <Border Grid.RowSpan="3" Background="#E50D1117" Cursor="Wait"
                                         Visibility="{Binding Status, Converter={StaticResource StatusVisibility}, ConverterParameter='Created,AnalyzingAudio,GeneratingImages,ComposingVideo,GeneratingSEO,Uploading'}">
                                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24">
-                                        <TextBlock Text="⏳ Rendering Engine Active" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentPurpleBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_RenderActive]}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentPurpleBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
                                         <TextBlock Text="{Binding Status, Converter={StaticResource StatusToProgress}}" 
                                                    FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"
                                                    TextAlignment="Center" LineHeight="20"/>

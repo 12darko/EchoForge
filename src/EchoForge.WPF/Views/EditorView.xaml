@@ -7,6 +7,7 @@
              xmlns:converters="clr-namespace:EchoForge.WPF.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="750" d:DesignWidth="1200"
+             xmlns:loc="clr-namespace:EchoForge.WPF.Localization"
              Background="#0B0E14" Foreground="#F8FAFC">
 
     <UserControl.Resources>
@@ -27,16 +28,16 @@
         <!-- ═══════════════ HEADER BAR ═══════════════ -->
         <Border Grid.Row="0" Background="#12161F" BorderBrush="#1A1F2B" BorderThickness="0,0,0,1">
             <DockPanel LastChildFill="True" Margin="20,0">
-                <Button DockPanel.Dock="Left" Content="← Back to Dashboard" Style="{StaticResource SecondaryButton}" 
+                <Button DockPanel.Dock="Left" Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_BackToDashboard]}" Style="{StaticResource SecondaryButton}" 
                         Command="{Binding GoBackCommand}" Padding="12,6" VerticalAlignment="Center" Margin="0,0,20,0"/>
                 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="✂️ Video Editor" FontSize="16" FontWeight="Bold" Margin="0,0,12,0" Foreground="{StaticResource AccentPurpleBrush}"/>
+                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VideoEditor]}" FontSize="16" FontWeight="Bold" Margin="0,0,12,0" Foreground="{StaticResource AccentPurpleBrush}"/>
                     <TextBlock Text="{Binding ProjectTitle, StringFormat='— {0}'}" FontSize="14" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Export/Render Button moved to header for better visibility -->
-                <Button DockPanel.Dock="Right" Content="📽️ Render Final Video" 
+                <Button DockPanel.Dock="Right" Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_RenderFinalVideo]}" 
                         Command="{Binding RenderVideoCommand}"
                         Padding="16,8" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Cursor="Hand">
                     <Button.Style>
@@ -78,7 +79,7 @@
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                                             Visibility="{Binding PreviewImagePath, Converter={StaticResource StringToInverseVisibility}}">
                                     <TextBlock Text="🎬" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                                    <TextBlock Text="Video Preview" Foreground="#4A5568" FontSize="16" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VideoPreview]}" Foreground="#4A5568" FontSize="16" HorizontalAlignment="Center"/>
                                 </StackPanel>
                                 <!-- The Image & Effects Preview Overlays -->
                                 <Grid Margin="16" Opacity="{Binding PreviewOpacity, FallbackValue=1.0}">
@@ -225,7 +226,7 @@
                                     <GradientStop Color="#05FFFFFF" Offset="1"/>
                                 </LinearGradientBrush>
                             </Border.Background>
-                            <TextBlock Text="🎛️ Properties" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Properties]}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
                         </Border>
 
                         <!-- ═══════ PROJECT SETTINGS (shown when NO scene selected) ═══════ -->
@@ -240,8 +241,8 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                                 <StackPanel>
-                                    <TextBlock Text="⚙️ Project Settings" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Global settings for the entire video" FontSize="11" Foreground="#64748B"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_ProjectSettings]}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_GlobalSettings]}" FontSize="11" Foreground="#64748B"/>
                                 </StackPanel>
                             </Border>
 
@@ -253,7 +254,7 @@
                                     <StackPanel Margin="16,14">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                             <TextBlock Text="🔊" FontSize="16" Margin="0,0,8,0"/>
-                                            <TextBlock Text="Music Volume" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_MusicVolume]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -274,9 +275,9 @@
                                     <StackPanel Margin="16,14">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                             <TextBlock Text="🌅" FontSize="16" Margin="0,0,8,0"/>
-                                            <TextBlock Text="Video Intro Fade" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VideoIntroFade]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                        <TextBlock Text="Fade from black at the start of your video" FontSize="10" Foreground="#64748B" Margin="0,0,0,8"/>
+                                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_IntroFadeDesc]}" FontSize="10" Foreground="#64748B" Margin="0,0,0,8"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -296,9 +297,9 @@
                                     <StackPanel Margin="16,14">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                             <TextBlock Text="🌙" FontSize="16" Margin="0,0,8,0"/>
-                                            <TextBlock Text="Video Outro Fade" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VideoOutroFade]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                        <TextBlock Text="Fade to black at the end of your video" FontSize="10" Foreground="#64748B" Margin="0,0,0,8"/>
+                                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_OutroFadeDesc]}" FontSize="10" Foreground="#64748B" Margin="0,0,0,8"/>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -311,7 +312,7 @@
                                 </Grid>
                             </Border>
 
-                            <TextBlock Text="💡 Select a scene from the timeline to edit per-scene effects." FontSize="11" Foreground="#475569" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_SelectSceneHint]}" FontSize="11" Foreground="#475569" TextWrapping="Wrap" Margin="0,8,0,0"/>
                         </StackPanel>
 
                         <!-- ═══════ SCENE PROPERTIES (shown when a scene IS selected) ═══════ -->
@@ -332,13 +333,13 @@
                             </Border>
 
                             <!-- Duration -->
-                            <TextBlock Text="⏱ Duration (seconds)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Duration]}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
                             <TextBox Text="{Binding SelectedScene.Duration, UpdateSourceTrigger=PropertyChanged}" 
                                      Style="{StaticResource ModernTextBox}" Margin="0,0,0,4"/>
                             <TextBlock Text="{Binding SelectedSceneDurationDisplay}" FontSize="11" Foreground="#4A5568" Margin="0,0,0,16"/>
 
                             <!-- Image Prompt -->
-                            <TextBlock Text="🖼 Image Prompt" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_ImagePrompt]}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
                             <TextBox Text="{Binding SelectedScene.Prompt, UpdateSourceTrigger=PropertyChanged}" 
                                      Style="{StaticResource ModernTextBox}" Height="90" 
                                      TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,12"/>
@@ -350,7 +351,7 @@
                                     BorderBrush="#8B5CF6" BorderThickness="1" Background="#1A0D1117">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="✨" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Regenerate Image For This Scene" FontWeight="SemiBold" Foreground="#A855F7"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_RegenerateImage]}" FontWeight="SemiBold" Foreground="#A855F7"/>
                                 </StackPanel>
                             </Button>
 
@@ -363,8 +364,8 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                                 <StackPanel>
-                                    <TextBlock Text="✨ Transition Effect" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Choose how scenes blend together" FontSize="11" Foreground="#64748B"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_TransitionEffect]}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_TransitionDesc]}" FontSize="11" Foreground="#64748B"/>
                                 </StackPanel>
                             </Border>
                             <ListBox SelectedValue="{Binding SelectedScene.Transition}" SelectedValuePath="Tag" 
@@ -522,7 +523,7 @@
                             </ListBox>
 
                             <!-- Save Button -->
-                            <Button Content="💾 Save All Changes" 
+                            <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_SaveAllChanges]}" 
                                     Style="{StaticResource PrimaryButton}" 
                                     Command="{Binding ApplySceneEditsCommand}"
                                     Padding="12,10" Margin="0,0,0,20" HorizontalAlignment="Stretch"/>
@@ -536,8 +537,8 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                                 <StackPanel>
-                                    <TextBlock Text="✨ Visual Effects" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Apply effects to this scene" FontSize="11" Foreground="#64748B"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VisualEffects]}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VisualEffectsDesc]}" FontSize="11" Foreground="#64748B"/>
                                 </StackPanel>
                             </Border>
 
@@ -548,7 +549,7 @@
                                     <StackPanel Margin="16,12">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                             <TextBlock Text="🌅" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Fade In" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_FadeIn]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -569,7 +570,7 @@
                                     <StackPanel Margin="16,12">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                             <TextBlock Text="🌙" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Fade Out" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_FadeOut]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -590,7 +591,7 @@
                                     <StackPanel Margin="16,12">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                             <TextBlock Text="⚡" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Playback Speed" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_PlaybackSpeed]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -611,7 +612,7 @@
                                     <StackPanel Margin="16,12">
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                             <TextBlock Text="🎨" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Color Filter" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_ColorFilter]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <ComboBox SelectedValue="{Binding SelectedScene.Filter}" SelectedValuePath="Content" Style="{StaticResource ModernComboBox}">
                                             <ComboBoxItem Content="none"/>
@@ -632,7 +633,7 @@
                         <!-- Loading Indicator -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,24,0,0"
                                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Text="⏳ Processing..." FontSize="13" Foreground="#A855F7" FontStyle="Italic"/>
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Processing]}" FontSize="13" Foreground="#A855F7" FontStyle="Italic"/>
                         </StackPanel>
                         
                         <!-- Status message -->
@@ -647,8 +648,8 @@
         <Border Grid.Row="2" Background="#12161F" Margin="16,0,16,0" Padding="8,6" CornerRadius="8,8,0,0">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <Button Content="✂️ Split" Command="{Binding SplitSceneCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,4,0" Padding="8,4" ToolTip="Split scene at the playhead"/>
-                    <Button Content="🗑️ Del" Command="{Binding DeleteSceneCommand}" Style="{StaticResource SecondaryButton}" Foreground="#F43F5E" Padding="8,4" Margin="0,0,8,0" ToolTip="Delete selected scene"/>
+                    <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Split]}" Command="{Binding SplitSceneCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,4,0" Padding="8,4" ToolTip="Split scene at the playhead"/>
+                    <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Delete]}" Command="{Binding DeleteSceneCommand}" Style="{StaticResource SecondaryButton}" Foreground="#F43F5E" Padding="8,4" Margin="0,0,8,0" ToolTip="Delete selected scene"/>
                     <Border Width="1" Background="#2A2F3A" Margin="0,2,8,2"/>
                     <Button Content="[ In" Command="{Binding MarkInCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,4,0" ToolTip="Mark In point at current playhead position" Foreground="#3B82F6"/>
                     <Button Content="Out ]" Command="{Binding MarkOutCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,4,0" ToolTip="Mark Out point at current playhead position" Foreground="#3B82F6"/>
@@ -664,7 +665,7 @@
                     <!-- Timeline Tutorial Tip -->
                     <Border Background="#1A3B82F6" CornerRadius="6" Padding="8,4" Margin="0,0,12,0" Cursor="Help"
                             ToolTip="Timeline Tips:&#x0a;• Click a scene to select and edit it&#x0a;• Drag the right edge of a scene to resize&#x0a;• Use Split to cut a scene at the playhead&#x0a;• Set In/Out points then Trim to crop&#x0a;• Drag scenes to reorder them&#x0a;• Use the zoom slider to see more detail">
-                        <TextBlock Text="❓ Tips" FontSize="10" Foreground="#3B82F6" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Tips]}" FontSize="10" Foreground="#3B82F6" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </Border>
                     <TextBlock Text="🔍" FontSize="12" VerticalAlignment="Center" Margin="0,0,6,0"/>
                     <TextBlock Text="-" Foreground="#4A5568" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="14" FontWeight="Bold"/>
@@ -675,7 +676,7 @@
                     <TextBlock Text="{Binding ZoomScale, StringFormat='{}{0:F1}x'}" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Width="30"/>
                 </StackPanel>
 
-                <TextBlock Text="💡 Drag playhead or click timeline to seek" Foreground="#4A5568" FontSize="10" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_DragHint]}" Foreground="#4A5568" FontSize="10" VerticalAlignment="Center" Margin="12,0,0,0"/>
             </DockPanel>
         </Border>
 
@@ -702,8 +703,8 @@
                 <!-- Fixed left label -->
                 <StackPanel DockPanel.Dock="Left" Width="60" Margin="0,0,0,0">
                     <TextBlock Text="🎞️" FontSize="16" Margin="0,4,0,2"/>
-                    <TextBlock Text="Video" FontSize="11" Foreground="#94A3B8" FontWeight="SemiBold"/>
-                    <TextBlock Text="Track" FontSize="10" Foreground="#4A5568"/>
+                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VideoTrack]}" FontSize="11" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Track]}" FontSize="10" Foreground="#4A5568"/>
                 </StackPanel>
 
                 <!-- Scrollable Timeline Track with Playhead Overlay -->

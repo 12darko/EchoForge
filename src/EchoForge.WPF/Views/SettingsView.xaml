@@ -12,8 +12,8 @@
     <DockPanel>
         <!-- Header -->
         <StackPanel DockPanel.Dock="Top" Margin="0,0,0,32">
-            <TextBlock Text="⚙️ Settings &amp; Preferences" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-            <TextBlock Text="Configure your AI studio — API keys, system paths, and preferences" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Set_Title]}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Set_Subtitle]}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
         </StackPanel>
 
         <!-- Two-Panel Layout: Category Tabs + Content -->
