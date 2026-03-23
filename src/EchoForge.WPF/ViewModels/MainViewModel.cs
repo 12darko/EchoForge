@@ -49,7 +49,7 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
-        _apiClient = new Services.ApiClient();
+        _apiClient = new Services.ApiClient(Services.ServerConfig.GetServerUrl());
         Services.ApiClient.ConnectionStateChanged += OnConnectionStateChanged;
         ShowLogin();
     }
