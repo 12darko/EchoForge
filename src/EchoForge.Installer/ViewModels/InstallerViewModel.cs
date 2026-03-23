@@ -13,10 +13,17 @@ namespace EchoForge.Installer.ViewModels
     public partial class InstallerViewModel : ObservableObject
     {
         private readonly Window _window;
+        private readonly bool _isUninstallMode;
 
+        // === Install Screen ===
         [ObservableProperty]
-        private bool _isWelcomeVisible = true;
+        private bool _isWelcomeVisible = false;
 
+        // === Uninstall Screen ===
+        [ObservableProperty]
+        private bool _isUninstallWelcomeVisible = false;
+
+        // === Shared Screens ===
         [ObservableProperty]
         private bool _isInstallingVisible = false;
 
@@ -35,11 +42,47 @@ namespace EchoForge.Installer.ViewModels
         [ObservableProperty]
         private double _progressValue = 0;
 
+        [ObservableProperty]
+        private string _doneTitle = "✅ Kurulum Başarıyla Tamamlandı!";
+
+        [ObservableProperty]
+        private string _doneSubtitle = "EchoForge içerik stüdyosu kullanıma hazır.";
+
+        [ObservableProperty]
+        private bool _showLaunchButton = true;
+
         public InstallerViewModel(Window window)
         {
             _window = window;
+            
+            // Check if running in uninstall mode
+            var args = Environment.GetCommandLineArgs();
+            _isUninstallMode = Array.Exists(args, a => a.Equals("--uninstall", StringComparison.OrdinalIgnoreCase));
+
+            if (_isUninstallMode)
+            {
+                // Try to read install path from registry
+                try
+                {
+                    using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\EchoForge");
+                    if (key != null)
+                    {
+                        InstallPath = key.GetValue("InstallLocation")?.ToString() ?? InstallPath;
+                    }
+                }
+                catch { }
+
+                IsUninstallWelcomeVisible = true;
+            }
+            else
+            {
+                IsWelcomeVisible = true;
+            }
         }
 
+        // ========================
+        //  INSTALL
+        // ========================
         [RelayCommand]
         private async Task InstallAsync()
         {
@@ -50,12 +93,41 @@ namespace EchoForge.Installer.ViewModels
             {
                 await RunInstallationAsync();
 
+                DoneTitle = "✅ Kurulum Başarıyla Tamamlandı!";
+                DoneSubtitle = "EchoForge içerik stüdyosu kullanıma hazır.";
+                ShowLaunchButton = true;
                 IsInstallingVisible = false;
                 IsDoneVisible = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Kurulum sırasında hata oluştu:\n{ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
+            }
+        }
+
+        // ========================
+        //  UNINSTALL
+        // ========================
+        [RelayCommand]
+        private async Task UninstallAsync()
+        {
+            IsUninstallWelcomeVisible = false;
+            IsInstallingVisible = true;
+
+            try
+            {
+                await RunUninstallAsync();
+
+                DoneTitle = "🗑️ Kaldırma İşlemi Tamamlandı!";
+                DoneSubtitle = "EchoForge bilgisayarınızdan başarıyla kaldırıldı.";
+                ShowLaunchButton = false;
+                IsInstallingVisible = false;
+                IsDoneVisible = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Kaldırma sırasında hata oluştu:\n{ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown();
             }
         }
@@ -71,16 +143,22 @@ namespace EchoForge.Installer.ViewModels
             Application.Current.Shutdown();
         }
 
+        [RelayCommand]
+        private void CloseApp()
+        {
+            Application.Current.Shutdown();
+        }
+
+        // ========================
+        //  INSTALL LOGIC
+        // ========================
         private async Task RunInstallationAsync()
         {
             if (!Directory.Exists(InstallPath))
-            {
                 Directory.CreateDirectory(InstallPath);
-            }
 
             StatusText = "Dosyalar çıkarılıyor...";
             
-            // Extract the embedded payload.zip
             using (var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoForge.Installer.payload.zip"))
             {
                 if (resourceStream == null)
@@ -93,7 +171,7 @@ namespace EchoForge.Installer.ViewModels
 
                     foreach (var entry in archive.Entries)
                     {
-                        if (string.IsNullOrEmpty(entry.Name)) // Directory
+                        if (string.IsNullOrEmpty(entry.Name))
                         {
                             Directory.CreateDirectory(Path.Combine(InstallPath, entry.FullName));
                         }
@@ -105,16 +183,11 @@ namespace EchoForge.Installer.ViewModels
                             if (!Directory.Exists(destDir))
                                 Directory.CreateDirectory(destDir);
 
-                            // Extract the file
                             entry.ExtractToFile(destPath, overwrite: true);
                         }
 
                         currentEntry++;
-                        
-                        // Wait slightly to let UI update and look smooth
-                        if (currentEntry % 5 == 0)
-                            await Task.Delay(1);
-
+                        if (currentEntry % 5 == 0) await Task.Delay(1);
                         ProgressValue = ((double)currentEntry / totalEntries) * 100;
                     }
                 }
@@ -124,14 +197,118 @@ namespace EchoForge.Installer.ViewModels
             await Task.Delay(500);
 
             if (CreateDesktopShortcut)
-            {
                 CreateShortcut();
+
+            // Copy ourselves as the uninstaller
+            CopySelfAsUninstaller();
+
+            CreateRegistryKeys();
+            ProgressValue = 100;
+        }
+
+        // ========================
+        //  UNINSTALL LOGIC
+        // ========================
+        private async Task RunUninstallAsync()
+        {
+            StatusText = "Masaüstü kısayolu siliniyor...";
+            await Task.Delay(300);
+            ProgressValue = 10;
+
+            // Delete desktop shortcut
+            try
+            {
+                string shortcut = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "EchoForge.lnk");
+                if (File.Exists(shortcut)) File.Delete(shortcut);
+            }
+            catch { }
+
+            StatusText = "Uygulama dosyaları siliniyor...";
+            ProgressValue = 30;
+
+            // Delete all files except EchoForge_Uninstall.exe (ourselves)
+            if (Directory.Exists(InstallPath))
+            {
+                var files = Directory.GetFiles(InstallPath, "*", SearchOption.AllDirectories);
+                int total = files.Length;
+                int current = 0;
+                string selfExe = Path.Combine(InstallPath, "EchoForge_Uninstall.exe");
+
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        if (!file.Equals(selfExe, StringComparison.OrdinalIgnoreCase))
+                            File.Delete(file);
+                    }
+                    catch { }
+
+                    current++;
+                    if (current % 3 == 0) await Task.Delay(1);
+                    ProgressValue = 30 + ((double)current / total) * 50;
+                }
+
+                // Delete subdirectories
+                foreach (var dir in Directory.GetDirectories(InstallPath))
+                {
+                    try { Directory.Delete(dir, true); } catch { }
+                }
             }
 
-            // Register Uninstaller (optional but good practice)
-            CreateRegistryKeys();
+            StatusText = "Kayıt defteri temizleniyor...";
+            ProgressValue = 90;
+            await Task.Delay(300);
+
+            // Remove registry key
+            try
+            {
+                Microsoft.Win32.Registry.LocalMachine.DeleteSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\EchoForge", false);
+            }
+            catch { }
+
+            // Schedule self-deletion after the process exits
+            ScheduleSelfDelete();
 
             ProgressValue = 100;
+            StatusText = "Tamamlandı!";
+        }
+
+        private void ScheduleSelfDelete()
+        {
+            try
+            {
+                // Create a temp batch file that waits, then deletes the install folder
+                string batPath = Path.Combine(Path.GetTempPath(), "echoforge_cleanup.bat");
+                File.WriteAllText(batPath, $@"@echo off
+ping 127.0.0.1 -n 3 > nul
+rmdir /S /Q ""{InstallPath}""
+del ""%~f0""
+");
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = batPath,
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                });
+            }
+            catch { }
+        }
+
+        // ========================
+        //  HELPERS
+        // ========================
+        private void CopySelfAsUninstaller()
+        {
+            try
+            {
+                string selfPath = Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                if (!string.IsNullOrEmpty(selfPath))
+                {
+                    string destPath = Path.Combine(InstallPath, "EchoForge_Uninstall.exe");
+                    File.Copy(selfPath, destPath, true);
+                }
+            }
+            catch { }
         }
 
         private void CreateShortcut()
@@ -142,23 +319,21 @@ namespace EchoForge.Installer.ViewModels
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
                 string shortcutLocation = Path.Combine(desktopPath, "EchoForge.lnk");
 
-                // Using PowerShell to create a shortcut since WshShell COM is annoying to reference in modern .NET
                 string psScript = $@"
 $s = (New-Object -COM WScript.Shell).CreateShortcut('{shortcutLocation}')
 $s.TargetPath = '{targetPath}'
 $s.WorkingDirectory = '{InstallPath}'
 $s.Save()";
                 
-                var startInfo = new ProcessStartInfo
+                Process.Start(new ProcessStartInfo
                 {
                     FileName = "powershell.exe",
                     Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{psScript}\"",
                     CreateNoWindow = true,
                     UseShellExecute = false
-                };
-                Process.Start(startInfo)?.WaitForExit();
+                })?.WaitForExit();
             }
-            catch { /* Ignore shortcut errors */ }
+            catch { }
         }
 
         private void CreateRegistryKeys()
@@ -166,6 +341,8 @@ $s.Save()";
             try
             {
                 string keyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\EchoForge";
+                string uninstallExe = Path.Combine(InstallPath, "EchoForge_Uninstall.exe");
+
                 using (var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(keyPath))
                 {
                     key.SetValue("DisplayName", "EchoForge AI Content Studio");
@@ -173,19 +350,10 @@ $s.Save()";
                     key.SetValue("DisplayVersion", "2.0.0");
                     key.SetValue("Publisher", "EchoForge");
                     key.SetValue("InstallLocation", InstallPath);
-                    
-                    // A simple uninstaller script just deletes the folder and key
-                    string uninstallBat = Path.Combine(InstallPath, "uninstall.bat");
-                    File.WriteAllText(uninstallBat, $@"@echo off
-echo EchoForge siliniyor...
-rmdir /S /Q ""{InstallPath}""
-reg delete ""HKLM\{keyPath}"" /f
-echo Silindi!
-");
-                    key.SetValue("UninstallString", uninstallBat);
+                    key.SetValue("UninstallString", $"\"{uninstallExe}\" --uninstall");
                 }
             }
-            catch { /* Ignore registry errors if not running as full admin sometimes */ }
+            catch { }
         }
     }
 }

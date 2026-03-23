@@ -68,7 +68,7 @@
                 <TextBlock Text="⚡ EchoForge" FontSize="32" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,10" />
                 <TextBlock Text="AI Content Studio v2.0" FontSize="16" Foreground="#9CA3AF" HorizontalAlignment="Center" Margin="0,0,0,30" />
 
-                <!-- Welcome Screen -->
+                <!-- Install Welcome Screen -->
                 <StackPanel Visibility="{Binding IsWelcomeVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="Bilgisayarınıza en yeni tam otomatik AI içerik stüdyosunu kurmak üzeresiniz." 
                                Foreground="#D1D5DB" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20" FontSize="14"/>
@@ -81,10 +81,35 @@
                     
                     <CheckBox Content="Masaüstü kısayolu oluştur" IsChecked="{Binding CreateDesktopShortcut}" Foreground="#D1D5DB" Margin="0,0,0,20" />
 
-                    <Button Content="Uygulamayı Kur" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding InstallCommand}" Width="200" HorizontalAlignment="Center"/>
+                    <Button Content="⚡ Uygulamayı Kur" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding InstallCommand}" Width="200" HorizontalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Installing Screen -->
+                <!-- Uninstall Welcome Screen -->
+                <StackPanel Visibility="{Binding IsUninstallWelcomeVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="🗑️" FontSize="40" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="EchoForge'u bilgisayarınızdan kaldırmak üzeresiniz." 
+                               Foreground="#D1D5DB" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,10" FontSize="14"/>
+                    <TextBlock Text="Tüm uygulama dosyaları ve kısayollar silinecektir." 
+                               Foreground="#9CA3AF" TextAlignment="Center" Margin="0,0,0,25" FontSize="12"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="Evet, Kaldır" Width="140" Margin="0,0,10,0" Command="{Binding UninstallCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                                    <Setter Property="Background" Value="#EF4444" />
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#DC2626" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Content="İptal" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding CloseAppCommand}" Width="140" Background="#374151"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Installing/Uninstalling Progress Screen -->
                 <StackPanel Visibility="{Binding IsInstallingVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="{Binding StatusText}" Foreground="White" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,15" />
                     
@@ -101,12 +126,16 @@
                     <TextBlock Text="Lütfen bekleyin..." Foreground="#9CA3AF" HorizontalAlignment="Center" FontSize="12" />
                 </StackPanel>
 
-                <!-- Done Screen -->
+                <!-- Done Screen (dynamic for both install &amp; uninstall) -->
                 <StackPanel Visibility="{Binding IsDoneVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TextBlock Text="✅ Kurulum Başarıyla Tamamlandı!" FontSize="20" FontWeight="SemiBold" Foreground="#10B981" HorizontalAlignment="Center" Margin="0,0,0,10" />
-                    <TextBlock Text="EchoForge içerik stüdyosu kullanıma hazır." Foreground="#D1D5DB" HorizontalAlignment="Center" Margin="0,0,0,30" />
+                    <TextBlock Text="{Binding DoneTitle}" FontSize="20" FontWeight="SemiBold" Foreground="#10B981" HorizontalAlignment="Center" Margin="0,0,0,10" />
+                    <TextBlock Text="{Binding DoneSubtitle}" Foreground="#D1D5DB" HorizontalAlignment="Center" Margin="0,0,0,30" />
                     
-                    <Button Content="Zirveye Ulaş (Başlat)" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding LaunchCommand}" Width="200" HorizontalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="⚡ Başlat" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding LaunchCommand}" Width="160" Margin="0,0,10,0"
+                                Visibility="{Binding ShowLaunchButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Button Content="Kapat" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding CloseAppCommand}" Width="160" Background="#374151" />
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Grid>
