@@ -43,6 +43,8 @@ public partial class DashboardViewModel : ObservableObject
         _refreshTimer.Start();
     }
 
+    private bool _hasShownLoadError = false;
+
     [RelayCommand]
     private async Task LoadProjects()
     {
@@ -50,6 +52,7 @@ public partial class DashboardViewModel : ObservableObject
         try
         {
             var projects = await _apiClient.GetProjectsAsync();
+            _hasShownLoadError = false; // Reset on success
             Projects.Clear();
             foreach (var p in projects)
             {
@@ -93,7 +96,15 @@ public partial class DashboardViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            EchoForge.WPF.Views.EchoMessageBox.Show($"Failed to load projects: {ex.Message}", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
+            // Only show error popup once, not on every refresh cycle
+            if (!_hasShownLoadError)
+            {
+                _hasShownLoadError = true;
+                string userMessage = ex.Message.Contains("500") 
+                    ? "Sunucuya bağlanılamadı veya sunucu hatası oluştu (500).\nSunucunun güncel olduğundan emin olun."
+                    : $"Projeler yüklenemedi: {ex.Message}";
+                EchoForge.WPF.Views.EchoMessageBox.Show(userMessage, "Bağlantı Hatası", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
+            }
         }
         finally
         {
