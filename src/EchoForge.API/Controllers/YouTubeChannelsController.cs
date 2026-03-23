@@ -52,6 +52,23 @@ public class YouTubeChannelsController : ControllerBase
         }
     }
 
+    [HttpPost("save-token")]
+    public async Task<ActionResult> SaveToken([FromQuery] int userId, [FromBody] System.Text.Json.JsonElement tokenJsonElement, [FromServices] EchoForge.Core.Interfaces.IYouTubeUploadService ytService)
+    {
+        try
+        {
+            var tokenStr = tokenJsonElement.GetRawText();
+            if (string.IsNullOrWhiteSpace(tokenStr)) return BadRequest("Invalid token");
+
+            var channel = await ytService.SaveTokenAndConnectAsync(userId, tokenStr);
+            return Ok(channel);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
+
     [HttpGet("{channelId}/videos")]
     public async Task<ActionResult<List<EchoForge.Core.DTOs.YouTubeVideoDto>>> GetVideos(string channelId, [FromServices] EchoForge.Core.Interfaces.IYouTubeUploadService ytService)
     {

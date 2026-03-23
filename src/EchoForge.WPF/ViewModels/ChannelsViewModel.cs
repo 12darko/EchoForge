@@ -57,7 +57,7 @@ public partial class ChannelsViewModel : ObservableObject
     {
         try
         {
-            var settings = await _apiClient.GetAllSettingsAsync();
+            var settings = await _apiClient.GetAllSettingsAsync(_isAdmin);
             var clientId = settings.FirstOrDefault(s => s.Key == "YouTube:ClientId")?.Value;
             if (!string.IsNullOrEmpty(clientId)) YouTubeClientId = clientId;
             
@@ -116,26 +116,33 @@ public partial class ChannelsViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(YouTubeClientId) || string.IsNullOrWhiteSpace(YouTubeClientSecret))
         {
-            EchoForge.WPF.Views.EchoMessageBox.Show("Please enter your YouTube API Credentials first (Client ID & Client Secret) and click 'Save Credentials'.", "Credentials Required", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Warning);
+            EchoForge.WPF.Views.EchoMessageBox.Show("Lütfen önce Ayarlar'dan YouTube API Kimlik Bilgilerini (Client ID & Client Secret) kaydedin.", "Credentials Required", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Warning);
             return;
         }
 
         IsLoading = true;
         try
         {
-            EchoForge.WPF.Views.EchoMessageBox.Show("The browser will now open for YouTube Login. Please approve the permissions.", "Info", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Info);
+            EchoForge.WPF.Views.EchoMessageBox.Show("Tarayıcınız YouTube yetkilendirmesi için açılıyor. Lütfen açılan sayfada giriş yapıp izinleri onaylayın.", "Info", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Info);
 
-            var channel = await _apiClient.ConnectYouTubeAsync();
+            var tokenJson = await YouTubeAuthHelper.AuthorizeAndGetTokenAsync(YouTubeClientId, YouTubeClientSecret);
+            if (tokenJson == null)
+            {
+                EchoForge.WPF.Views.EchoMessageBox.Show("Yetkilendirme işlemi iptal edildi veya tarayıcıda başarısız oldu.", "Canceled", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Warning);
+                return;
+            }
+
+            var channel = await _apiClient.ConnectYouTubeWithTokenAsync(tokenJson);
             
             if (channel != null)
             {
                 await LoadChannelsAsync();
                 SelectedChannel = Channels.FirstOrDefault(c => c.ChannelId == channel.ChannelId);
-                EchoForge.WPF.Views.EchoMessageBox.Show($"Successfully connected to {channel.ChannelName}!", "Success", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);
+                EchoForge.WPF.Views.EchoMessageBox.Show($"'{channel.ChannelName}' kanalı başarıyla bağlandı ve sunucuya eklendi!", "Success", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);
             }
             else
             {
-                EchoForge.WPF.Views.EchoMessageBox.Show("Failed to connect channel.", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
+                EchoForge.WPF.Views.EchoMessageBox.Show("Kanal bilgileri veya Token sunucuya kaydedilemedi.", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
             }
         }
         catch (Exception ex)

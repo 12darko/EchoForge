@@ -8,7 +8,7 @@ namespace EchoForge.WPF.Services;
 
 public class ApiClient
 {
-    private readonly HttpClient _httpClient;
+    private HttpClient _httpClient;
 
     public static ApiClient? Instance { get; private set; }
     public string BaseUrl => _httpClient.BaseAddress?.ToString() ?? "http://localhost:5035";
@@ -64,7 +64,19 @@ public class ApiClient
     {
         if (string.IsNullOrWhiteSpace(url)) return;
         if (!url.EndsWith("/")) url += "/";
-        _httpClient.BaseAddress = new Uri(url);
+        
+        if (Uri.TryCreate(url, UriKind.Absolute, out var newUri))
+        {
+            if (_httpClient.BaseAddress == newUri) return;
+            
+            var currentToken = _httpClient.DefaultRequestHeaders.Authorization;
+            var handler = new ConnectionCheckHandler(new HttpClientHandler());
+            
+            _httpClient = new HttpClient(handler) { BaseAddress = newUri };
+            
+            if (currentToken != null)
+                _httpClient.DefaultRequestHeaders.Authorization = currentToken;
+        }
     }
 
     private async Task EnsureSuccessOrThrowAsync(HttpResponseMessage response)
@@ -312,7 +324,7 @@ public class ApiClient
     {
         try
         {
-            var response = await _httpClient.PostAsync("api/youtubechannels/connect", null);
+            var response = await _httpClient.PostAsync($"api/youtubechannels/connect?userId={CurrentUserId}", null);
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<EchoForge.Core.Entities.YouTubeChannel>();
@@ -320,5 +332,24 @@ public class ApiClient
             return null;
         }
         catch { return null; }
+    }
+
+    public async Task<EchoForge.Core.Entities.YouTubeChannel?> ConnectYouTubeWithTokenAsync(string tokenResponseJson)
+    {
+        try
+        {
+            var content = new StringContent(tokenResponseJson, System.Text.Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"api/youtubechannels/save-token?userId={CurrentUserId}", content);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<EchoForge.Core.Entities.YouTubeChannel>();
+            }
+            var err = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Sunucu Hatası: {response.StatusCode} - {err}");
+        }
+        catch (Exception ex)
+        { 
+            throw new Exception(ex.Message); 
+        }
     }
 }

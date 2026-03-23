@@ -96,6 +96,12 @@
                                 </Border>
 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Hugging Face API Key (Görsel için)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Go to huggingface.co to get a token with Inference API permission"/>
+                                </StackPanel>
+                                <TextBox Text="{Binding HuggingFaceApiKey}" Style="{StaticResource ModernTextBox}" Margin="0,0,0,24"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                     <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Set_GroqKey]}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
                                     <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Go to console.x.ai to get a Groq key"/>
                                 </StackPanel>

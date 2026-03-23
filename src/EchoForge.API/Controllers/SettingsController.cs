@@ -18,6 +18,7 @@ public class SettingsController : ControllerBase
     private static readonly HashSet<string> _serverManagedKeys = new(StringComparer.OrdinalIgnoreCase)
     {
         "Grok:ApiKey",
+        "HuggingFace:ApiKey",
         "YouTube:ClientId",
         "YouTube:ClientSecret",
         "ApiBaseUrl"

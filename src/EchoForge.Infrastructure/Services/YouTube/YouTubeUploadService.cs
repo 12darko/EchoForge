@@ -145,6 +145,73 @@ public class YouTubeUploadService : IYouTubeUploadService
         return dbChannel;
     }
 
+    public async Task<EchoForge.Core.Entities.YouTubeChannel> SaveTokenAndConnectAsync(int userId, string tokenJson, CancellationToken cancellationToken = default)
+    {
+        await LoadCredentialsAsync();
+
+        if (string.IsNullOrEmpty(_clientId) || string.IsNullOrEmpty(_clientSecret))
+            throw new InvalidOperationException("YouTube API Client ID or Secret not found in settings.");
+
+        var token = System.Text.Json.JsonSerializer.Deserialize<TokenResponse>(tokenJson);
+        if (token == null) throw new ArgumentException("Invalid token JSON");
+
+        // Use the credential to fetch the user's Channel ID and Name
+        var secrets = new ClientSecrets { ClientId = _clientId, ClientSecret = _clientSecret };
+        var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+        {
+            ClientSecrets = secrets,
+            Scopes = new[] { YouTubeService.Scope.YoutubeUpload, YouTubeService.Scope.Youtube }
+        });
+        
+        var credential = new UserCredential(flow, "temp", token);
+
+        using var youtubeService = new YouTubeService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = credential,
+            ApplicationName = "EchoForge"
+        });
+
+        var request = youtubeService.Channels.List("snippet");
+        request.Mine = true;
+        var response = await request.ExecuteAsync(cancellationToken);
+
+        var channel = response.Items.FirstOrDefault();
+        if (channel == null)
+        {
+            throw new Exception("No YouTube channel found for the authenticated Google account.");
+        }
+
+        var channelId = channel.Id;
+        var channelName = channel.Snippet.Title;
+
+        // Save token to DB via DataStore
+        var dbDataStore = new YouTubeChannelDataStore(
+            _context, 
+            _encryptionService, 
+            _loggerFactory.CreateLogger<YouTubeChannelDataStore>(),
+            channelId);
+
+        await dbDataStore.StoreAsync("user", token);
+
+        // Update DB
+        var dbChannel = await _context.YouTubeChannels.FirstOrDefaultAsync(c => c.ChannelId == channelId, cancellationToken);
+        if (dbChannel != null)
+        {
+            dbChannel.ChannelName = channelName;
+            dbChannel.UserId = userId;
+        }
+        else
+        {
+            dbChannel = new EchoForge.Core.Entities.YouTubeChannel { ChannelId = channelId, ChannelName = channelName, UserId = userId };
+            _context.YouTubeChannels.Add(dbChannel);
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Successfully connected and saved channel locally: {ChannelName} ({ChannelId}) for UserId: {UserId}", channelName, channelId, userId);
+
+        return dbChannel;
+    }
+
     private async Task<UserCredential?> GetCredentialAsync(string channelId, CancellationToken cancellationToken)
     {
         await LoadCredentialsAsync();

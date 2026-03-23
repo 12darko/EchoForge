@@ -8,13 +8,16 @@ public partial class SettingsViewModel : ObservableObject
     private readonly Services.ApiClient _apiClient;
 
     [ObservableProperty]
+    private string _huggingFaceApiKey = string.Empty;
+
+    [ObservableProperty]
     private string _grokApiKey = string.Empty;
 
     [ObservableProperty]
-    private string _seoLanguage = "English";
+    private string _seoLanguage = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "tr" ? "Turkish" : "English";
 
     [ObservableProperty]
-    private string _appLanguage = "en";
+    private string _appLanguage = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "tr" ? "tr" : "en";
 
     partial void OnAppLanguageChanged(string value)
     {
@@ -42,7 +45,7 @@ public partial class SettingsViewModel : ObservableObject
     private string _ffmpegPath = "ffmpeg";
 
     [ObservableProperty]
-    private string _apiBaseUrl = "http://localhost:5000";
+    private string _apiBaseUrl = Services.ServerConfig.GetServerUrl();
 
     [ObservableProperty]
     private int _dailyUploadLimit = 5;
@@ -79,6 +82,9 @@ public partial class SettingsViewModel : ObservableObject
                 var grokKey = settings.FirstOrDefault(s => s.Key == "Grok:ApiKey")?.Value;
                 if (!string.IsNullOrEmpty(grokKey)) GrokApiKey = grokKey;
 
+                var hfKey = settings.FirstOrDefault(s => s.Key == "HuggingFace:ApiKey")?.Value;
+                if (!string.IsNullOrEmpty(hfKey)) HuggingFaceApiKey = hfKey;
+
                 var seoLang = settings.FirstOrDefault(s => s.Key == "Seo:Language")?.Value;
                 if (!string.IsNullOrEmpty(seoLang)) SeoLanguage = seoLang;
 
@@ -111,6 +117,8 @@ public partial class SettingsViewModel : ObservableObject
                 if (!string.IsNullOrEmpty(outroPath)) DefaultOutroVideoPath = outroPath;
                 
                 var baseUrl = settings.FirstOrDefault(s => s.Key == "ApiBaseUrl")?.Value;
+                if (!string.IsNullOrWhiteSpace(baseUrl)) ApiBaseUrl = baseUrl;
+                else ApiBaseUrl = Services.ServerConfig.GetServerUrl();
             }
         }
         catch (Exception ex)
@@ -128,6 +136,9 @@ public partial class SettingsViewModel : ObservableObject
 
             if (!string.IsNullOrEmpty(GrokApiKey))
                 await _apiClient.SaveSettingAsync("Grok:ApiKey", GrokApiKey, true);
+                
+            if (!string.IsNullOrEmpty(HuggingFaceApiKey))
+                await _apiClient.SaveSettingAsync("HuggingFace:ApiKey", HuggingFaceApiKey, true);
             
             await _apiClient.SaveSettingAsync("Seo:Language", SeoLanguage, false);
             await _apiClient.SaveSettingAsync("App:Language", AppLanguage, false);
