@@ -125,10 +125,14 @@ public partial class ChannelsViewModel : ObservableObject
         {
             EchoForge.WPF.Views.EchoMessageBox.Show("Tarayıcınız YouTube yetkilendirmesi için açılıyor. Lütfen açılan sayfada giriş yapıp izinleri onaylayın.", "Info", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Info);
 
-            var tokenJson = await YouTubeAuthHelper.AuthorizeAndGetTokenAsync(YouTubeClientId, YouTubeClientSecret);
+            var (tokenJson, authError) = await YouTubeAuthHelper.AuthorizeAndGetTokenAsync(YouTubeClientId, YouTubeClientSecret);
+            
             if (tokenJson == null)
             {
-                EchoForge.WPF.Views.EchoMessageBox.Show("Yetkilendirme işlemi iptal edildi veya tarayıcıda başarısız oldu.", "Canceled", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Warning);
+                EchoForge.WPF.Views.EchoMessageBox.Show(
+                    authError ?? "Yetkilendirme işlemi iptal edildi veya tarayıcıda başarısız oldu.", 
+                    "YouTube Bağlantı Hatası", 
+                    EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Warning);
                 return;
             }
 
@@ -147,11 +151,12 @@ public partial class ChannelsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            EchoForge.WPF.Views.EchoMessageBox.Show($"Error: {ex.Message}", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
+            EchoForge.WPF.Views.EchoMessageBox.Show($"Bağlantı hatası: {ex.Message}", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
         }
         finally
         {
             IsLoading = false;
+            ConnectChannelCommand.NotifyCanExecuteChanged();
         }
     }
 

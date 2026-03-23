@@ -1,0 +1,11 @@
+<Application x:Class="EchoForge.Installer.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:EchoForge.Installer.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <!-- Generic Converters used anywhere -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:PercentageToGridLengthConverter x:Key="PercentageToGridLengthConverter" />
+    </Application.Resources>
+</Application>

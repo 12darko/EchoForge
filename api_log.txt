@@ -1,0 +1,55 @@
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM information_schema.tables
+WHERE table_type = 'BASE TABLE' AND table_schema = 'echoforge'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE IF NOT EXISTS YouTubeChannels (Id INT AUTO_INCREMENT PRIMARY KEY, ChannelName VARCHAR(200) NOT NULL, ChannelId VARCHAR(100) NOT NULL, AccessToken TEXT NULL, RefreshToken TEXT NULL, TokenExpiration DATETIME NULL, CreatedAt DATETIME NOT NULL, UNIQUE (ChannelId));
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (25ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      ALTER TABLE Projects ADD CONSTRAINT FK_Projects_YouTubeChannels FOREIGN KEY (TargetChannelId) REFERENCES YouTubeChannels(Id) ON DELETE SET NULL;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      
+                  CREATE TABLE IF NOT EXISTS Users (
+                      Id INT AUTO_INCREMENT PRIMARY KEY, 
+                      Username VARCHAR(100) NOT NULL, 
+                      PasswordHash VARCHAR(255) NOT NULL, 
+                      Email VARCHAR(255) NOT NULL, 
+                      CreatedAt DATETIME(6) NOT NULL, 
+                      LastLoginAt DATETIME(6) NULL, 
+                      IsActive TINYINT(1) NOT NULL DEFAULT 1, 
+                      UNIQUE (Username)
+                  );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM `Templates` AS `t`)
+info: EchoForge.Infrastructure.Services.TemplateService[0]
+      Templates already seeded, skipping
+warn: Microsoft.AspNetCore.StaticFiles.StaticFileMiddleware[16]
+      The WebRootPath was not found: D:\Gemini\Projects\YoutubeOtomation\wwwroot. Static files may be unavailable.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5000
+info: Hangfire.BackgroundJobServer[0]
+      Starting Hangfire Server using job storage: 'In-Memory Storage'
+info: Hangfire.BackgroundJobServer[0]
+      Using the following options for Hangfire Server:
+          Worker count: 20
+          Listening queues: 'default'
+          Shutdown timeout: 00:00:15
+          Schedule polling interval: 00:00:15
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\Gemini\Projects\YoutubeOtomation
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server desktop-055k955:33492:89debf74 successfully announced in 1,9789 ms
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server desktop-055k955:33492:89debf74 is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, Worker, DelayedJobScheduler, RecurringJobScheduler...
+info: Hangfire.Server.BackgroundServerProcess[0]
+      Server desktop-055k955:33492:89debf74 all the dispatchers started
