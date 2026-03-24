@@ -46,7 +46,7 @@ public class ClientJobOrchestrator
 
         if (settingsList != null)
         {
-            config.FFmpegPath = AppDomain.CurrentDomain.BaseDirectory;
+            config.FFmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg.exe");
             config.HuggingFaceKey = settingsList.FirstOrDefault(s => s.Key == "HuggingFace:ApiKey")?.Value;
             config.GrokKey = settingsList.FirstOrDefault(s => s.Key == "Grok:ApiKey")?.Value;
             config.VideoFps = int.TryParse(settingsList.FirstOrDefault(s => s.Key == "Video:Fps")?.Value, out var fps) ? fps : 30;
@@ -147,6 +147,8 @@ public class ClientJobOrchestrator
         }
         catch (Exception ex)
         {
+            var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt");
+            File.AppendAllText(logPath, $"[{DateTime.Now}] StartPipelineAsync Error ({projectId}): {ex}\n\n");
             await _apiClient.UpdateProjectStatusAsync(projectId, ProjectStatus.Failed, ex.Message);
         }
     }
