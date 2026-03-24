@@ -141,6 +141,7 @@ using (var scope = app.Services.CreateScope())
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "VisualEffect", "VARCHAR(50) NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "ManualImageDurationSec", "DOUBLE NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "ImageStyle", "VARCHAR(200) NULL");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "UserId", "INT NULL");
 
     // TEMPORARY DB SCHEMA PATCH FOR PHASE 5 AND LATER
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "PipelineProgress", "INT NULL");

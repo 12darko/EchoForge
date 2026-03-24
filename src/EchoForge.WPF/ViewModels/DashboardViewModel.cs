@@ -9,6 +9,7 @@ namespace EchoForge.WPF.ViewModels;
 public partial class DashboardViewModel : ObservableObject
 {
     private readonly Services.ApiClient _apiClient;
+    private readonly Services.ClientJobOrchestrator _orchestrator;
 
     [ObservableProperty]
     private ObservableCollection<ProjectDto> _projects = new();
@@ -32,9 +33,10 @@ public partial class DashboardViewModel : ObservableObject
     private readonly System.Windows.Threading.DispatcherTimer _refreshTimer;
     private readonly Action<ProjectDto>? _onOpenEditor;
 
-    public DashboardViewModel(Services.ApiClient apiClient, Action<ProjectDto>? onOpenEditor = null)
+    public DashboardViewModel(Services.ApiClient apiClient, Services.ClientJobOrchestrator orchestrator, Action<ProjectDto>? onOpenEditor = null)
     {
         _apiClient = apiClient;
+        _orchestrator = orchestrator;
         _onOpenEditor = onOpenEditor;
 
         _refreshTimer = new System.Windows.Threading.DispatcherTimer();
@@ -215,15 +217,15 @@ public partial class DashboardViewModel : ObservableObject
 
         if (result == System.Windows.MessageBoxResult.OK)
         {
-            var success = await _apiClient.RetryProjectAsync(SelectedProject.Id);
-            if (success)
+            await _apiClient.UpdateProjectStatusAsync(SelectedProject.Id, ProjectStatus.Created, "");
+            
+            _ = Task.Run(async () =>
             {
-                EchoForge.WPF.Views.EchoMessageBox.Show("Pipeline restarted!", "Success", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);
-            }
-            else
-            {
-                EchoForge.WPF.Views.EchoMessageBox.Show("Failed to retry project.", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
-            }
+                await _orchestrator.StartPipelineAsync(SelectedProject.Id, System.Threading.CancellationToken.None);
+            });
+
+            EchoForge.WPF.Views.EchoMessageBox.Show("Pipeline restarted locally!", "Success", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);
+            
             await LoadProjects();
         }
     }
@@ -240,12 +242,22 @@ public partial class DashboardViewModel : ObservableObject
 
         if (result == System.Windows.MessageBoxResult.OK)
         {
-            var success = await _apiClient.DeleteProjectAsync(targetProject.Id);
-            if (!success)
+            try
             {
-                EchoForge.WPF.Views.EchoMessageBox.Show("Failed to delete project. Please try again.", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
+                var success = await _apiClient.DeleteProjectAsync(targetProject.Id);
+                if (!success)
+                {
+                    EchoForge.WPF.Views.EchoMessageBox.Show("Failed to delete project. Please try again.", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
+                }
             }
-            await LoadProjects();
+            catch (Exception ex)
+            {
+                EchoForge.WPF.Views.EchoMessageBox.Show($"Delete failed: {ex.Message}", "Error", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Error);
+            }
+            finally
+            {
+                await LoadProjects();
+            }
         }
     }
 

@@ -167,14 +167,24 @@
                                 </DockPanel>
 
                                 <!-- In Progress Overlay (Locks Card) -->
-                                <Border Grid.RowSpan="3" Background="#E50D1117" Cursor="Wait"
+                                <Border Grid.RowSpan="3" Background="#F20D1117"
                                         Visibility="{Binding Status, Converter={StaticResource StatusVisibility}, ConverterParameter='Created,AnalyzingAudio,GeneratingImages,ComposingVideo,GeneratingSEO,Uploading'}">
-                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24">
-                                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_RenderActive]}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentPurpleBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                                        <TextBlock Text="{Binding Status, Converter={StaticResource StatusToProgress}}" 
-                                                   FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"
-                                                   TextAlignment="Center" LineHeight="20"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <!-- Header Actions (Delete inside Overlay) -->
+                                        <Button Content="✕ Cancel / Delete" Style="{StaticResource SecondaryButton}" 
+                                                Foreground="{StaticResource AccentRedBrush}" Background="#20FF3333" BorderBrush="{StaticResource AccentRedBrush}"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="16" Padding="12,6" FontSize="12"
+                                                Command="{Binding DataContext.DeleteProjectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"/>
+                                                
+                                        <!-- Centered Progress Info -->
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24">
+                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_RenderActive]}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentPurpleBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusToProgress}}" 
+                                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"
+                                                       TextAlignment="Center" LineHeight="20"/>
+                                        </StackPanel>
+                                    </Grid>
                                 </Border>
                             </Grid>
                         </Border>

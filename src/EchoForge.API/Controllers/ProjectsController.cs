@@ -43,28 +43,17 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<ProjectDto>> Create([FromForm] CreateProjectRequest request, IFormFile audioFile)
+    public async Task<ActionResult<ProjectDto>> Create([FromBody] CreateProjectRequest request)
     {
         // Validate template
         var template = await _templateService.GetByIdAsync(request.TemplateId);
         if (template == null) return BadRequest("Invalid template ID");
 
-        // Save audio file
-        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "audio");
-        Directory.CreateDirectory(uploadsDir);
-        var audioFileName = $"{Guid.NewGuid()}{Path.GetExtension(audioFile.FileName)}";
-        var audioPath = Path.Combine(uploadsDir, audioFileName);
-
-        using (var stream = new FileStream(audioPath, FileMode.Create))
-        {
-            await audioFile.CopyToAsync(stream);
-        }
-
-        // Create project
+        // Create project — audio file stays on the client machine
         var project = new Project
         {
             Title = request.Title,
-            AudioPath = audioPath,
+            AudioPath = request.AudioPath ?? string.Empty,
             TemplateId = request.TemplateId,
             FormatType = request.FormatType,
             ExtractAutoShorts = request.ExtractAutoShorts,
@@ -85,9 +74,7 @@ public class ProjectsController : ControllerBase
 
         await _projectRepository.CreateAsync(project);
 
-        // Queue the job pipeline
-        _jobClient.Enqueue<Jobs.JobOrchestrator>(x => x.StartPipelineAsync(project.Id, CancellationToken.None));
-
+        // Pipeline handled by client
         _logger.LogInformation("Project created: {Id} - {Title}", project.Id, project.Title);
         return CreatedAtAction(nameof(GetById), new { id = project.Id }, MapToDto(project));
     }
@@ -102,7 +89,8 @@ public class ProjectsController : ControllerBase
             return BadRequest("Project is not awaiting approval");
 
         // Queue upload job
-        _jobClient.Enqueue<Jobs.JobOrchestrator>(x => x.UploadAsync(id, CancellationToken.None));
+        project.Status = ProjectStatus.Uploading;
+        await _projectRepository.UpdateAsync(project);
         
         return Ok();
     }
@@ -126,7 +114,7 @@ public class ProjectsController : ControllerBase
         project.UpdatedAt = DateTime.UtcNow;
         await _projectRepository.UpdateAsync(project);
 
-        _jobClient.Enqueue<Jobs.JobOrchestrator>(x => x.StartPipelineAsync(id, CancellationToken.None));
+        // Retry handled by client
         _logger.LogInformation("Project {Id} retried — pipeline re-queued", id);
         return Ok();
     }
@@ -153,8 +141,7 @@ public class ProjectsController : ControllerBase
         project.Status = ProjectStatus.ComposingVideo;
         await _projectRepository.UpdateAsync(project);
 
-        _jobClient.Enqueue<Jobs.JobOrchestrator>(x => x.ResumePipelineAsync(id, CancellationToken.None));
-        _logger.LogInformation("Project {Id} review approved — resuming pipeline for render", id);
+        _logger.LogInformation("Project {Id} review approved — pipeline will be resumed by client", id);
         return Ok();
     }
 
@@ -231,14 +218,54 @@ public class ProjectsController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    [HttpPut("{id}/client-update")]
+    public async Task<ActionResult> ClientUpdate(int id, [FromBody] ProjectDto updateDto)
     {
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null) return NotFound();
 
-        await _projectRepository.DeleteAsync(id);
-        return NoContent();
+        project.Status = updateDto.Status;
+        project.PipelineProgress = updateDto.PipelineProgress;
+        
+        if (!string.IsNullOrEmpty(updateDto.ErrorMessage)) project.ErrorMessage = updateDto.ErrorMessage;
+        if (!string.IsNullOrEmpty(updateDto.AudioPath)) project.AudioPath = updateDto.AudioPath;
+        if (!string.IsNullOrEmpty(updateDto.OutputVideoPath)) project.OutputVideoPath = updateDto.OutputVideoPath;
+        if (!string.IsNullOrEmpty(updateDto.TimelineJson)) project.TimelineJson = updateDto.TimelineJson;
+        if (updateDto.BPM > 0) project.BPM = updateDto.BPM;
+        if (updateDto.Duration > 0) project.Duration = updateDto.Duration;
+        if (updateDto.SceneCount > 0) project.SceneCount = updateDto.SceneCount;
+        if (updateDto.SceneDuration > 0) project.SceneDuration = updateDto.SceneDuration;
+        
+        if (!string.IsNullOrEmpty(updateDto.SeoTitle)) project.SeoTitle = updateDto.SeoTitle;
+        if (!string.IsNullOrEmpty(updateDto.SeoDescription)) project.SeoDescription = updateDto.SeoDescription;
+        if (!string.IsNullOrEmpty(updateDto.SeoTags)) project.SeoTags = updateDto.SeoTags;
+        if (!string.IsNullOrEmpty(updateDto.SeoHashtags)) project.SeoHashtags = updateDto.SeoHashtags;
+        if (!string.IsNullOrEmpty(updateDto.YouTubeVideoId)) project.YouTubeVideoId = updateDto.YouTubeVideoId;
+
+        project.UpdatedAt = DateTime.UtcNow;
+        if (updateDto.Status == ProjectStatus.Completed && project.CompletedAt == null)
+            project.CompletedAt = DateTime.UtcNow;
+
+        await _projectRepository.UpdateAsync(project);
+        return Ok(MapToDto(project));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(int id)
+    {
+        try
+        {
+            var project = await _projectRepository.GetByIdAsync(id);
+            if (project == null) return NotFound();
+
+            await _projectRepository.DeleteAsync(id);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting project {Id}", id);
+            return StatusCode(500, ex.InnerException?.Message ?? ex.Message);
+        }
     }
 
     private static ProjectDto MapToDto(Project p) => new()
