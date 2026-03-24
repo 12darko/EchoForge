@@ -52,6 +52,8 @@ public partial class App : Application
             var updater = new Services.UpdateService(updateUrl);
             var info = await updater.CheckForUpdateAsync();
 
+            Views.EchoMessageBox.Show($"[DEBUG] API URL: {updateUrl}\nFetched Version: {info.LatestVersion}\nCurrent Version: {Services.UpdateService.GetCurrentVersion()}\nIs Available: {info.Available}", "Auto-Update Debug", Views.EchoMessageBox.EchoMessageType.Info);
+
             if (info.Available)
             {
                 var msg = $"A new version (v{info.LatestVersion}) is available.\n\nRelease Notes:\n{info.ReleaseNotes}\n\nWould you like to install it now?";

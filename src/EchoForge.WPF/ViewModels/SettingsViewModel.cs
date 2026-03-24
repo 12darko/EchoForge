@@ -366,4 +366,45 @@ public partial class SettingsViewModel : ObservableObject
             IsCheckingUpdate = false;
         }
     }
+    [RelayCommand]
+    private async Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            var apiBase = Services.ServerConfig.GetServerUrl().TrimEnd('/');
+            var updateUrl = $"{apiBase}/api/update/check"; 
+            
+            var updater = new Services.UpdateService(updateUrl);
+            var info = await updater.CheckForUpdateAsync();
+
+            if (info.Available)
+            {
+                var msg = $"A new version (v{info.LatestVersion}) is available.\n\nRelease Notes:\n{info.ReleaseNotes}\n\nWould you like to install it now?";
+                var result = Views.EchoMessageBox.Show(msg, "Update Available", Views.EchoMessageBox.EchoMessageType.Question);
+
+                if (result == System.Windows.MessageBoxResult.OK || result.ToString() == "Yes" || result.ToString() == "True")
+                {
+                    Views.EchoMessageBox.Show("Downloading update. The application will restart automatically. Please wait...", "Downloading", Views.EchoMessageBox.EchoMessageType.Info);
+                    
+                    var zipPath = await updater.DownloadUpdateAsync(info);
+                    if (!string.IsNullOrEmpty(zipPath))
+                    {
+                        updater.InstallAndRestart(zipPath);
+                    }
+                    else
+                    {
+                        Views.EchoMessageBox.Show("Failed to download the update.", "Update Error", Views.EchoMessageBox.EchoMessageType.Error);
+                    }
+                }
+            }
+            else
+            {
+                Views.EchoMessageBox.Show($"You are using the latest version ({Services.UpdateService.GetCurrentVersion()}).", "Up to Date", Views.EchoMessageBox.EchoMessageType.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Views.EchoMessageBox.Show("Update check failed: " + ex.Message, "Error", Views.EchoMessageBox.EchoMessageType.Error);
+        }
+    }
 }

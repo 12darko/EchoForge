@@ -73,10 +73,12 @@ public partial class EchoMessageBox : Window
             dlg.BtnCancel.Visibility = Visibility.Visible;
         }
 
-        // Try to set owner
-        if (Application.Current?.MainWindow != null && Application.Current.MainWindow != dlg)
+        // Try to set owner safely
+        if (Application.Current?.MainWindow != null && 
+            Application.Current.MainWindow != dlg && 
+            Application.Current.MainWindow.IsLoaded)
         {
-            dlg.Owner = Application.Current.MainWindow;
+            try { dlg.Owner = Application.Current.MainWindow; } catch { }
         }
 
         dlg.ShowDialog();
