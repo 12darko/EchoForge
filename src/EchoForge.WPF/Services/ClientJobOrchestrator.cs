@@ -46,7 +46,7 @@ public class ClientJobOrchestrator
 
         if (settingsList != null)
         {
-            config.FFmpegPath = settingsList.FirstOrDefault(s => s.Key == "FFmpeg:Path")?.Value ?? "ffmpeg";
+            config.FFmpegPath = AppDomain.CurrentDomain.BaseDirectory;
             config.HuggingFaceKey = settingsList.FirstOrDefault(s => s.Key == "HuggingFace:ApiKey")?.Value;
             config.GrokKey = settingsList.FirstOrDefault(s => s.Key == "Grok:ApiKey")?.Value;
             config.VideoFps = int.TryParse(settingsList.FirstOrDefault(s => s.Key == "Video:Fps")?.Value, out var fps) ? fps : 30;
