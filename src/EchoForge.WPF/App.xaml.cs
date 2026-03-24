@@ -48,8 +48,7 @@ public partial class App : Application
             // Wait a bit for MainWindow to fully load
             await Task.Delay(2000);
 
-            var apiBase = Services.ServerConfig.GetServerUrl().TrimEnd('/');
-            var updateUrl = $"{apiBase}/api/update/check"; 
+            const string updateUrl = "https://vibeoracle.cloud/updates/latest.json";
             
             var updater = new Services.UpdateService(updateUrl);
             var info = await updater.CheckForUpdateAsync();
