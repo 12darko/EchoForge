@@ -344,15 +344,17 @@ $s.Save()";
             {
                 string keyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\EchoForge";
                 string uninstallExe = Path.Combine(InstallPath, "EchoForge_Uninstall.exe");
+                string version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "2.2.2";
 
                 using (var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(keyPath))
                 {
                     key.SetValue("DisplayName", "EchoForge AI Content Studio");
                     key.SetValue("DisplayIcon", Path.Combine(InstallPath, "EchoForge.WPF.exe"));
-                    key.SetValue("DisplayVersion", "2.0.0");
+                    key.SetValue("DisplayVersion", version);
                     key.SetValue("Publisher", "EchoForge");
                     key.SetValue("InstallLocation", InstallPath);
                     key.SetValue("UninstallString", $"\"{uninstallExe}\" --uninstall");
+                    key.SetValue("QuietUninstallString", $"\"{uninstallExe}\" --uninstall");
                 }
             }
             catch { }

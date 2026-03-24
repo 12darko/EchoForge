@@ -9,6 +9,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>..\EchoForge.WPF\Assets\echoforge_icon.ico</ApplicationIcon>
     <AssemblyName>EchoForge_Setup</AssemblyName>
+    <Version>2.2.2</Version>
+    <AssemblyVersion>2.2.2.0</AssemblyVersion>
+    <FileVersion>2.2.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,5 +21,5 @@
   <ItemGroup>
     <EmbeddedResource Include="payload.zip" />
   </ItemGroup>
-</Project>
 
+</Project>
