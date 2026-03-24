@@ -28,9 +28,11 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ProjectDto>>> GetAll()
+    public async Task<ActionResult<List<ProjectDto>>> GetAll([FromQuery] int? userId = null)
     {
         var projects = await _projectRepository.GetAllAsync();
+        if (userId.HasValue && userId.Value > 0)
+            projects = projects.Where(p => p.UserId == userId.Value).ToList();
         return Ok(projects.Select(MapToDto).ToList());
     }
 
@@ -69,7 +71,8 @@ public class ProjectsController : ControllerBase
             TargetPlatforms = request.TargetPlatforms,
             TargetChannelId = request.TargetChannelId,
             Status = ProjectStatus.Created,
-            PrivacyStatus = request.PrivacyStatus
+            PrivacyStatus = request.PrivacyStatus,
+            UserId = request.UserId
         };
 
         await _projectRepository.CreateAsync(project);
