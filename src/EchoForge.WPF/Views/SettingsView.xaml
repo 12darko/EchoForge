@@ -7,6 +7,8 @@
     <UserControl.Resources>
         <converters:RadioBoolConverter x:Key="RadioBoolConverter"/>
         <converters:BoolToVisibilityConverter x:Key="AdminVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        <converters:InverseBoolConverter x:Key="InverseBool"/>
     </UserControl.Resources>
 
     <DockPanel>
@@ -224,10 +226,11 @@
                                 Command="{Binding SaveSettingsCommand}"
                                 Style="{StaticResource PrimaryButton}"
                                 Height="56" FontSize="16"/>
+                    </StackPanel>
 
-                        <!-- ═══════ TAB 5: Updates ═══════ -->
-                        <Border Style="{StaticResource GlassCard}" Margin="0,32,0,0" Padding="24"
-                                Visibility="{Binding IsChecked, ElementName=TabUpdates, Converter={StaticResource BoolToVisibility}}">
+                    <!-- ═══════ TAB 5: Updates (INDEPENDENT PANEL) ═══════ -->
+                    <StackPanel Visibility="{Binding IsChecked, ElementName=TabUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                     <TextBlock Text="🔄" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center"/>
@@ -241,7 +244,6 @@
 
                                 <Button Content="🔍 Check for Updates" 
                                         Command="{Binding CheckForUpdatesCommand}"
-                                        IsEnabled="{Binding IsCheckingUpdate, Converter={StaticResource InverseBool}}"
                                         Style="{StaticResource SecondaryButton}" 
                                         Padding="20,12" Margin="0,0,0,16" HorizontalAlignment="Left"/>
 
@@ -249,16 +251,20 @@
                                            FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" 
                                            TextWrapping="Wrap" Margin="0,0,0,12"/>
 
-                                <ProgressBar Value="{Binding UpdateProgress}" Maximum="100" Height="8" 
-                                             Background="#15FFFFFF" Foreground="#8B5CF6" 
-                                             Margin="0,0,0,16"
-                                             Visibility="{Binding IsCheckingUpdate, Converter={StaticResource BoolToVisibility}}"/>
+                                <Border Background="#0A000000" BorderBrush="#20FFFFFF" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,0,16"
+                                        Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto">
+                                        <TextBlock Text="{Binding ReleaseNotesText}" 
+                                                   FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   TextWrapping="Wrap"/>
+                                    </ScrollViewer>
+                                </Border>
 
                                 <Button Content="⬇️ Download &amp; Install Update" 
                                         Command="{Binding DownloadAndInstallUpdateCommand}"
                                         Style="{StaticResource PrimaryButton}" 
                                         Padding="20,12" HorizontalAlignment="Left"
-                                        Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibility}}"/>
+                                        Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>

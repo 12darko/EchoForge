@@ -18,7 +18,8 @@ public class GroqSeoService : ISeoService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<GroqSeoService> _logger;
-    private readonly IAppSettingsService _appSettingsService;
+    private readonly IAppSettingsService? _appSettingsService;
+    private readonly string? _apiKey;
     private readonly Random _random = new();
 
     private static readonly string[] TitleVariations =
@@ -36,13 +37,20 @@ public class GroqSeoService : ISeoService
         _appSettingsService = appSettingsService;
     }
 
+    public GroqSeoService(HttpClient httpClient, ILogger<GroqSeoService> logger, string apiKey)
+    {
+        _httpClient = httpClient;
+        _logger = logger;
+        _apiKey = apiKey;
+    }
+
     public async Task<SeoResult> GenerateSeoAsync(string projectTitle, string templateName, string genre, string language = "English", string? customInstructions = null, string? targetPlatforms = null, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Generating SEO via Groq for: {Title} in {Language}. Platforms: {Plat}", projectTitle, language, targetPlatforms ?? "Default");
 
         try
         {
-            var apiKey = await _appSettingsService.GetSettingAsync("Groq:ApiKey");
+            var apiKey = _apiKey ?? (await _appSettingsService?.GetSettingAsync("Groq:ApiKey"));
             if (string.IsNullOrEmpty(apiKey))
             {
                 _logger.LogWarning("Groq API Key is not set in Settings! Falling back to default SEO.");

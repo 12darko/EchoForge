@@ -159,11 +159,13 @@ namespace EchoForge.Installer.ViewModels
 
             StatusText = "Dosyalar çıkarılıyor...";
             
-            using (var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("EchoForge.Installer.payload.zip"))
-            {
-                if (resourceStream == null)
-                    throw new FileNotFoundException("Sistem derleme dosyası (payload.zip) installer içerisinde bulunamadı.");
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = System.Linq.Enumerable.FirstOrDefault(assembly.GetManifestResourceNames(), n => n.EndsWith("payload.zip"));
+            if (resourceName == null)
+                throw new FileNotFoundException("Sistem derleme dosyası (payload.zip) installer içerisinde bulunamadı.");
 
+            using (var resourceStream = assembly.GetManifestResourceStream(resourceName))
+            {
                 using (var archive = new ZipArchive(resourceStream, ZipArchiveMode.Read))
                 {
                     int totalEntries = archive.Entries.Count;

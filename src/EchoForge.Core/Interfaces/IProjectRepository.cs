@@ -4,7 +4,7 @@ namespace EchoForge.Core.Interfaces;
 
 public interface IProjectRepository
 {
-    Task<List<Project>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<List<Project>> GetAllAsync(int? userId = null, CancellationToken cancellationToken = default);
     Task<Project?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<Project> CreateAsync(Project project, CancellationToken cancellationToken = default);
     Task UpdateAsync(Project project, CancellationToken cancellationToken = default);

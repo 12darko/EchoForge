@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EchoForge.Core\EchoForge.Core.csproj" />
+    <ProjectReference Include="..\EchoForge.Infrastructure\EchoForge.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +19,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\echoforge_icon.ico</ApplicationIcon>
+    <Version>2.2.1</Version>
+    <AssemblyVersion>2.2.1.0</AssemblyVersion>
+    <FileVersion>2.2.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

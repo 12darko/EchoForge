@@ -142,7 +142,37 @@ public class ApiClient
     // Projects
     public async Task<List<ProjectDto>> GetProjectsAsync()
     {
-        return await _httpClient.GetFromJsonAsync<List<ProjectDto>>("api/projects") ?? new();
+        return await _httpClient.GetFromJsonAsync<List<ProjectDto>>($"api/projects?userId={CurrentUserId}") ?? new();
+    }
+
+    public async Task<ProjectDto?> ClientUpdateAsync(int id, ProjectDto updateDto)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"api/projects/{id}/client-update", updateDto);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<ProjectDto>();
+        }
+        return null;
+    }
+
+    public async Task UpdateProjectStatusAsync(int id, EchoForge.Core.Models.ProjectStatus status, string? errorMessage = null)
+    {
+        var project = await GetProjectAsync(id);
+        if (project == null) return;
+        
+        project.Status = status;
+        if (errorMessage != null) project.ErrorMessage = errorMessage;
+        
+        await ClientUpdateAsync(id, project);
+    }
+
+    public async Task UpdateProjectProgressAsync(int id, int progress)
+    {
+        var project = await GetProjectAsync(id);
+        if (project == null) return;
+        
+        project.PipelineProgress = Math.Clamp(progress, 0, 100);
+        await ClientUpdateAsync(id, project);
     }
 
     public async Task<ProjectDto?> GetProjectAsync(int id)
@@ -154,39 +184,27 @@ public class ApiClient
         bool extractAutoShorts = false, string transitionStyle = "fade", string privacyStatus = "private", string imageModel = "flux", int uniqueImageCount = 8, double? manualImageDurationSec = null, string imageStyle = "",
         string? customInstructions = null, string? targetPlatforms = null, int? targetChannelId = null, string? visualEffect = null)
     {
-        using var form = new MultipartFormDataContent();
-        form.Add(new StringContent(title), "Title");
-        form.Add(new StringContent(templateId.ToString()), "TemplateId");
-        form.Add(new StringContent(((int)format).ToString()), "FormatType");
-        form.Add(new StringContent(extractAutoShorts.ToString()), "ExtractAutoShorts");
-        form.Add(new StringContent(transitionStyle), "TransitionStyle");
-        
-        if (!string.IsNullOrEmpty(visualEffect))
-            form.Add(new StringContent(visualEffect), "VisualEffect");
+        var request = new CreateProjectRequest
+        {
+            Title = title,
+            AudioPath = audioFilePath,
+            TemplateId = templateId,
+            FormatType = format,
+            ExtractAutoShorts = extractAutoShorts,
+            TransitionStyle = string.IsNullOrEmpty(transitionStyle) ? "fade" : transitionStyle,
+            PrivacyStatus = string.IsNullOrEmpty(privacyStatus) ? "private" : privacyStatus,
+            ImageModel = imageModel,
+            UniqueImageCount = uniqueImageCount,
+            ManualImageDurationSec = manualImageDurationSec,
+            ImageStyle = imageStyle ?? "",
+            CustomInstructions = customInstructions,
+            TargetPlatforms = targetPlatforms,
+            TargetChannelId = targetChannelId,
+            VisualEffect = visualEffect,
+            UserId = CurrentUserId
+        };
 
-        form.Add(new StringContent(privacyStatus), "PrivacyStatus");
-        form.Add(new StringContent(imageModel), "ImageModel");
-        form.Add(new StringContent(uniqueImageCount.ToString()), "UniqueImageCount");
-        if (manualImageDurationSec.HasValue)
-            form.Add(new StringContent(manualImageDurationSec.Value.ToString()), "ManualImageDurationSec");
-            
-        form.Add(new StringContent(imageStyle ?? ""), "ImageStyle");
-
-        if (!string.IsNullOrEmpty(customInstructions))
-            form.Add(new StringContent(customInstructions), "CustomInstructions");
-
-        if (!string.IsNullOrEmpty(targetPlatforms))
-            form.Add(new StringContent(targetPlatforms), "TargetPlatforms");
-
-        if (targetChannelId.HasValue)
-            form.Add(new StringContent(targetChannelId.Value.ToString()), "TargetChannelId");
-
-        var fileBytes = await File.ReadAllBytesAsync(audioFilePath);
-        var fileContent = new ByteArrayContent(fileBytes);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/mpeg");
-        form.Add(fileContent, "audioFile", Path.GetFileName(audioFilePath));
-
-        var response = await _httpClient.PostAsync("api/projects", form);
+        var response = await _httpClient.PostAsJsonAsync("api/projects", request);
         await EnsureSuccessOrThrowAsync(response);
         return await response.Content.ReadFromJsonAsync<ProjectDto>();
     }

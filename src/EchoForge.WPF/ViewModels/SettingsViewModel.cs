@@ -106,9 +106,9 @@ public partial class SettingsViewModel : ObservableObject
                 var limit = settings.FirstOrDefault(s => s.Key == "DailyUploadLimit")?.Value;
                 if (int.TryParse(limit, out int l)) DailyUploadLimit = l;
 
-                var outputDir = settings.FirstOrDefault(s => s.Key == "Output:Directory")?.Value;
-                if (!string.IsNullOrEmpty(outputDir)) OutputDirectory = outputDir;
-                else OutputDirectory = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "output");
+                // Use local user's Documents folder instead of remote API setting
+                var myDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                OutputDirectory = System.IO.Path.Combine(myDocs, "EchoForge", "Publishing");
 
                 var introPath = settings.FirstOrDefault(s => s.Key == "Branding:IntroVideoPath")?.Value;
                 if (!string.IsNullOrEmpty(introPath)) DefaultIntroVideoPath = introPath;
@@ -283,6 +283,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _latestVersionText = "";
 
+    [ObservableProperty]
+    private string _releaseNotesText = "No patch notes available yet.";
+
     private Services.UpdateService.UpdateInfo? _pendingUpdate;
 
     [RelayCommand]
@@ -305,11 +308,15 @@ public partial class SettingsViewModel : ObservableObject
                 _pendingUpdate = info;
                 IsUpdateAvailable = true;
                 LatestVersionText = info.LatestVersion;
-                UpdateStatusText = $"🆕 New version v{info.LatestVersion} available!\n{info.ReleaseNotes}";
+                UpdateStatusText = $"🆕 New version v{info.LatestVersion} available!";
+                ReleaseNotesText = string.IsNullOrWhiteSpace(info.ReleaseNotes) 
+                    ? "Release notes not provided." 
+                    : $"What's new:\n\n{info.ReleaseNotes}";
             }
             else
             {
                 UpdateStatusText = "✅ You are on the latest version.";
+                ReleaseNotesText = "Your application is fully up to date.";
             }
         }
         catch (Exception ex)
@@ -328,8 +335,7 @@ public partial class SettingsViewModel : ObservableObject
         if (_pendingUpdate == null || !_pendingUpdate.Available) return;
 
         IsCheckingUpdate = true;
-        UpdateStatusText = "⬇️ Downloading update...";
-        UpdateProgress = 0;
+        Views.UpdateProgressWindow? progressWindow = null;
 
         try
         {
@@ -337,74 +343,54 @@ public partial class SettingsViewModel : ObservableObject
             var updateUrl = $"{apiBase}/api/update/check";
             var updater = new Services.UpdateService(updateUrl);
 
+            // Open progress popup on UI thread
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                progressWindow = new Views.UpdateProgressWindow(_pendingUpdate.LatestVersion);
+                progressWindow.Show();
+            });
+
             var zipPath = await updater.DownloadUpdateAsync(_pendingUpdate, progress =>
             {
+                var pct = progress * 100;
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    UpdateProgress = progress * 100;
-                    UpdateStatusText = $"⬇️ Downloading... {(progress * 100):F0}%";
+                    progressWindow?.UpdateProgress(pct, $"Downloading... {pct:F0}%");
+                    UpdateProgress = pct;
+                    UpdateStatusText = $"⬇️ Downloading... {pct:F0}%";
                 });
             });
 
             if (!string.IsNullOrEmpty(zipPath))
             {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    progressWindow?.SetCompleted();
+                });
                 UpdateStatusText = "🔄 Installing update and restarting...";
-                await Task.Delay(500);
+                await Task.Delay(800);
                 updater.InstallAndRestart(zipPath);
             }
             else
             {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    progressWindow?.SetError("Download failed.");
+                });
                 UpdateStatusText = "❌ Download failed.";
             }
         }
         catch (Exception ex)
         {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                progressWindow?.SetError(ex.Message);
+            });
             UpdateStatusText = $"❌ Update failed: {ex.Message}";
         }
         finally
         {
             IsCheckingUpdate = false;
-        }
-    }
-    [RelayCommand]
-    private async Task CheckForUpdatesAsync()
-    {
-        try
-        {
-            var apiBase = Services.ServerConfig.GetServerUrl().TrimEnd('/');
-            var updateUrl = $"{apiBase}/api/update/check"; 
-            
-            var updater = new Services.UpdateService(updateUrl);
-            var info = await updater.CheckForUpdateAsync();
-
-            if (info.Available)
-            {
-                var msg = $"A new version (v{info.LatestVersion}) is available.\n\nRelease Notes:\n{info.ReleaseNotes}\n\nWould you like to install it now?";
-                var result = Views.EchoMessageBox.Show(msg, "Update Available", Views.EchoMessageBox.EchoMessageType.Question);
-
-                if (result == System.Windows.MessageBoxResult.OK || result.ToString() == "Yes" || result.ToString() == "True")
-                {
-                    Views.EchoMessageBox.Show("Downloading update. The application will restart automatically. Please wait...", "Downloading", Views.EchoMessageBox.EchoMessageType.Info);
-                    
-                    var zipPath = await updater.DownloadUpdateAsync(info);
-                    if (!string.IsNullOrEmpty(zipPath))
-                    {
-                        updater.InstallAndRestart(zipPath);
-                    }
-                    else
-                    {
-                        Views.EchoMessageBox.Show("Failed to download the update.", "Update Error", Views.EchoMessageBox.EchoMessageType.Error);
-                    }
-                }
-            }
-            else
-            {
-                Views.EchoMessageBox.Show($"You are using the latest version ({Services.UpdateService.GetCurrentVersion()}).", "Up to Date", Views.EchoMessageBox.EchoMessageType.Success);
-            }
-        }
-        catch (Exception ex)
-        {
-            Views.EchoMessageBox.Show("Update check failed: " + ex.Message, "Error", Views.EchoMessageBox.EchoMessageType.Error);
         }
     }
 }

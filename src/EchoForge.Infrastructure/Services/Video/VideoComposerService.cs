@@ -43,11 +43,14 @@ public class VideoComposerService : IVideoComposerService
         _logger.LogInformation("Starting video composition: {ImageCount} images, {Width}x{Height}",
             imagePaths.Count, settings.Width, settings.Height);
 
-        var targetDir = !string.IsNullOrWhiteSpace(outputDirectory) ? outputDirectory : _outputDir;
+        var myDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        var targetDir = !string.IsNullOrWhiteSpace(outputDirectory) ? outputDirectory : Path.Combine(myDocs, "EchoForge", "Publishing");
         Directory.CreateDirectory(targetDir);
 
         var outputPath = Path.Combine(targetDir, $"echoforge_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
-        var tempDir = Path.Combine(targetDir, "temp_" + Guid.NewGuid().ToString("N")[..8]);
+        
+        var tempMainDir = Path.Combine(myDocs, "EchoForge", "Rendering");
+        var tempDir = Path.Combine(tempMainDir, "temp_" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(tempDir);
 
         try

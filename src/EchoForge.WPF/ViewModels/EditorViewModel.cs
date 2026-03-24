@@ -9,6 +9,7 @@ namespace EchoForge.WPF.ViewModels;
 public partial class EditorViewModel : ObservableObject, IDropTarget
 {
     private readonly Services.ApiClient _apiClient;
+    private readonly Services.ClientJobOrchestrator _orchestrator;
     private readonly ProjectDto _project;
 
     [ObservableProperty]
@@ -104,9 +105,10 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     public int ProjectId => _project.Id;
     public string AudioFilePath => _project.AudioPath ?? string.Empty;
 
-    public EditorViewModel(ProjectDto project, Services.ApiClient apiClient, Action goBackAction)
+    public EditorViewModel(ProjectDto project, Services.ApiClient apiClient, Services.ClientJobOrchestrator orchestrator, Action goBackAction)
     {
         _apiClient = apiClient;
+        _orchestrator = orchestrator;
         _project = project;
         _projectTitle = project.Title ?? "Untitled Project";
         _goBackAction = goBackAction;
@@ -736,19 +738,16 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
             // Save scenes first
             await _apiClient.UpdateProjectScenesAsync(_project.Id, Scenes.ToList());
 
-            var success = await _apiClient.RenderProjectAsync(_project.Id);
-            if (success)
+            _ = Task.Run(async () =>
             {
-                StatusMessage = "🎬 Video rendering started! You can close this editor.";
-                EchoForge.WPF.Views.EchoMessageBox.Show("Video rendering has been started! The process will run in the background.", "Rendering Started", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);
-                
-                // Navigate back to dashboard instead of closing a window wrapper
-                _goBackAction?.Invoke();
-            }
-            else
-            {
-                StatusMessage = "❌ Failed to start rendering.";
-            }
+                await _orchestrator.ResumePipelineAsync(_project.Id, System.Threading.CancellationToken.None);
+            });
+
+            StatusMessage = "🎬 Video rendering started! You can close this editor.";
+            EchoForge.WPF.Views.EchoMessageBox.Show("Video rendering has been started locally! The process will run in the background.", "Rendering Started", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);
+            
+            // Navigate back to dashboard instead of closing a window wrapper
+            _goBackAction?.Invoke();
         }
         catch (Exception ex)
         {

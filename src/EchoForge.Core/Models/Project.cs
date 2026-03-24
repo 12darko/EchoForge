@@ -24,6 +24,8 @@ public class Project
 
     public bool ExtractAutoShorts { get; set; } = false; // Trims the best 60-second highlight
 
+    public int? UserId { get; set; } // Owner of this project
+
     [MaxLength(50)]
     public string ImageModel { get; set; } = "flux"; // Pollinations model: flux, turbo, flux-realism
 

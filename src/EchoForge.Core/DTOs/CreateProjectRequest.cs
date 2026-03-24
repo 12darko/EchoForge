@@ -5,12 +5,14 @@ namespace EchoForge.Core.DTOs;
 public class CreateProjectRequest
 {
     public string Title { get; set; } = string.Empty;
+    public string AudioPath { get; set; } = string.Empty;
     public int TemplateId { get; set; }
     public FormatType FormatType { get; set; } = FormatType.Vertical_9x16;
     public bool ExtractAutoShorts { get; set; } = false;
     public string PrivacyStatus { get; set; } = "private";
     public int? CustomWidth { get; set; }
     public int? CustomHeight { get; set; }
+    public int? UserId { get; set; }
     public string? TransitionStyle { get; set; }
     public string? VisualEffect { get; set; }
 

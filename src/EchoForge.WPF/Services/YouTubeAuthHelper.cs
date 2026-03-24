@@ -48,10 +48,6 @@ public static class YouTubeAuthHelper
         {
             return (null, "Yetkilendirme zaman aşımına uğradı veya iptal edildi.\nTarayıcıyı kapatırsanız işlem otomatik olarak iptal olur.");
         }
-        catch (TaskCanceledException)
-        {
-            return (null, "Yetkilendirme işlemi iptal edildi veya zaman aşımına uğradı.");
-        }
         catch (Exception ex)
         {
             string msg = ex.Message;

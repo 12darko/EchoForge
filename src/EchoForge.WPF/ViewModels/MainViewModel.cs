@@ -25,6 +25,7 @@ public partial class MainViewModel : ObservableObject
     private bool _isDisconnected;
 
     private readonly Services.ApiClient _apiClient;
+    private readonly Services.ClientJobOrchestrator _orchestrator;
 
     private DashboardViewModel? _dashboardVm;
     private CreateProjectViewModel? _createProjectVm;
@@ -47,9 +48,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _tutorialIcon = "💡";
 
+    public string AppVersion => $"v{Services.UpdateService.GetCurrentVersion()} — EchoForge";
+
     public MainViewModel()
     {
         _apiClient = new Services.ApiClient(Services.ServerConfig.GetServerUrl());
+        _orchestrator = new Services.ClientJobOrchestrator(_apiClient);
         Services.ApiClient.ConnectionStateChanged += OnConnectionStateChanged;
         ShowLogin();
     }
@@ -105,7 +109,7 @@ public partial class MainViewModel : ObservableObject
         // Always recreate DashboardVM or just refresh? Let's refresh projects if it exists.
         if (_dashboardVm == null)
         {
-            _dashboardVm = new DashboardViewModel(_apiClient, NavigateToEditor);
+            _dashboardVm = new DashboardViewModel(_apiClient, _orchestrator, NavigateToEditor);
             _dashboardVm.LoadProjectsCommand.Execute(null);
         }
         else
@@ -119,7 +123,7 @@ public partial class MainViewModel : ObservableObject
     {
         CurrentPage = "Editor";
         // Recreate editor VM every time to ensure fresh state
-        _editorVm = new EditorViewModel(project, _apiClient, () => NavigateToDashboard());
+        _editorVm = new EditorViewModel(project, _apiClient, _orchestrator, () => NavigateToDashboard());
         CurrentView = _editorVm;
     }
 
@@ -127,7 +131,7 @@ public partial class MainViewModel : ObservableObject
     private void NavigateToCreate()
     {
         CurrentPage = "Create";
-        _createProjectVm = new CreateProjectViewModel(_apiClient);
+        _createProjectVm = new CreateProjectViewModel(_apiClient, _orchestrator);
         _createProjectVm.ProjectCreated += () => NavigateToDashboard();
         CurrentView = _createProjectVm;
         _createProjectVm.LoadTemplatesCommand.Execute(null);

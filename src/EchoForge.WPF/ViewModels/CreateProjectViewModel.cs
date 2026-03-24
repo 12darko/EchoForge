@@ -9,6 +9,7 @@ namespace EchoForge.WPF.ViewModels;
 public partial class CreateProjectViewModel : ObservableObject
 {
     private readonly Services.ApiClient _apiClient;
+    private readonly Services.ClientJobOrchestrator _orchestrator;
 
     public event Action? ProjectCreated;
 
@@ -125,9 +126,10 @@ public partial class CreateProjectViewModel : ObservableObject
             SelectedFormat = FormatType.Standard_16x9;
     }
 
-    public CreateProjectViewModel(Services.ApiClient apiClient)
+    public CreateProjectViewModel(Services.ApiClient apiClient, Services.ClientJobOrchestrator orchestrator)
     {
         _apiClient = apiClient;
+        _orchestrator = orchestrator;
     }
 
     [RelayCommand]
@@ -220,6 +222,12 @@ public partial class CreateProjectViewModel : ObservableObject
                     $"Project '{Title}' created successfully!\n\nModel: {ImageModel} | Unique Images: {UniqueImageCount}\nThe processing pipeline has been started.\nYou can monitor progress in the Dashboard.",
                     "Success");
                 ProjectCreated?.Invoke();
+
+                // Start local processing pipeline without awaiting (fire and forget)
+                _ = Task.Run(async () =>
+                {
+                    await _orchestrator.StartPipelineAsync(result.Id, System.Threading.CancellationToken.None);
+                });
             }
             else
             {

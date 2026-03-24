@@ -55,6 +55,7 @@ public class UpdateService
         try
         {
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("EchoForge-Updater/1.0");
             var response = await client.GetFromJsonAsync<UpdateResponse>(_updateCheckUrl);
 
             if (response != null && IsNewerVersion(response.Version, CurrentVersion))

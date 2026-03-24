@@ -23,6 +23,7 @@ public class ProjectDto
     public string? VisualEffect { get; set; }
     public ProjectStatus Status { get; set; }
     public int? PipelineProgress { get; set; }
+    public int? UserId { get; set; }
     public string PrivacyStatus { get; set; } = "private";
     public string? OutputVideoPath { get; set; }
     public string? YouTubeVideoId { get; set; }

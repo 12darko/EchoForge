@@ -45,40 +45,68 @@ public partial class App : Application
     {
         try
         {
-            // Dynamically construct update URL from ServerConfig instead of ApiClient.Instance which might be null early on
+            // Wait a bit for MainWindow to fully load
+            await Task.Delay(2000);
+
             var apiBase = Services.ServerConfig.GetServerUrl().TrimEnd('/');
             var updateUrl = $"{apiBase}/api/update/check"; 
             
             var updater = new Services.UpdateService(updateUrl);
             var info = await updater.CheckForUpdateAsync();
 
-            Views.EchoMessageBox.Show($"[DEBUG] API URL: {updateUrl}\nFetched Version: {info.LatestVersion}\nCurrent Version: {Services.UpdateService.GetCurrentVersion()}\nIs Available: {info.Available}", "Auto-Update Debug", Views.EchoMessageBox.EchoMessageType.Info);
-
             if (info.Available)
             {
-                var msg = $"A new version (v{info.LatestVersion}) is available.\n\nRelease Notes:\n{info.ReleaseNotes}\n\nWould you like to install it now?";
-                var result = Views.EchoMessageBox.Show(msg, "Update Available", Views.EchoMessageBox.EchoMessageType.Question);
-
-                if (result.ToString() == "Yes" || result.ToString() == "OK" || result.ToString() == "True" || result.ToString() == "Confirm")
+                // Show question on UI thread and wait for answer
+                bool userAccepted = false;
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Views.EchoMessageBox.Show("Downloading update. The application will restart automatically. Please wait...", "Downloading", Views.EchoMessageBox.EchoMessageType.Info);
-                    
-                    var zipPath = await updater.DownloadUpdateAsync(info);
+                    var msg = $"A new version (v{info.LatestVersion}) is available.\n\nRelease Notes:\n{info.ReleaseNotes}\n\nWould you like to install it now?";
+                    var result = Views.EchoMessageBox.Show(msg, "Update Available", Views.EchoMessageBox.EchoMessageType.Question);
+                    var r = result.ToString();
+                    userAccepted = r == "Yes" || r == "OK" || r == "True" || r == "Confirm";
+                });
+
+                if (userAccepted)
+                {
+                    // Open progress popup
+                    Views.UpdateProgressWindow? progressWindow = null;
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        progressWindow = new Views.UpdateProgressWindow(info.LatestVersion);
+                        progressWindow.Show();
+                    });
+
+                    var zipPath = await updater.DownloadUpdateAsync(info, progress =>
+                    {
+                        var pct = progress * 100;
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            progressWindow?.UpdateProgress(pct, $"Downloading... {pct:F0}%");
+                        });
+                    });
+
                     if (!string.IsNullOrEmpty(zipPath))
                     {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            progressWindow?.SetCompleted();
+                        });
+                        await Task.Delay(800);
                         updater.InstallAndRestart(zipPath);
                     }
                     else
                     {
-                        Views.EchoMessageBox.Show("Failed to download the update.", "Update Error", Views.EchoMessageBox.EchoMessageType.Error);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            progressWindow?.SetError("Download failed.");
+                        });
                     }
                 }
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            // Show error so we know why it's failing during test
-            Views.EchoMessageBox.Show("Update check failed: " + ex.Message, "Debug Error", Views.EchoMessageBox.EchoMessageType.Error);
+            // Silent failure on startup — don't interrupt user if server is offline
         }
     }
 }

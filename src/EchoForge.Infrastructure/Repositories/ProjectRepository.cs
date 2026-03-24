@@ -14,10 +14,14 @@ public class ProjectRepository : IProjectRepository
         _context = context;
     }
 
-    public async Task<List<Project>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Project>> GetAllAsync(int? userId = null, CancellationToken cancellationToken = default)
     {
-        return await _context.Projects
-            .Include(p => p.Template)
+        var query = _context.Projects.Include(p => p.Template).AsQueryable();
+        
+        if (userId.HasValue)
+            query = query.Where(p => p.UserId == userId.Value);
+
+        return await query
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
