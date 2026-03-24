@@ -160,6 +160,8 @@ using (var scope = app.Services.CreateScope())
     try { await db.Database.ExecuteSqlRawAsync("ALTER TABLE Projects ADD CONSTRAINT FK_Projects_YouTubeChannels FOREIGN KEY (TargetChannelId) REFERENCES YouTubeChannels(Id) ON DELETE SET NULL;"); } catch { }
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "TimelineJson", "TEXT NULL");
 
+    try { await db.Database.ExecuteSqlRawAsync("CREATE TABLE IF NOT EXISTS UploadLogs (Id INT AUTO_INCREMENT PRIMARY KEY, ProjectId INT NOT NULL, Status VARCHAR(50) NOT NULL DEFAULT 'Pending', ResponseJson TEXT NULL, ErrorMessage VARCHAR(2000) NULL, CreatedAt DATETIME NOT NULL, CONSTRAINT FK_UploadLogs_Projects FOREIGN KEY (ProjectId) REFERENCES Projects(Id) ON DELETE CASCADE);"); } catch { }
+
     // TEMPORARY DB SCHEMA PATCH FOR PHASE 5 (Users & Auth)
     try {
         await db.Database.ExecuteSqlRawAsync(@"
