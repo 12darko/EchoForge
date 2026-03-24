@@ -39,6 +39,15 @@ public class ClientJobOrchestrator
         public string SeoLanguage { get; set; } = "English";
     }
 
+    private class DummySettingsService : EchoForge.Core.Interfaces.IAppSettingsService
+    {
+        private readonly string _hfKey;
+        public DummySettingsService(string hfKey) { _hfKey = hfKey; }
+        public Task<string?> GetSettingAsync(string key) => Task.FromResult(key == "HuggingFace:ApiKey" ? _hfKey : null);
+        public Task UpdateSettingAsync(string key, string value) => Task.CompletedTask;
+        public Task<List<EchoForge.Core.Models.AppSetting>> GetAllSettingsAsync(bool decrypt) => Task.FromResult(new List<EchoForge.Core.Models.AppSetting>());
+    }
+
     private async Task<SettingConfig> GetSettingsAsync()
     {
         var settingsList = await _apiClient.GetAllSettingsAsync(true); // Attempt to fetch all keys
@@ -107,7 +116,8 @@ public class ClientJobOrchestrator
             
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.HuggingFaceKey);
             
-            var imageService = new StabilityImageService(_httpClient, NullLogger<StabilityImageService>.Instance);
+            var dummySettings = new DummySettingsService(config.HuggingFaceKey);
+            var imageService = new HuggingFaceImageService(_httpClient, NullLogger<HuggingFaceImageService>.Instance, dummySettings);
             var renderSettings = VideoRenderSettings.FromFormatType(project.FormatType, 0, 0);
             renderSettings.FPS = config.VideoFps;
 
