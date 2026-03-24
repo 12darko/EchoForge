@@ -143,37 +143,29 @@ public class UpdateService
         try
         {
             var appDir = AppDomain.CurrentDomain.BaseDirectory;
-            var batchPath = Path.Combine(UpdateDir, "update_installer.bat");
+            var ps1Path = Path.Combine(UpdateDir, "update_installer.ps1");
 
-            // Create a batch script that:
+            // Create a PowerShell script that:
             // 1. Waits for the app to close
             // 2. Extracts the ZIP over the app directory
             // 3. Relaunches the app
             // 4. Cleans up
-            var batchContent = $@"@echo off
-echo EchoForge Auto-Updater
-echo Waiting for application to close...
-timeout /t 3 /nobreak >nul
-
-echo Extracting update...
-powershell -Command ""Expand-Archive -Path '{zipPath}' -DestinationPath '{appDir}' -Force""
-
-echo Starting updated application...
-start """" ""{Path.Combine(appDir, "EchoForge.WPF.exe")}""
-
-echo Cleaning up...
-del ""{zipPath}"" >nul 2>&1
-del ""%~f0"" >nul 2>&1
+            var ps1Content = $@"
+Start-Sleep -Seconds 3
+Expand-Archive -Path '{zipPath}' -DestinationPath '{appDir}' -Force
+Start-Process -FilePath '{Path.Combine(appDir, "EchoForge.WPF.exe")}'
+Remove-Item -Path '{zipPath}' -Force -ErrorAction SilentlyContinue
+Remove-Item -Path `$MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
 ";
-            File.WriteAllText(batchPath, batchContent);
+            File.WriteAllText(ps1Path, ps1Content);
 
-            // Launch the installer script
+            // Launch the installer script with Admin rights (UAC prompt will be shown)
             Process.Start(new ProcessStartInfo
             {
-                FileName = batchPath,
+                FileName = "powershell.exe",
+                Arguments = $"-ExecutionPolicy Bypass -WindowStyle Hidden -File \"{ps1Path}\"",
                 UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                CreateNoWindow = true
+                Verb = "runas"
             });
 
             // Exit the current app so the updater can replace files
