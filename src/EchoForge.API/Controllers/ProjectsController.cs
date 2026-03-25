@@ -154,8 +154,9 @@ public class ProjectsController : ControllerBase
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null) return NotFound();
 
-        if (project.Status != ProjectStatus.ReviewingScenes)
-            return BadRequest("Scenes can only be updated while in ReviewingScenes status.");
+        // Allow scene updates during reviewing or before composing starts
+        if (project.Status != ProjectStatus.ReviewingScenes && project.Status != ProjectStatus.ComposingVideo)
+            return BadRequest("Scenes can only be updated while in ReviewingScenes or ComposingVideo status.");
 
         project.TimelineJson = System.Text.Json.JsonSerializer.Serialize(updatedScenes);
         project.UpdatedAt = DateTime.UtcNow;

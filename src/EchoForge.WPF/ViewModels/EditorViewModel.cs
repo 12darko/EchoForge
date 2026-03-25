@@ -239,10 +239,14 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         }
     }
 
-    partial void OnSelectedSceneChanged(TimelineItemDto? value)
+    partial void OnSelectedSceneChanged(TimelineItemDto? oldValue, TimelineItemDto? value)
     {
+        // Clear old selection
+        if (oldValue != null) oldValue.IsSelected = false;
+
         if (value != null && !string.IsNullOrEmpty(value.ImagePath))
         {
+            value.IsSelected = true;
             PreviewImagePath = value.ImagePath;
             
             // Calculate start and end time of the selected scene
@@ -732,12 +736,21 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         if (result != System.Windows.MessageBoxResult.OK) return;
 
         IsLoading = true;
-        StatusMessage = "Starting video render...";
+        StatusMessage = "💾 Saving scene changes before render...";
         try
         {
-            // Save scenes first
-            await _apiClient.UpdateProjectScenesAsync(_project.Id, Scenes.ToList());
+            // 1. Save scenes to server FIRST and wait for confirmation
+            var saveSuccess = await _apiClient.UpdateProjectScenesAsync(_project.Id, Scenes.ToList());
+            if (!saveSuccess)
+            {
+                StatusMessage = "❌ Failed to save scene changes to server. Render cancelled.";
+                IsLoading = false;
+                return;
+            }
 
+            StatusMessage = "🎬 Starting video render...";
+
+            // 2. Now start the render pipeline (scenes are guaranteed saved)
             _ = Task.Run(async () =>
             {
                 await _orchestrator.ResumePipelineAsync(_project.Id, System.Threading.CancellationToken.None);

@@ -74,4 +74,13 @@ public class TimelineItemDto : System.ComponentModel.INotifyPropertyChanged
         set { if (Math.Abs(_speed - value) > 0.001) { _speed = value; OnPropertyChanged(); } }
     }
     public string Filter { get; set; } = "none";
+
+    // UI-only property, not serialized to JSON
+    private bool _isSelected;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set { if (_isSelected != value) { _isSelected = value; OnPropertyChanged(); } }
+    }
 }
