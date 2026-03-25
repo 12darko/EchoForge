@@ -334,7 +334,7 @@
 
                             <!-- Duration -->
                             <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Duration]}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding SelectedScene.Duration, UpdateSourceTrigger=PropertyChanged}" 
+                            <TextBox Text="{Binding SelectedScene.Duration, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:F2}'}" 
                                      Style="{StaticResource ModernTextBox}" Margin="0,0,0,4"/>
                             <TextBlock Text="{Binding SelectedSceneDurationDisplay}" FontSize="11" Foreground="#4A5568" Margin="0,0,0,16"/>
 

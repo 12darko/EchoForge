@@ -43,11 +43,22 @@ public class ProjectDto
     public System.Collections.ObjectModel.ObservableCollection<TimelineItemDto> Scenes { get; set; } = new();
 }
 
-public class TimelineItemDto
+public class TimelineItemDto : System.ComponentModel.INotifyPropertyChanged
 {
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        => PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+
     public int SceneNumber { get; set; }
-    public double Duration { get; set; }
-    public string DurationStr => $"{Duration:F1}s";
+
+    private double _duration;
+    public double Duration
+    {
+        get => _duration;
+        set { if (Math.Abs(_duration - value) > 0.001) { _duration = value; OnPropertyChanged(); OnPropertyChanged(nameof(DurationStr)); } }
+    }
+    public string DurationStr => $"{Duration:F2}s";
+
     public string Prompt { get; set; } = string.Empty;
     public string ImagePath { get; set; } = string.Empty;
     public string Transition { get; set; } = string.Empty;
@@ -55,6 +66,12 @@ public class TimelineItemDto
     // Visual effects per scene
     public double FadeInDuration { get; set; } = 0;
     public double FadeOutDuration { get; set; } = 0;
-    public double Speed { get; set; } = 1.0;
+
+    private double _speed = 1.0;
+    public double Speed
+    {
+        get => _speed;
+        set { if (Math.Abs(_speed - value) > 0.001) { _speed = value; OnPropertyChanged(); } }
+    }
     public string Filter { get; set; } = "none";
 }
