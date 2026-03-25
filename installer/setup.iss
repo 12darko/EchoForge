@@ -4,7 +4,7 @@
 ; ╚══════════════════════════════════════════════════════════════╝
 
 #define MyAppName "EchoForge"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.2.2"
 #define MyAppPublisher "EchoForge Studio"
 #define MyAppURL "https://github.com/12darko/EchoForge"
 #define MyAppExeName "EchoForge.WPF.exe"

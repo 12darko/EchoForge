@@ -21,5 +21,6 @@ public interface IVideoComposerService
         string? introVideoPath = null,
         string? outroVideoPath = null,
         Action<int>? progressCallback = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        List<TimelineItemDto>? timelineItems = null);
 }

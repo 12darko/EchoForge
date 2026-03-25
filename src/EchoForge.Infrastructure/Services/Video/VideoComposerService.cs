@@ -38,7 +38,8 @@ public class VideoComposerService : IVideoComposerService
         string? introVideoPath = null,
         string? outroVideoPath = null,
         Action<int>? progressCallback = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        List<TimelineItemDto>? timelineItems = null)
     {
         _logger.LogInformation("Starting video composition: {ImageCount} images, {Width}x{Height}",
             imagePaths.Count, settings.Width, settings.Height);
@@ -57,56 +58,73 @@ public class VideoComposerService : IVideoComposerService
         {
             var audioDuration = await GetAudioDurationAsync(audioPath, cancellationToken);
             var effectiveDuration = Math.Min(audioDuration, settings.MaxDurationSeconds);
-            var sceneDuration = effectiveDuration / imagePaths.Count;
 
-            _logger.LogInformation("Audio: {Duration}s, {SceneCount} scenes × {SceneDuration}s each",
-                effectiveDuration, imagePaths.Count, sceneDuration.ToString("F2", CultureInfo.InvariantCulture));
+            // Use per-scene durations from timeline if available
+            bool hasTimeline = timelineItems != null && timelineItems.Count == imagePaths.Count;
+            var sceneDurations = new List<double>();
+            if (hasTimeline)
+            {
+                sceneDurations = timelineItems!.Select(t => t.Duration).ToList();
+                // Clamp total to effective duration
+                var totalTimelineDuration = sceneDurations.Sum();
+                if (totalTimelineDuration > effectiveDuration)
+                {
+                    var ratio = effectiveDuration / totalTimelineDuration;
+                    sceneDurations = sceneDurations.Select(d => d * ratio).ToList();
+                }
+                effectiveDuration = sceneDurations.Sum();
+            }
+            else
+            {
+                var uniformDuration = effectiveDuration / imagePaths.Count;
+                sceneDurations = Enumerable.Repeat(uniformDuration, imagePaths.Count).ToList();
+            }
+
+            _logger.LogInformation("Audio: {Duration}s, {SceneCount} scenes, timeline={HasTimeline}",
+                effectiveDuration, imagePaths.Count, hasTimeline);
 
             // Generate TimelineJson
-            var timelineItems = new List<TimelineItemDto>();
+            var resultTimelineItems = new List<TimelineItemDto>();
             for (int i = 0; i < imagePaths.Count; i++)
             {
-                timelineItems.Add(new TimelineItemDto
+                resultTimelineItems.Add(new TimelineItemDto
                 {
                     SceneNumber = i + 1,
-                    Duration = sceneDuration,
+                    Duration = sceneDurations[i],
                     ImagePath = imagePaths[i],
-                    Transition = transition,
-                    Prompt = "Auto-generated scene details" // can't easily fetch prompt here but we keep the visual
+                    Transition = hasTimeline ? timelineItems![i].Transition : transition,
+                    Speed = hasTimeline ? timelineItems![i].Speed : 1.0,
+                    FadeInDuration = hasTimeline ? timelineItems![i].FadeInDuration : 0,
+                    FadeOutDuration = hasTimeline ? timelineItems![i].FadeOutDuration : 0,
+                    Filter = hasTimeline ? timelineItems![i].Filter : "none",
+                    Prompt = hasTimeline ? timelineItems![i].Prompt : "Auto-generated scene"
                 });
             }
-            var timelineJson = System.Text.Json.JsonSerializer.Serialize(timelineItems);
+            var timelineJson = System.Text.Json.JsonSerializer.Serialize(resultTimelineItems);
 
-            bool hasVisualEffect = !string.IsNullOrWhiteSpace(visualEffect) && visualEffect != "none";
+            // Always use the advanced pipeline when we have timeline data
+            bool useAdvancedPipeline = hasTimeline || !string.IsNullOrWhiteSpace(visualEffect) && visualEffect != "none" 
+                || (!string.IsNullOrWhiteSpace(transition) && transition != "none" && imagePaths.Count > 1);
 
-            if (!hasVisualEffect && (string.IsNullOrWhiteSpace(transition) || transition == "none" || imagePaths.Count == 1))
+            if (!useAdvancedPipeline && imagePaths.Count == 1)
             {
-                // Basic Concat approach (faster, simple cuts)
+                // Single image basic approach
                 var concatFilePath = Path.Combine(tempDir, "concat.txt");
                 var concatLines = new List<string>();
-                foreach (var imgPath in imagePaths)
-                {
-                    concatLines.Add($"file '{imgPath.Replace("\\", "/").Replace("'", "'\\''")}'");
-                    concatLines.Add($"duration {sceneDuration.ToString("F4", CultureInfo.InvariantCulture)}");
-                }
-                if (imagePaths.Count > 0)
-                {
-                    concatLines.Add($"file '{imagePaths.Last().Replace("\\", "/").Replace("'", "'\\''")}'");
-                }
+                concatLines.Add($"file '{imagePaths[0].Replace("\\", "/").Replace("'", "'\\''")}'");
+                concatLines.Add($"duration {effectiveDuration.ToString("F4", CultureInfo.InvariantCulture)}");
+                concatLines.Add($"file '{imagePaths[0].Replace("\\", "/").Replace("'", "'\\''")}'");
                 await File.WriteAllLinesAsync(concatFilePath, concatLines, cancellationToken);
 
                 var durStr = effectiveDuration.ToString("F2", CultureInfo.InvariantCulture);
                 var filter = $"scale={settings.Width}:{settings.Height}:force_original_aspect_ratio=decrease,pad={settings.Width}:{settings.Height}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps={settings.FPS}";
-
                 var args = $"-hwaccel auto -f concat -safe 0 -i \"{concatFilePath}\" -i \"{audioPath}\" -vf \"{filter}\" -c:v {settings.Codec} -preset fast -pix_fmt yuv420p -c:a aac -b:a 192k -t {durStr} -shortest -movflags +faststart -y \"{outputPath}\"";
-
-                _logger.LogInformation("Building simple video: {Width}x{Height} @ {FPS}fps", settings.Width, settings.Height, settings.FPS);
                 await RunFfmpegAsync(args, progressCallback, effectiveDuration, cancellationToken);
             }
             else
             {
-                // Complex Filtergraph approach (XFade, Zoompan, VFX)
-                outputPath = await ComposeVideoWithTransitionsAsync(imagePaths, audioPath, settings, transition, visualEffect, targetDir, tempDir, effectiveDuration, sceneDuration, progressCallback, cancellationToken);
+                // Advanced pipeline with per-scene support
+                outputPath = await ComposeVideoWithTimelineAsync(imagePaths, audioPath, settings, resultTimelineItems, visualEffect, targetDir, tempDir, effectiveDuration, sceneDurations, progressCallback, cancellationToken);
             }
 
             if (!File.Exists(outputPath) || new FileInfo(outputPath).Length < 1000)
@@ -183,31 +201,32 @@ public class VideoComposerService : IVideoComposerService
         return mainVideoPath;
     }
 
-    private async Task<string> ComposeVideoWithTransitionsAsync(List<string> imagePaths, string audioPath, VideoRenderSettings settings, string transition, string? visualEffect, string targetDir, string tempDir, double effectiveDuration, double sceneDuration, Action<int>? progressCallback, CancellationToken cancellationToken)
+    private async Task<string> ComposeVideoWithTimelineAsync(
+        List<string> imagePaths, string audioPath, VideoRenderSettings settings, 
+        List<TimelineItemDto> timeline, string? visualEffect, 
+        string targetDir, string tempDir, double effectiveDuration, List<double> sceneDurations,
+        Action<int>? progressCallback, CancellationToken cancellationToken)
     {
         var outputPath = Path.Combine(targetDir, $"echoforge_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
         
-        // Transition settings
-        double transitionDuration = sceneDuration <= 2.0 ? 0.5 : 1.0;
-        double imageDuration = sceneDuration + transitionDuration;
-
         var sbInputs = new System.Text.StringBuilder();
         var sbFilter = new System.Text.StringBuilder();
 
-        // 1. Inputs (Copy to temp with short names to prevent CLI max length limits)
+        // 1. Inputs — each image gets its own duration + transition overlap
         for (int i = 0; i < imagePaths.Count; i++)
         {
             var tempImgPath = Path.Combine(tempDir, $"{i}.jpg");
             File.Copy(imagePaths[i], tempImgPath, true);
-            sbInputs.Append($"-loop 1 -t {imageDuration.ToString("F4", CultureInfo.InvariantCulture)} -i \"{tempImgPath}\" ");
+            double transOverlap = (i < imagePaths.Count - 1) ? Math.Min(1.0, sceneDurations[i] * 0.3) : 0;
+            double inputDuration = sceneDurations[i] + transOverlap;
+            sbInputs.Append($"-loop 1 -t {inputDuration.ToString("F4", CultureInfo.InvariantCulture)} -i \"{tempImgPath}\" ");
         }
 
-        // 2. Filtergraph: Scale + Zoompan + VFX (if needed)
-        
-        string vfxFilter = "";
+        // 2. Per-scene filtergraph: Scale + Speed + FadeIn/Out + Filter
+        string globalVfx = "";
         if (!string.IsNullOrWhiteSpace(visualEffect))
         {
-            vfxFilter = visualEffect.ToLowerInvariant() switch
+            globalVfx = visualEffect.ToLowerInvariant() switch
             {
                 "bw" => ",colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3",
                 "sepia" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131",
@@ -220,21 +239,74 @@ public class VideoComposerService : IVideoComposerService
 
         for (int i = 0; i < imagePaths.Count; i++)
         {
+            var scene = timeline[i];
+            var dur = sceneDurations[i];
+
             sbFilter.Append($"[{i}:v]scale={settings.Width}:{settings.Height}:force_original_aspect_ratio=increase,crop={settings.Width}:{settings.Height},setsar=1,fps={settings.FPS}");
-            if (transition == "zoompan")
+
+            // Zoompan if transition is zoompan
+            if (scene.Transition == "zoompan")
             {
-                 sbFilter.Append($",zoompan=z='min(zoom+0.0015,1.5)':d={((int)(settings.FPS * imageDuration))}:s={settings.Width}x{settings.Height}");
+                double transOverlap = (i < imagePaths.Count - 1) ? Math.Min(1.0, dur * 0.3) : 0;
+                sbFilter.Append($",zoompan=z='min(zoom+0.0015,1.5)':d={((int)(settings.FPS * (dur + transOverlap)))}:s={settings.Width}x{settings.Height}");
             }
-            sbFilter.Append($"{vfxFilter}[v{i}];\n");
+
+            // Speed: setpts=PTS/speed (speed > 1 = faster)
+            if (Math.Abs(scene.Speed - 1.0) > 0.01 && scene.Speed > 0.1)
+            {
+                sbFilter.Append($",setpts=PTS/{scene.Speed.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+
+            // Per-scene color filter
+            var sceneFilter = scene.Filter?.ToLowerInvariant() ?? "none";
+            if (sceneFilter != "none")
+            {
+                var filterStr = sceneFilter switch
+                {
+                    "grayscale" => ",colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3",
+                    "sepia" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131",
+                    "warm" => ",colortemperature=temperature=6500",
+                    "cool" => ",colortemperature=temperature=3500",
+                    "highcontrast" => ",eq=contrast=1.4:saturation=1.2",
+                    "vintage" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131,vignette=PI/4",
+                    "vignette" => ",vignette=PI/4",
+                    "blur" => ",gblur=sigma=5",
+                    _ => ""
+                };
+                sbFilter.Append(filterStr);
+            }
+
+            // FadeIn / FadeOut per scene
+            if (scene.FadeInDuration > 0)
+            {
+                sbFilter.Append($",fade=t=in:st=0:d={scene.FadeInDuration.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+            if (scene.FadeOutDuration > 0)
+            {
+                var fadeOutStart = dur - scene.FadeOutDuration;
+                if (fadeOutStart < 0) fadeOutStart = 0;
+                sbFilter.Append($",fade=t=out:st={fadeOutStart.ToString("F2", CultureInfo.InvariantCulture)}:d={scene.FadeOutDuration.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+
+            sbFilter.Append($"{globalVfx}[v{i}];\n");
         }
 
-        // 3. Filtergraph: XFade
+        // 3. XFade transitions between scenes
         string lastNode = "[v0]";
-        string xfadeEffect = transition == "zoompan" ? "fade" : transition; // Map zoompan transition to standard fade
+        double cumulativeOffset = 0;
         
         for (int i = 1; i < imagePaths.Count; i++)
         {
-            double offset = i * sceneDuration;
+            cumulativeOffset += sceneDurations[i - 1];
+            var scene = timeline[i];
+            double transitionDuration = Math.Min(1.0, sceneDurations[i - 1] * 0.3);
+            double offset = cumulativeOffset - transitionDuration;
+            if (offset < 0) offset = 0;
+
+            string xfadeEffect = scene.Transition;
+            if (string.IsNullOrWhiteSpace(xfadeEffect) || xfadeEffect == "none") xfadeEffect = "fade";
+            if (xfadeEffect == "zoompan") xfadeEffect = "fade";
+
             sbFilter.Append($"{lastNode}[v{i}]xfade=transition={xfadeEffect}:duration={transitionDuration.ToString("F2", CultureInfo.InvariantCulture)}:offset={offset.ToString("F4", CultureInfo.InvariantCulture)}[f{i}];\n");
             lastNode = $"[f{i}]";
         }
@@ -247,14 +319,14 @@ public class VideoComposerService : IVideoComposerService
         argsBuilder.Append(sbInputs.ToString());
         argsBuilder.Append($"-i \"{audioPath}\" ");
         argsBuilder.Append($"-filter_complex_script \"{filterScriptPath}\" ");
-        argsBuilder.Append($"-map \"{lastNode}\" -map {imagePaths.Count}:a "); // Final video node and original audio
+        argsBuilder.Append($"-map \"{lastNode}\" -map {imagePaths.Count}:a ");
         argsBuilder.Append($"-c:v {settings.Codec} -preset fast -pix_fmt yuv420p ");
         argsBuilder.Append($"-c:a aac -b:a 192k ");
         argsBuilder.Append($"-t {effectiveDuration.ToString("F2", CultureInfo.InvariantCulture)} -shortest ");
         argsBuilder.Append($"-movflags +faststart ");
         argsBuilder.Append($"-y \"{outputPath}\"");
 
-        _logger.LogInformation("Building transition video ({Transition}): {Width}x{Height} @ {FPS}fps", transition, settings.Width, settings.Height, settings.FPS);
+        _logger.LogInformation("Building timeline video: {Width}x{Height} @ {FPS}fps, {Scenes} scenes", settings.Width, settings.Height, settings.FPS, imagePaths.Count);
         await RunFfmpegAsync(argsBuilder.ToString(), progressCallback, effectiveDuration, cancellationToken);
         
         return outputPath;

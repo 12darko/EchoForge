@@ -1,0 +1,6 @@
+{
+  "version": "2.2.1",
+  "downloadUrl": "https://vibeoracle.cloud/updates/SLKdNGrvRj1unD5A82VxWXo7/new/EchoForge-v2.2.1.zip",
+  "releaseNotes": "🆕 v2.2.1 Hotfix Hatırlatmaları:\n\n• Data Isolation Bug: Artık herkes sadece kendi oluşturduğu projeleri görebilir.\n• Render Bug: Çıktı alanları (Output Directory) API üzerinde değil, kişisel klasöre sabitlendi.",
+  "fileSizeBytes": 67152516
+}

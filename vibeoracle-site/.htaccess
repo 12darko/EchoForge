@@ -1,0 +1,20 @@
+# /updates/ klasörünü dışarıdan erişime kapat
+# Sadece EchoForge uygulaması özel header ile erişebilir
+
+<Directory "/updates">
+    Order Deny,Allow
+    Deny from all
+</Directory>
+
+# Gizli alt dizine (secret key) sadece EchoForge User-Agent ile izin ver
+<Directory "/updates/SLKdNGrvRj1unD5A82VxWXo7">
+    Order Deny,Allow
+    Deny from all
+    
+    # EchoForge uygulaması "EchoForge-Updater" User-Agent gönderir
+    SetEnvIf User-Agent "EchoForge-Updater" allowed
+    Allow from env=allowed
+</Directory>
+
+# Dizin listelemeyi kapat
+Options -Indexes

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibеOracle — We Build Digital Experiences</title>
+    <meta name="description" content="VibеOracle is a digital studio crafting innovative web applications, AI tools, and interactive experiences. Explore our products.">
+    <meta name="keywords" content="digital studio, web applications, AI tools, SaaS products, VibеOracle">
+    <meta name="author" content="VibеOracle">
+    <meta name="theme-color" content="#6D28D9">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vibeoracle.cloud/">
+    <meta property="og:title" content="VibеOracle — We Build Digital Experiences">
+    <meta property="og:description" content="A digital studio crafting innovative web applications, AI tools, and interactive experiences.">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #06080F; --bg-card: rgba(255,255,255,0.025); --border: rgba(255,255,255,0.06);
+            --text: #E2E8F0; --text2: #94A3B8; --text3: #64748B;
+            --purple: #8B5CF6; --blue: #3B82F6; --cyan: #06B6D4; --green: #10B981;
+            --orange: #F97316; --pink: #EC4899;
+            --grad: linear-gradient(135deg, #8B5CF6, #3B82F6);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        /* Ambient glow */
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(139,92,246,0.07) 0%, transparent 100%),
+                        radial-gradient(circle at 80% 60%, rgba(59,130,246,0.04) 0%, transparent 50%);
+        }
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+        /* NAV */
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--border); }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .logo-icon { width: 36px; height: 36px; background: var(--grad); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .logo-text { font-size: 20px; font-weight: 700; color: var(--text); }
+        .logo-text span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 28px; align-items: center; }
+        .nav-links a { color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta { background: var(--grad); color: white !important; padding: 10px 24px; border-radius: 10px; font-weight: 600; }
+
+        /* HERO */
+        .hero { text-align: center; padding: 100px 0 80px; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);
+            padding: 8px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; color: var(--purple); margin-bottom: 28px;
+        }
+        .hero h1 { font-size: clamp(36px, 5.5vw, 64px); font-weight: 900; line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.03em; }
+        .hero h1 .gradient { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { font-size: 18px; color: var(--text2); max-width: 560px; margin: 0 auto 48px; line-height: 1.7; }
+        .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-p { background: var(--grad); color: white; padding: 16px 36px; border-radius: 12px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; transition: transform 0.2s; }
+        .btn-p:hover { transform: translateY(-2px); }
+        .btn-s { background: var(--bg-card); color: var(--text); padding: 16px 36px; border-radius: 12px; border: 1px solid var(--border); font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
+        .btn-s:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+        /* PRODUCTS */
+        .products { padding: 60px 0 80px; }
+        .sec-title { text-align: center; margin-bottom: 56px; }
+        .sec-title h2 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+        .sec-title p { font-size: 15px; color: var(--text2); }
+
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .product-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 36px; transition: border-color 0.3s, transform 0.3s, background 0.3s;
+            display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: inherit;
+        }
+        .product-card:hover { border-color: rgba(139,92,246,0.3); transform: translateY(-6px); background: rgba(255,255,255,0.04); }
+        .product-header { display: flex; align-items: center; gap: 16px; }
+        .product-icon {
+            width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0;
+        }
+        .product-card h3 { font-size: 20px; font-weight: 700; }
+        .product-card .tag {
+            display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .product-card p { font-size: 14px; color: var(--text2); line-height: 1.7; }
+        .product-card .visit {
+            display: inline-flex; align-items: center; gap: 6px; color: var(--purple); font-size: 14px; font-weight: 600; margin-top: auto; transition: gap 0.2s;
+        }
+        .product-card:hover .visit { gap: 10px; }
+
+        /* Colors */
+        .c-purple { background: rgba(139,92,246,0.15); }
+        .c-blue { background: rgba(59,130,246,0.15); }
+        .c-cyan { background: rgba(6,182,212,0.15); }
+        .c-green { background: rgba(16,185,129,0.15); }
+        .t-purple { background: rgba(139,92,246,0.12); color: var(--purple); }
+        .t-blue { background: rgba(59,130,246,0.12); color: var(--blue); }
+        .t-cyan { background: rgba(6,182,212,0.12); color: var(--cyan); }
+        .t-green { background: rgba(16,185,129,0.12); color: var(--green); }
+
+        /* STATS */
+        .stats { padding: 48px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; text-align: center; }
+        .stat-n { font-size: 40px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-l { font-size: 13px; color: var(--text3); margin-top: 6px; }
+
+        /* ABOUT */
+        .about { padding: 80px 0; text-align: center; }
+        .about-box {
+            background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.15);
+            border-radius: 24px; padding: 56px 48px; max-width: 700px; margin: 0 auto;
+        }
+        .about-box h2 { font-size: 28px; font-weight: 700; margin-bottom: 16px; }
+        .about-box p { font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 28px; }
+
+        /* FOOTER */
+        footer { border-top: 1px solid var(--border); padding: 32px 0; text-align: center; }
+        footer p { font-size: 13px; color: var(--text3); }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-bottom: 12px; }
+        .footer-links a { color: var(--text2); text-decoration: none; font-size: 13px; }
+        .footer-links a:hover { color: var(--text); }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .products-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero { padding: 60px 0 40px; }
+            .about-box { padding: 36px 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- NAV -->
+    <nav>
+        <a href="/" class="logo">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">Vibе<span>Oracle</span></div>
+        </a>
+        <div class="nav-links">
+            <a href="#products">Products</a>
+            <a href="#about">About</a>
+            <a href="mailto:contact@vibeoracle.cloud">Contact</a>
+            <a href="#products" class="nav-cta">Our Products</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-badge">✨ Digital Studio</div>
+        <h1>We Build<br><span class="gradient">Digital Experiences</span></h1>
+        <p>A creative technology studio crafting innovative web applications, AI-powered tools, and interactive platforms used by thousands worldwide.</p>
+        <div class="hero-cta">
+            <a href="#products" class="btn-p">Explore Our Products</a>
+            <a href="mailto:contact@vibeoracle.cloud" class="btn-s">Get in Touch →</a>
+        </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section class="products" id="products">
+        <div class="sec-title">
+            <h2>Our Products</h2>
+            <p>Tools and platforms we've built from the ground up</p>
+        </div>
+        <div class="products-grid">
+
+            <!-- VormPixyze -->
+            <a href="https://vormpixyze.com/" target="_blank" class="product-card">
+                <div class="product-header">
+                    <div class="product-icon c-purple">🖼️</div>
+                    <div>
+                        <h3>VormPixyze</h3>
+                        <span class="tag t-purple">Image Tools</span>
+                    </div>
+                </div>
+                <p>Free online image converter supporting HEIC, WebP, PNG to JPG conversion. AI-powered background removal and smart renaming. Privacy-focused with secure server-side processing.</p>
+                <span class="visit">Visit vormpixyze.com →</span>
+            </a>
+
+            <!-- OrbisPlay -->
+            <a href="https://orbisplay.com/" target="_blank" class="product-card">
+                <div class="product-header">
+                    <div class="product-icon c-blue">🎮</div>
+                    <div>
+                        <h3>OrbisPlay</h3>
+                        <span class="tag t-blue">Gaming</span>
+                    </div>
+                </div>
+                <p>Daily brain training games platform featuring Lexi, Connecta, Pixelade and Higher/Lower. New puzzles every day to keep your mind sharp and engaged.</p>
+                <span class="visit">Visit orbisplay.com →</span>
+            </a>
+
+            <!-- PixelScaleAI -->
+            <a href="https://pixelscaleai.com/" target="_blank" class="product-card">
+                <div class="product-header">
+                    <div class="product-icon c-cyan">🔍</div>
+                    <div>
+                        <h3>PixelScaleAI</h3>
+                        <span class="tag t-cyan">AI Upscaler</span>
+                    </div>
+                </div>
+                <p>AI-powered image upscaling and enhancement tool. Transform blurry photos into crisp 4K/8K quality visuals in seconds. Runs entirely in the browser for maximum privacy.</p>
+                <span class="visit">Visit pixelscaleai.com →</span>
+            </a>
+
+            <!-- Utilyra -->
+            <a href="https://utilyra.com/" target="_blank" class="product-card">
+                <div class="product-header">
+                    <div class="product-icon c-green">🛠️</div>
+                    <div>
+                        <h3>Utilyra</h3>
+                        <span class="tag t-green">Dev Tools</span>
+                    </div>
+                </div>
+                <p>35+ online developer and text tools including JSON formatter, regex tester, algorithm visualizer, and more. 100% free and client-side for complete privacy.</p>
+                <span class="visit">Visit utilyra.com →</span>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats">
+        <div class="stats-grid">
+            <div><div class="stat-n">4</div><div class="stat-l">Live Products</div></div>
+            <div><div class="stat-n">35+</div><div class="stat-l">Online Tools</div></div>
+            <div><div class="stat-n">100%</div><div class="stat-l">Free to Use</div></div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about" id="about">
+        <div class="about-box">
+            <h2>About VibеOracle</h2>
+            <p>We're a small but passionate digital studio focused on building tools that make people's lives easier. From image processing to brain games, from developer utilities to AI upscaling — every product we ship is free, fast, and privacy-first.</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="mailto:contact@vibeoracle.cloud">Contact</a>
+        </div>
+        <p>© 2026 VibеOracle. All rights reserved.</p>
+    </footer>
+</div>
+</body>
+</html>

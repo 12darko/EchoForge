@@ -1,0 +1,9 @@
+﻿D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\Services\ClientJobOrchestrator.cs(81,100): error CS1503: Argument 2: cannot convert from 'System.Net.Http.HttpClient' to 'string?' [D:\Gemini\Projects\YoutubeOtomation\src\EchoForge.WPF\EchoForge.WPF_lylpwgy4_wpftmp.csproj]
+
+Build FAILED.
+    5 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:02.55
+
+Workload updates are available. Run `dotnet workload list` for more information.

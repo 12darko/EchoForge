@@ -106,6 +106,11 @@ public class ClientJobOrchestrator
                 analysis.SceneCount = Math.Min(Math.Max(1, (int)Math.Ceiling(analysis.Duration / manualSec)), 100);
             }
 
+            // Ensure scene count respects user's UniqueImageCount selection
+            var userRequestedImages = project.UniqueImageCount > 0 ? project.UniqueImageCount : analysis.SceneCount;
+            var targetSceneCount = Math.Max(userRequestedImages, analysis.SceneCount);
+            if (targetSceneCount < 1) targetSceneCount = 1;
+
             // Generate Images
             await _apiClient.UpdateProjectStatusAsync(projectId, ProjectStatus.GeneratingImages);
             
@@ -126,8 +131,8 @@ public class ClientJobOrchestrator
             if (!string.IsNullOrWhiteSpace(project.ImageStyle)) basePrompt = $"{project.ImageStyle} style, {basePrompt}";
 
             var imagePaths = await imageService.GenerateImagesAsync(
-                basePrompt, analysis.SceneCount, renderSettings.Width, renderSettings.Height,
-                project.ImageModel, project.UniqueImageCount, cancellationToken);
+                basePrompt, targetSceneCount, renderSettings.Width, renderSettings.Height,
+                project.ImageModel, targetSceneCount, cancellationToken);
                 
             // Timeline Json creation
             var sceneDuration = Math.Min(analysis.Duration, renderSettings.MaxDurationSeconds) / imagePaths.Count;
@@ -180,21 +185,20 @@ public class ClientJobOrchestrator
             renderSettings.FPS = config.VideoFps;
 
             var videoService = new VideoComposerService(NullLogger<VideoComposerService>.Instance, config.FFmpegPath, config.OutputDir);
-            
-            var transitionTarget = timelineItems.FirstOrDefault()?.Transition ?? "none";
 
             var videoResult = await videoService.ComposeVideoAsync(
                 imagePaths,
                 project.AudioPath,
                 renderSettings,
-                transitionTarget,
+                "none",
                 project.VisualEffect,
                 null,
                 config.OutputDir,
                 config.IntroVideoPath,
                 config.OutroVideoPath,
                 async (progressPercent) => await _apiClient.UpdateProjectProgressAsync(projectId, progressPercent),
-                cancellationToken);
+                cancellationToken,
+                timelineItems);
 
             project.OutputVideoPath = videoResult.VideoFilePath;
             project.TimelineJson = videoResult.TimelineJson;

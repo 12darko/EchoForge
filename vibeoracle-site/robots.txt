@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /updates/
+Disallow: /api/
+
+Sitemap: https://vibeoracle.cloud/sitemap.xml

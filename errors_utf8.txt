@@ -1,0 +1,13 @@
+﻿
+D:\Gemini\Projects\YoutubeOtomation\src\
+EchoForge.WPF\App.xaml.cs(111,2): error 
+CS1513: } expected [D:\Gemini\Projects\Y
+outubeOtomation\src\EchoForge.WPF\EchoFo
+rge.WPF_y5kuhlci_wpftmp.csproj]
+D:\Gemini\Projects\YoutubeOtomation\src\
+EchoForge.WPF\App.xaml.cs(111,2): error 
+CS1513: } expected [D:\Gemini\Projects\Y
+outubeOtomation\src\EchoForge.WPF\EchoFo
+rge.WPF_y5kuhlci_wpftmp.csproj]
+
+
