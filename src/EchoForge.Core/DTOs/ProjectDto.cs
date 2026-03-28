@@ -61,11 +61,31 @@ public class TimelineItemDto : System.ComponentModel.INotifyPropertyChanged
 
     public string Prompt { get; set; } = string.Empty;
     public string ImagePath { get; set; } = string.Empty;
-    public string Transition { get; set; } = string.Empty;
+    private string _transition = string.Empty;
+    public string Transition
+    {
+        get => _transition;
+        set { if (_transition != value) { _transition = value; OnPropertyChanged(); } }
+    }
     
     // Visual effects per scene
-    public double FadeInDuration { get; set; } = 0;
-    public double FadeOutDuration { get; set; } = 0;
+    private double _fadeInDuration = 0;
+    public double FadeInDuration
+    {
+        get => _fadeInDuration;
+        set { if (Math.Abs(_fadeInDuration - value) > 0.001) { _fadeInDuration = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasFadeIn)); } }
+    }
+
+    private double _fadeOutDuration = 0;
+    public double FadeOutDuration
+    {
+        get => _fadeOutDuration;
+        set { if (Math.Abs(_fadeOutDuration - value) > 0.001) { _fadeOutDuration = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasFadeOut)); } }
+    }
+
+    // Helper booleans for UI triggers
+    public bool HasFadeIn => FadeInDuration > 0.05;
+    public bool HasFadeOut => FadeOutDuration > 0.05;
 
     private double _speed = 1.0;
     public double Speed
@@ -73,7 +93,49 @@ public class TimelineItemDto : System.ComponentModel.INotifyPropertyChanged
         get => _speed;
         set { if (Math.Abs(_speed - value) > 0.001) { _speed = value; OnPropertyChanged(); } }
     }
-    public string Filter { get; set; } = "none";
+    
+    private string _filter = "none";
+    public string Filter
+    {
+        get => _filter;
+        set { if (_filter != value) { _filter = value; OnPropertyChanged(); } }
+    }
+
+    // ═══ Color Adjustments (per scene) ═══
+    private double _brightness = 0;
+    public double Brightness
+    {
+        get => _brightness;
+        set { if (Math.Abs(_brightness - value) > 0.001) { _brightness = value; OnPropertyChanged(); } }
+    }
+
+    private double _contrast = 1.0;
+    public double Contrast
+    {
+        get => _contrast;
+        set { if (Math.Abs(_contrast - value) > 0.001) { _contrast = value; OnPropertyChanged(); } }
+    }
+
+    private double _saturation = 1.0;
+    public double Saturation
+    {
+        get => _saturation;
+        set { if (Math.Abs(_saturation - value) > 0.001) { _saturation = value; OnPropertyChanged(); } }
+    }
+
+    private double _temperature = 6500;
+    public double Temperature
+    {
+        get => _temperature;
+        set { if (Math.Abs(_temperature - value) > 1) { _temperature = value; OnPropertyChanged(); } }
+    }
+
+    private double _tint = 0;
+    public double Tint
+    {
+        get => _tint;
+        set { if (Math.Abs(_tint - value) > 0.001) { _tint = value; OnPropertyChanged(); } }
+    }
 
     // UI-only property, not serialized to JSON
     private bool _isSelected;

@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using EchoForge.WPF.ViewModels;
+using EchoForge.Core.DTOs;
 
 namespace EchoForge.WPF.Views;
 
@@ -408,6 +409,12 @@ public partial class EditorView : UserControl
         foreach (var scene in vm.Scenes)
             totalDuration += scene.Duration;
 
+        // Ensure the ruler covers the longest track (Audio or Video)
+        if (vm.AudioDuration > totalDuration)
+        {
+            totalDuration = vm.AudioDuration;
+        }
+
         if (totalDuration <= 0) return;
 
         double canvasWidth = TimeRulerCanvas.ActualWidth;
@@ -416,16 +423,15 @@ public partial class EditorView : UserControl
         double totalTrackWidth = 0;
         double zoom = vm.ZoomScale;
         if (zoom <= 0) zoom = 1.0;
-        foreach (var scene in vm.Scenes)
-        {
-            double w = scene.Duration * 8 * zoom; // matches DurationAndZoomMultiConverter
-            if (w < 60) w = 60;
-            if (w > 1000) w = 1000;
-            totalTrackWidth += w + 26; // +26 for transition arrow & margin
-        }
+        
+        // Calculate total pixels based on the longest duration to maintain consistent pixelsPerSecond
+        totalTrackWidth = totalDuration * 50 * zoom;
+        
+        // We still add some padding at the end for visual comfort
+        totalTrackWidth += 100;
 
         double scrollOffset = TimelineScrollViewer?.HorizontalOffset ?? 0;
-        double pixelsPerSecond = totalTrackWidth / totalDuration;
+        double pixelsPerSecond = (totalTrackWidth - 100) / totalDuration;
 
         // Dynamic intervals based on pixels available
         double maxTicksOnScreen = Math.Max(10, canvasWidth / 70); // spaced ~70px apart
@@ -446,19 +452,15 @@ public partial class EditorView : UserControl
         vm.UpdateTimelineLayoutMetrics(totalTrackWidth, pixelsPerSecond, scrollOffset);
 
         // Update Audio Track Width
-        if (AudioTrackBackground != null && AudioClipBlock != null)
-        {
-            AudioTrackBackground.Width = Math.Max(0, totalTrackWidth);
-            AudioClipBlock.Width = Math.Max(0, totalTrackWidth);
-        }
+        // Audio track visuals are handled by XAML bindings now
 
         for (double t = 0; t <= totalDuration; t += tickIntervalSec)
         {
             // Floating point precision fix to avoid 0.3000000004
             t = Math.Round(t, 2);
 
-            double x = (t * pixelsPerSecond) - scrollOffset + 60; // +60 offset for left labels
-            if (x < 0 || x > canvasWidth + 40) continue;
+            double x = (t * pixelsPerSecond) - scrollOffset; // Removed +60
+            if (x < -20 || x > canvasWidth + 20) continue;
 
             // Tick line
             var line = new System.Windows.Shapes.Line
@@ -494,8 +496,8 @@ public partial class EditorView : UserControl
             double subTickInterval = tickIntervalSec / 5.0; // 5 sub-sections
             for (double st = t + subTickInterval; st < t + tickIntervalSec - (subTickInterval/2) && st <= totalDuration; st += subTickInterval)
             {
-                double sx = (st * pixelsPerSecond) - scrollOffset + 60;
-                if (sx < 0 || sx > canvasWidth + 40) continue;
+                double sx = (st * pixelsPerSecond) - scrollOffset; // Removed +60
+                if (sx < -20 || sx > canvasWidth + 20) continue;
                 var subLine = new System.Windows.Shapes.Line
                 {
                     X1 = sx, X2 = sx,
@@ -514,14 +516,15 @@ public partial class EditorView : UserControl
     {
         _isDraggingPlayhead = true;
         TimeRulerCanvas.CaptureMouse();
-        HandleSeek(e.GetPosition(TimeRulerCanvas).X);
+        // TimeRulerCanvas is relative to viewport. Add scrollOffset to get absolute pixel.
+        HandleSeek(e.GetPosition(TimeRulerCanvas).X + (TimelineScrollViewer?.HorizontalOffset ?? 0));
     }
 
     private void TimeRulerCanvas_MouseMove(object sender, MouseEventArgs e)
     {
         if (_isDraggingPlayhead && e.LeftButton == MouseButtonState.Pressed)
         {
-            HandleSeek(e.GetPosition(TimeRulerCanvas).X);
+            HandleSeek(e.GetPosition(TimeRulerCanvas).X + (TimelineScrollViewer?.HorizontalOffset ?? 0));
         }
     }
 
@@ -533,22 +536,21 @@ public partial class EditorView : UserControl
 
     private void TrackGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        // Don't seek if they clicked exactly on a scene block (let the block handle selection)
-        // If they click empty space, we seek.
+        // Don't seek if they clicked exactly on a scene block
         if (e.OriginalSource is FrameworkElement fe && fe.DataContext is EchoForge.Core.DTOs.TimelineItemDto)
             return;
 
         _isDraggingPlayhead = true;
         TrackGrid.CaptureMouse();
-        // Since scroll viewer shifts content, we need the position relative to the grid itself, but adjusting for 60px padding
-        HandleSeek(e.GetPosition(TrackGrid).X - (TimelineScrollViewer?.HorizontalOffset ?? 0));
+        // TrackGrid is inside ScrollViewer. Position IS absolute!
+        HandleSeek(e.GetPosition(TrackGrid).X); 
     }
 
     private void TrackGrid_MouseMove(object sender, MouseEventArgs e)
     {
         if (_isDraggingPlayhead && e.LeftButton == MouseButtonState.Pressed)
         {
-            HandleSeek(e.GetPosition(TrackGrid).X - (TimelineScrollViewer?.HorizontalOffset ?? 0));
+            HandleSeek(e.GetPosition(TrackGrid).X);
         }
     }
 
@@ -558,14 +560,12 @@ public partial class EditorView : UserControl
         TrackGrid.ReleaseMouseCapture();
     }
 
-    private void HandleSeek(double clientX)
+    private void HandleSeek(double absoluteX)
     {
         if (DataContext is EditorViewModel vm)
         {
-            // Remove the 60px left padding offset from the visual calculation
-            double localX = clientX - 60 + (TimelineScrollViewer?.HorizontalOffset ?? 0);
-            if (localX < 0) localX = 0;
-            vm.SeekToPixelPosition(localX);
+            if (absoluteX < 0) absoluteX = 0;
+            vm.SeekToPixelPosition(absoluteX);
         }
     }
 
@@ -592,24 +592,32 @@ public partial class EditorView : UserControl
     {
         if (!_isResizingScene || _resizingScene == null) return;
         
+        if (e.LeftButton == MouseButtonState.Released)
+        {
+            _isResizingScene = false;
+            _resizingScene = null;
+            if (sender is FrameworkElement fe) fe.ReleaseMouseCapture();
+            
+            if (DataContext is EditorViewModel viewModel) viewModel.UpdateTotalDuration();
+            return;
+        }
+
         var vm = DataContext as EditorViewModel;
         if (vm == null) return;
 
         Point currentPos = e.GetPosition(TrackGrid);
         double deltaX = currentPos.X - _resizeStartPoint.X;
         
-        // Zoom formula: pixelWidth = duration * 8 * zoomScale
-        // deltaDuration = deltaX / (8 * zoomScale)
+        // Zoom formula: pixelWidth = duration * 50 * zoomScale
+        // deltaDuration = deltaX / (50 * zoomScale)
         double zoom = vm.ZoomScale > 0 ? vm.ZoomScale : 1.0;
-        double deltaDuration = deltaX / (8.0 * zoom);
+        double deltaDuration = deltaX / (50.0 * zoom);
         
         double newDuration = _resizeStartDuration + deltaDuration;
         
-        // Boundaries
-        if (newDuration < 0.5) newDuration = 0.5; // absolute minimum duration
-        if (newDuration > 120.0) newDuration = 120.0; // absolute maximum per scene
+        if (newDuration < 1.0) newDuration = 1.0; 
         
-        // Snap to 0.1s increments for neatness visually
+        // 0.1 saniye hassasiyetli yuvarlama
         newDuration = Math.Round(newDuration * 10) / 10.0;
         
         // Only update if changed
@@ -617,9 +625,9 @@ public partial class EditorView : UserControl
         {
             _resizingScene.Duration = newDuration;
             
-            // The Duration setter in TimelineItemDto fires PropertyChanged, 
-            // so the binding in the UI auto-updates (Width + InfoBar).
-            // Just refresh the ruler.
+            // Eğer Trim esnasında toplam süre uzuyorsa, AudioTrack de ona göre ScrollArea açmalı. 
+            // Bu sebeple UpdateTotalDuration tetiklenmeli fakat performansı yormamalı
+            vm.UpdateTotalDuration();
             DrawTimeRuler();
         }
     }
@@ -639,6 +647,195 @@ public partial class EditorView : UserControl
             {
                 vm.UpdateTotalDuration(); 
             }
+        }
+    }
+
+    // --- AUDIO TRACK EDGE DRAGGING (TRIM) ---
+    private bool _isResizingAudio = false;
+    private Point _resizeAudioStartPoint;
+    private double _resizeAudioStartDuration;
+
+    private void AudioRightEdge_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe && DataContext is EditorViewModel vm)
+        {
+            _isResizingAudio = true;
+            _resizeAudioStartDuration = vm.AudioDuration;
+            _resizeAudioStartPoint = e.GetPosition(AudioTrackGrid);
+            fe.CaptureMouse();
+            e.Handled = true;
+        }
+    }
+
+    private void AudioRightEdge_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (!_isResizingAudio) return;
+        
+        if (e.LeftButton == MouseButtonState.Released)
+        {
+            _isResizingAudio = false;
+            if (sender is FrameworkElement fe) fe.ReleaseMouseCapture();
+            
+            if (DataContext is EditorViewModel viewModel) viewModel.UpdateTotalDuration();
+            return;
+        }
+
+        var vm = DataContext as EditorViewModel;
+        if (vm == null) return;
+
+        Point currentPos = e.GetPosition(AudioTrackGrid);
+        double deltaX = currentPos.X - _resizeAudioStartPoint.X;
+        
+        double zoom = vm.ZoomScale > 0 ? vm.ZoomScale : 1.0;
+        double deltaDuration = deltaX / (50.0 * zoom);
+        
+        double newDuration = _resizeAudioStartDuration + deltaDuration;
+        
+        if (newDuration < 1.0) newDuration = 1.0;
+        newDuration = Math.Round(newDuration * 10) / 10.0;
+        
+        if (Math.Abs(vm.AudioDuration - newDuration) > 0.05)
+        {
+            vm.AudioDuration = newDuration;
+            DrawTimeRuler();
+        }
+    }
+
+    private void AudioRightEdge_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isResizingAudio && sender is FrameworkElement fe)
+        {
+            _isResizingAudio = false;
+            fe.ReleaseMouseCapture();
+            e.Handled = true;
+            
+            if (DataContext is EditorViewModel vm)
+                vm.SaveHistoryState();
+        }
+    }
+
+    // ═══ SIDEBAR TAB SWITCHING ═══
+    private void SidebarTab_Click(object sender, RoutedEventArgs e)
+    {
+        // Hide all panels
+        PanelProperties.Visibility = Visibility.Collapsed;
+        PanelEffects.Visibility = Visibility.Collapsed;
+
+        // Show selected based on which RadioButton was clicked
+        if (sender == TabProperties) 
+        {
+            PanelProperties.Visibility = Visibility.Visible;
+        }
+        else if (sender == TabEffects) 
+        {
+            PanelEffects.Visibility = Visibility.Visible;
+        }
+    }
+
+    // ═══ EFFECT CARD CLICK & DRAG ═══
+    private void EffectCard_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.Tag is string effectTag)
+        {
+            var vm = DataContext as EditorViewModel;
+            if (vm?.SelectedScene != null)
+            {
+                vm.SelectedScene.Filter = effectTag;
+                PlayTransitionPreview(effectTag);
+            }
+        }
+    }
+
+    private void EffectCard_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed && sender is FrameworkElement fe && fe.Tag is string effectTag)
+        {
+            DragDrop.DoDragDrop(fe, new DataObject("EffectOrFilter", effectTag), DragDropEffects.Copy);
+        }
+    }
+
+    private void TransitionCard_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed && sender is FrameworkElement fe && fe.Tag is string transitionTag)
+        {
+            DragDrop.DoDragDrop(fe, new DataObject("Transition", transitionTag), DragDropEffects.Copy);
+        }
+    }
+
+    // ═══ SCENE DROP TARGET ═══
+    private void Scene_Drop(object sender, DragEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is TimelineItemDto scene)
+        {
+            var vm = DataContext as EditorViewModel;
+            if (vm != null)
+            {
+                // Optionally auto-select the scene that received the drop
+                vm.SelectedScene = scene;
+
+                if (e.Data.GetDataPresent("EffectOrFilter"))
+                {
+                    string effectTag = e.Data.GetData("EffectOrFilter") as string;
+                    if (!string.IsNullOrEmpty(effectTag))
+                    {
+                        scene.Filter = effectTag;
+                    }
+                }
+                else if (e.Data.GetDataPresent("Transition"))
+                {
+                    string transitionTag = e.Data.GetData("Transition") as string;
+                    if (!string.IsNullOrEmpty(transitionTag))
+                    {
+                        scene.Transition = transitionTag;
+                    }
+                }
+            }
+        }
+    }
+
+    // ═══ AUDIO TRACK DROP TARGET (From Windows File Explorer or Internal) ═══
+    private void AudioTrack_Drop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files != null && files.Length > 0)
+            {
+                var audioFile = files[0];
+                var vm = DataContext as EditorViewModel;
+                if (vm != null && (audioFile.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) || 
+                                   audioFile.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)))
+                {
+                    vm.SetAudioFile(audioFile);
+                }
+            }
+        }
+    }
+
+    // ═══ SPEED PRESET BUTTONS ═══
+    private void SpeedPreset_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.Tag is string tag)
+        {
+            var vm = DataContext as EditorViewModel;
+            if (vm?.SelectedScene != null && double.TryParse(tag, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double speed))
+            {
+                vm.SelectedScene.Speed = speed;
+            }
+        }
+    }
+
+    // ═══ RESET COLORS ═══
+    private void ResetColors_Click(object sender, RoutedEventArgs e)
+    {
+        var vm = DataContext as EditorViewModel;
+        if (vm?.SelectedScene != null)
+        {
+            vm.SelectedScene.Brightness = 0;
+            vm.SelectedScene.Contrast = 1.0;
+            vm.SelectedScene.Saturation = 1.0;
+            vm.SelectedScene.Temperature = 6500;
+            vm.SelectedScene.Tint = 0;
         }
     }
 }

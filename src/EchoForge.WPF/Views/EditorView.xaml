@@ -59,8 +59,9 @@
         <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="400"/>
-                <ColumnDefinition Width="400"/>
+                <ColumnDefinition Width="*" MinWidth="200"/>
+                <ColumnDefinition Width="340"/>
+                <ColumnDefinition Width="64"/>
             </Grid.ColumnDefinitions>
 
             <!-- ──── LEFT: PREVIEW AREA & PLAYBACK ──── -->
@@ -88,14 +89,14 @@
                                         <Image.Style>
                                             <Style TargetType="Image">
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ActiveScene.Filter}" Value="blur">
+                                                    <DataTrigger Binding="{Binding SelectedScene.Filter}" Value="blur">
                                                         <Setter Property="Effect">
                                                             <Setter.Value>
                                                                 <BlurEffect Radius="20" KernelType="Gaussian"/>
                                                             </Setter.Value>
                                                         </Setter>
                                                     </DataTrigger>
-                                                    <DataTrigger Binding="{Binding ActiveScene.Filter}" Value="grayscale">
+                                                    <DataTrigger Binding="{Binding SelectedScene.Filter}" Value="grayscale">
                                                         <!-- WPF no native grayscale effect, simulate with simple opacity drop to trick the eye, or leave as null for now -->
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -218,16 +219,9 @@
             <Border Grid.Column="1" Background="#12161F" Margin="4,8,8,8" CornerRadius="12">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="20,16">
-                        <!-- Properties Header with gradient accent -->
-                        <Border CornerRadius="10" Padding="14,10" Margin="0,0,0,16">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#1A8B5CF6" Offset="0"/>
-                                    <GradientStop Color="#05FFFFFF" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Properties]}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC"/>
-                        </Border>
+
+                        <!-- ════ PANEL: PROPERTIES ════ -->
+                        <StackPanel x:Name="PanelProperties">
 
                         <!-- ═══════ PROJECT SETTINGS (shown when NO scene selected) ═══════ -->
                         <StackPanel Visibility="{Binding SelectedScene, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Inverse}">
@@ -629,6 +623,66 @@
                                 </Grid>
                             </Border>
                         </StackPanel>
+                        </StackPanel> <!-- End PanelProperties -->
+
+                        <!-- ════ PANEL: EFFECTS ════ -->
+                        <StackPanel x:Name="PanelEffects" Visibility="Collapsed">
+                            <!-- Effects Header -->
+                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#1A1040" Offset="0"/>
+                                        <GradientStop Color="#0F172A" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel>
+                                    <TextBlock Text="Görsel Efektler" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Efektleri kliplerin üzerine sürükleyip bırakabilirsiniz." FontSize="11" Foreground="#64748B" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <UniformGrid Columns="2" Margin="-4,0,-4,0">
+                                <!-- Blur Effect Card -->
+                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="blur" MouseMove="EffectCard_MouseMove">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="💧" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Bulanıklık" Foreground="#3B82F6" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- Sepia Effect Card -->
+                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="sepia" MouseMove="EffectCard_MouseMove">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="🟤" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Sepya" Foreground="#D97706" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Vintage Effect Card -->
+                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="vintage" MouseMove="EffectCard_MouseMove">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="🎞️" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Vintage" Foreground="#8B5CF6" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Cool Effect Card -->
+                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="cool" MouseMove="EffectCard_MouseMove">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="❄️" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Soğuk (Mavi)" Foreground="#0EA5E9" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <!-- Warm Effect Card -->
+                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="warm" MouseMove="EffectCard_MouseMove">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="🔥" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Sıcak" Foreground="#F97316" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                        </StackPanel>
 
                         <!-- Loading Indicator -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,24,0,0"
@@ -641,6 +695,31 @@
                                    Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibility}}"/>
                     </StackPanel>
                 </ScrollViewer>
+            </Border>
+
+            <!-- ──── FAR RIGHT: VERTICAL NAVBAR (Clipchamp style) ──── -->
+            <Border Grid.Column="2" Background="#0A0D14" BorderBrush="#1A1F2B" BorderThickness="1,0,0,0">
+                <StackPanel Margin="0,16,0,0" HorizontalAlignment="Center">
+                    <!-- Tabbox: Properties -->
+                    <RadioButton x:Name="TabProperties" Tag="🎛️" ToolTip="Özellikler (Properties)" 
+                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"
+                                 IsChecked="True" Click="SidebarTab_Click"/>
+                    
+                    <!-- Tabbox: Effects -->
+                    <RadioButton x:Name="TabEffects" Tag="✨" ToolTip="Görsel Efektler (Effects)" 
+                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"
+                                 Click="SidebarTab_Click"/>
+
+                    <!-- Dummy Tabboxes to complete the Clipchamp look -->
+                    <RadioButton Tag="🔄" ToolTip="Geçişler (Transitions)" 
+                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"/>
+                    
+                    <RadioButton Tag="📁" ToolTip="Medya (Media)" 
+                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"/>
+
+                    <RadioButton Tag="🎵" ToolTip="Ses &amp; Müzik (Audio)" 
+                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"/>
+                </StackPanel>
             </Border>
         </Grid>
 
@@ -706,7 +785,6 @@
                     <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VideoTrack]}" FontSize="11" Foreground="#94A3B8" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Track]}" FontSize="10" Foreground="#4A5568"/>
                 </StackPanel>
-
                 <!-- Scrollable Timeline Track with Playhead Overlay -->
                 <Grid>
                     <ScrollViewer x:Name="TimelineScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
@@ -721,7 +799,6 @@
 
                             <!-- Scene blocks -->
                             <ItemsControl ItemsSource="{Binding Scenes}" Height="110" VerticalAlignment="Top"
-                                          dd:DragDrop.IsDragSource="True"
                                           dd:DragDrop.IsDropTarget="True"
                                           dd:DragDrop.DropHandler="{Binding}">
                                 <ItemsControl.ItemsPanel>
@@ -735,13 +812,14 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- Scene Block -->
-                                            <Border Grid.Column="0" MinWidth="12" MaxWidth="1000"
+                                            <!-- Scene Block Wrapper -->
+                                            <Border Grid.Column="0" MinWidth="12"
                                                     CornerRadius="6"
                                                     BorderBrush="#5A6FFF" BorderThickness="1.5"
-                                                    Cursor="Hand" Margin="2,4,0,4">
+                                                    Margin="2,4,0,4">
                                                 <Border.Background>
                                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                                         <GradientStop Color="#2A1B4D" Offset="0"/>
@@ -751,71 +829,275 @@
                                                 <Border.Width>
                                                     <MultiBinding Converter="{StaticResource DurationAndZoomMultiConverter}">
                                                         <Binding Path="Duration"/>
-                                                        <Binding Path="DataContext.ZoomScale" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                        <Binding Path="DataContext.ZoomScale" RelativeSource="{RelativeSource AncestorType={x:Type UserControl}}"/>
                                                     </MultiBinding>
                                                 </Border.Width>
-                                                <Border.InputBindings>
-                                                    <MouseBinding MouseAction="LeftClick"
-                                                                  Command="{Binding DataContext.SelectSceneCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                                  CommandParameter="{Binding}"/>
-                                                </Border.InputBindings>
                                                 
                                                 <!-- Selected outline trigger -->
                                                 <Border.Style>
                                                     <Style TargetType="Border">
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                                <Setter Property="BorderBrush" Value="#A855F7"/>
                                                                 <Setter Property="BorderThickness" Value="2"/>
+                                                                <Setter Property="BorderBrush" Value="#60A5FA"/>
+                                                                <Setter Property="Background" Value="#335A6FFF"/>
                                                             </DataTrigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#335A6FFF"/>
+                                                            </Trigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Border.Style>
 
-                                                <Grid x:Name="SceneInnerGrid">
+                                                <!-- 
+                                                   CORE FIX: GongSolutions DragSource is strictly isolated to the Inner Grid 
+                                                   so it doesn't accidentally steal MouseDown events belonging to the resize handles.
+                                                -->
+                                                <Grid x:Name="SceneInnerGrid" Cursor="Hand"
+                                                      dd:DragDrop.IsDragSource="True"
+                                                      dd:DragDrop.DragDropContext="TimelineScene"
+                                                      AllowDrop="True" Drop="Scene_Drop">
+                                                    
+                                                    <Grid.InputBindings>
+                                                        <MouseBinding MouseAction="LeftClick"
+                                                                      Command="{Binding DataContext.SelectSceneCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                      CommandParameter="{Binding}"/>
+                                                    </Grid.InputBindings>
+
                                                     <Grid.RowDefinitions>
-                                                        <RowDefinition Height="60"/>
+                                                        <RowDefinition Height="Auto"/>
                                                         <RowDefinition Height="*"/>
                                                     </Grid.RowDefinitions>
-                                                    <!-- Thumbnail -->
-                                                    <Border Grid.Row="0" CornerRadius="5,5,0,0" ClipToBounds="True" Background="#1E232B">
-                                                        <Image Source="{Binding ImagePath}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+
+                                                    <!-- Top bar of scene block (Scene number, Duration, Badges) -->
+                                                    <Border Grid.Row="0" Background="#4D5A6FFF" Padding="4,2" CornerRadius="4,4,0,0">
+                                                        <StackPanel Orientation="Horizontal" ClipToBounds="True">
+                                                            <TextBlock Text="{Binding SceneNumber, StringFormat='Scene {0}'}" FontSize="10" Foreground="#E2E8F0" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding DurationStr}" FontSize="9" Foreground="#94A3B8" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                            
+                                                            <!-- Filter/Effect Badge -->
+                                                            <Border Margin="6,0,0,0" Padding="4,1" CornerRadius="4" VerticalAlignment="Center">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                        <Setter Property="Background" Value="#333B82F6"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="none">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="{x:Null}">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="blur">
+                                                                                <Setter Property="Background" Value="#553B82F6"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="sepia">
+                                                                                <Setter Property="Background" Value="#55D97706"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="vintage">
+                                                                                <Setter Property="Background" Value="#558B5CF6"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="cool">
+                                                                                <Setter Property="Background" Value="#550EA5E9"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="warm">
+                                                                                <Setter Property="Background" Value="#55F97316"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="grayscale">
+                                                                                <Setter Property="Background" Value="#55888888"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="highcontrast">
+                                                                                <Setter Property="Background" Value="#55FFFFFF"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Filter}" Value="vignette">
+                                                                                <Setter Property="Background" Value="#55333333"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <TextBlock Text="{Binding Filter}" FontSize="9" Foreground="#F8FAFC" FontWeight="SemiBold"/>
+                                                            </Border>
+
+                                                            <!-- FadeIn Badge -->
+                                                            <Border Margin="4,0,0,0" Padding="3,1" CornerRadius="4" Background="#3310B981" VerticalAlignment="Center">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding HasFadeIn}" Value="True">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <TextBlock Text="⬆ IN" FontSize="8" Foreground="#10B981" FontWeight="Bold"/>
+                                                            </Border>
+
+                                                            <!-- FadeOut Badge -->
+                                                            <Border Margin="4,0,0,0" Padding="3,1" CornerRadius="4" Background="#33EC4899" VerticalAlignment="Center">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding HasFadeOut}" Value="True">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <TextBlock Text="⬇ OUT" FontSize="8" Foreground="#EC4899" FontWeight="Bold"/>
+                                                            </Border>
+                                                        </StackPanel>
                                                     </Border>
-                                                    <!-- Info bar -->
-                                                    <Border Grid.Row="1" Padding="8,4" Background="#0AFFFFFF" CornerRadius="0,0,5,5">
-                                                        <Grid>
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <StackPanel Grid.Column="0">
-                                                                <TextBlock Text="{Binding SceneNumber, StringFormat='Scene {0}'}" FontSize="11" FontWeight="Bold" Foreground="#F8FAFC"/>
-                                                                <TextBlock Text="{Binding DurationStr, StringFormat='⏳ {0}'}" FontSize="9" Foreground="#94A3B8"/>
-                                                            </StackPanel>
-                                                            <TextBlock Grid.Column="1" Text="{Binding Transition}" FontSize="9" Foreground="#10B981" 
-                                                                       FontStyle="Italic" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                                                        </Grid>
-                                                    </Border>
-                                                    
-                                                    <!-- Trim Handle (Right Edge) -->
-                                                    <Border Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Right" Width="8" Background="Transparent"
-                                                            Cursor="SizeWE" ToolTip="Drag to change duration"
-                                                            MouseLeftButtonDown="SceneRightEdge_MouseLeftButtonDown"
-                                                            MouseMove="SceneRightEdge_MouseMove"
-                                                            MouseLeftButtonUp="SceneRightEdge_MouseLeftButtonUp"
-                                                            Tag="{Binding}">
-                                                        <!-- Visual Handle Indicator -->
-                                                        <Border Width="4" HorizontalAlignment="Right" Background="#33FFFFFF" CornerRadius="2" Margin="0,15,2,15"/>
-                                                    </Border>
+
+                                                    <!-- Main content of scene block (Thumbnail, info, effect overlays) -->
+                                                    <Grid Grid.Row="1" ClipToBounds="True">
+                                                        <!-- Base content -->
+                                                        <Border Padding="4,4" CornerRadius="0,0,4,4">
+                                                            <Grid>
+                                                                <Image Source="{Binding ImagePath}" Stretch="UniformToFill" HorizontalAlignment="Left" Width="50" Opacity="0.6"/>
+                                                                <TextBlock Text="{Binding Prompt}" FontSize="9" Foreground="#CBD5E1" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="54,0,0,0" VerticalAlignment="Center"/>
+                                                            </Grid>
+                                                        </Border>
+
+                                                        <!-- Effect color accent stripe (left edge) -->
+                                                        <Border Width="4" HorizontalAlignment="Left" CornerRadius="0,0,0,4">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="Transparent"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="blur">
+                                                                            <Setter Property="Background" Value="#3B82F6"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="sepia">
+                                                                            <Setter Property="Background" Value="#D97706"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="vintage">
+                                                                            <Setter Property="Background" Value="#8B5CF6"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="cool">
+                                                                            <Setter Property="Background" Value="#0EA5E9"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="warm">
+                                                                            <Setter Property="Background" Value="#F97316"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="grayscale">
+                                                                            <Setter Property="Background" Value="#888888"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="highcontrast">
+                                                                            <Setter Property="Background" Value="#FFFFFF"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Filter}" Value="vignette">
+                                                                            <Setter Property="Background" Value="#333333"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                        </Border>
+
+                                                        <!-- FadeIn gradient overlay (green, left edge) -->
+                                                        <Border Width="30" HorizontalAlignment="Left" Opacity="0.7">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding HasFadeIn}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <Border.Background>
+                                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                                    <GradientStop Color="#6610B981" Offset="0"/>
+                                                                    <GradientStop Color="#0010B981" Offset="1"/>
+                                                                </LinearGradientBrush>
+                                                            </Border.Background>
+                                                        </Border>
+
+                                                        <!-- FadeOut gradient overlay (pink, right edge) -->
+                                                        <Border Width="30" HorizontalAlignment="Right" Opacity="0.7">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding HasFadeOut}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <Border.Background>
+                                                                <LinearGradientBrush StartPoint="1,0" EndPoint="0,0">
+                                                                    <GradientStop Color="#66EC4899" Offset="0"/>
+                                                                    <GradientStop Color="#00EC4899" Offset="1"/>
+                                                                </LinearGradientBrush>
+                                                            </Border.Background>
+                                                        </Border>
+                                                    </Grid>
                                                 </Grid>
                                             </Border>
 
+                                            <!-- Right resize handle -->
+                                            <Border Grid.Column="1" Width="8" Background="#1AFFFFFF" Cursor="SizeWE"
+                                                    Tag="{Binding}" Margin="-4,4,0,4"
+                                                    ToolTip="Resmi Kırp / Uzat"
+                                                    MouseLeftButtonDown="SceneRightEdge_MouseLeftButtonDown"
+                                                    MouseMove="SceneRightEdge_MouseMove"
+                                                    MouseLeftButtonUp="SceneRightEdge_MouseLeftButtonUp">
+                                                <!-- Visual Handle Grid -->
+                                                <Border Width="4" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20" Background="#66FFFFFF" CornerRadius="2"/>
+                                            </Border>
+
                                             <!-- Transition indicator arrow between scenes -->
-                                            <Border Grid.Column="1" Width="24" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0">
+                                            <Border Grid.Column="2" Width="28" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0">
                                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                    <TextBlock Text="▶" FontSize="10" Foreground="#4A5568" HorizontalAlignment="Center"/>
-                                                    <TextBlock Text="{Binding Transition, FallbackValue=''}" FontSize="7" Foreground="#10B981" 
-                                                               HorizontalAlignment="Center" FontStyle="Italic" TextTrimming="CharacterEllipsis" MaxWidth="24"/>
+                                                    <!-- Glowing Arrow -->
+                                                    <TextBlock Text="▶▶" FontSize="12" HorizontalAlignment="Center" ToolTip="Geçiş (Transition)">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#10B981"/> <!-- Green when active -->
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Transition}" Value="none">
+                                                                        <Setter Property="Foreground" Value="#334A5568"/>
+                                                                        <Setter Property="Text" Value="▶"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Transition}" Value="{x:Null}">
+                                                                        <Setter Property="Foreground" Value="#334A5568"/>
+                                                                        <Setter Property="Text" Value="▶"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Transition}" Value="">
+                                                                        <Setter Property="Foreground" Value="#334A5568"/>
+                                                                        <Setter Property="Text" Value="▶"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    
+                                                    <!-- Transition Name Text -->
+                                                    <TextBlock Text="{Binding Transition}" FontSize="8" Foreground="#10B981" 
+                                                               HorizontalAlignment="Center" FontStyle="Italic" TextTrimming="CharacterEllipsis" MaxWidth="28" Margin="0,2,0,0">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Transition}" Value="none">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Transition}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Transition}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
                                                 </StackPanel>
                                             </Border>
                                         </Grid>
@@ -825,17 +1107,12 @@
                         </Grid>
                     </ScrollViewer>
 
-                    <!-- PLAYHEAD OVERLAY (Vertical Red Line) -->
+                    <!-- PLAYHEAD OVERLAY (Vertical Red Line confined to Video Track) -->
                     <Canvas IsHitTestVisible="False">
                         <!-- Playhead group translated via ViewModel binding -->
-                        <Canvas x:Name="PlayheadGroup">
-                            <Canvas.RenderTransform>
-                                <TranslateTransform X="{Binding PlayheadPixelPosition}" Y="0"/>
-                            </Canvas.RenderTransform>
-                            <!-- Vertical Red Line -->
-                            <Line X1="0" Y1="-28" X2="0" Y2="140" Stroke="#EF4444" StrokeThickness="2"/>
-                            <!-- Top Knob -->
-                            <Polygon Points="-6,-28 6,-28 6,-18 0,-10 -6,-18" Fill="#EF4444"/>
+                        <Canvas x:Name="PlayheadGroup" Canvas.Left="{Binding PlayheadPixelPosition}">
+                            <Path Data="M -5,0 L 5,0 L 5,10 L 0,15 L -5,10 Z" Fill="#ED0B3E"/>
+                            <Line X1="0" Y1="15" X2="0" Y2="140" Stroke="#ED0B3E" StrokeThickness="1.5" Opacity="0.8"/>
                         </Canvas>
                     </Canvas>
                 </Grid>
@@ -845,47 +1122,77 @@
         <!-- ═══════════════ AUDIO TRACK (Multi-track) ═══════════════ -->
         <Border Grid.Row="5" Background="#12161F" BorderBrush="#1A1F2B" BorderThickness="0,1,0,0" Height="50">
             <DockPanel Margin="16,4">
-                <!-- Audio Label + Volume Slider -->
-                <StackPanel DockPanel.Dock="Left" Width="200" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="🔊" FontSize="16" VerticalAlignment="Center" Margin="0,0,6,0"
-                               ToolTip="Ses Kontrolü / Volume Control"/>
-                    <Slider Value="{Binding AudioVolume}" Minimum="0" Maximum="1" Width="100" 
-                            VerticalAlignment="Center" TickFrequency="0.05" IsSnapToTickEnabled="False"
-                            SmallChange="0.05" LargeChange="0.1"
-                            ToolTip="Ses Seviyesi / Volume"/>
-                    <TextBlock Text="{Binding AudioVolume, StringFormat='{}{0:P0}'}" FontSize="10" 
-                               Foreground="#10B981" VerticalAlignment="Center" Margin="6,0,0,0" Width="35"/>
+                <StackPanel DockPanel.Dock="Left" Width="60" Margin="0,0,0,0">
+                    <TextBlock Text="🎵" FontSize="16" Margin="0,4,0,2"/>
+                    <TextBlock Text="Audio" FontSize="11" Foreground="#94A3B8" FontWeight="SemiBold"/>
+                    <TextBlock Text="BGM" FontSize="10" Foreground="#4A5568"/>
                 </StackPanel>
                 
                 <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" 
-                              x:Name="AudioScrollViewer" IsHitTestVisible="False">
+                              x:Name="AudioScrollViewer">
                     <Grid x:Name="AudioTrackGrid" Background="Transparent" MinWidth="{Binding ActualWidth, ElementName=AudioScrollViewer}">
-                        <!-- Audio track background -->
-                        <Border Background="#08FFFFFF" CornerRadius="6" Height="36" VerticalAlignment="Center" HorizontalAlignment="Left" x:Name="AudioTrackBackground"/>
                         
-                        <!-- The Audio Clip Block -->
-                        <Border x:Name="AudioClipBlock" Background="#1A10B981" CornerRadius="4" Height="30" VerticalAlignment="Center" HorizontalAlignment="Left"
-                                BorderBrush="#4D10B981" BorderThickness="1" Cursor="Hand" ToolTip="Background Music">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#3310B981"/>
-                                            <Setter Property="BorderBrush" Value="#8010B981"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <Grid>
-                                <!-- Simulated Waveform Background -->
-                                <Path Fill="#3310B981" Stretch="Fill" Data="M 0,15 L 5,5 L 10,12 L 15,3 L 20,18 L 25,6 L 30,14 L 35,5 L 40,11 L 45,2 L 50,16 L 55,7 L 60,13 L 65,4 L 70,17 L 75,8 L 80,15 L 85,6 L 90,12 L 95,3 L 100,15 Z" Opacity="0.5" VerticalAlignment="Bottom" Height="20"/>
-                                
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0">
-                                    <TextBlock Text="🎵 BGM Track" FontSize="10" Foreground="#10B981" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding TotalDurationDisplay}" FontSize="9" Foreground="#6EE7B7" Margin="8,0,0,0" VerticalAlignment="Center" FontStyle="Italic"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                        <!-- Track background line -->
+                        <Border Background="#08FFFFFF" CornerRadius="6" Height="36" VerticalAlignment="Center" HorizontalAlignment="Left" MinWidth="2000" x:Name="AudioTrackBackground"/>
+                        
+                        <!-- The Audio Clip Wrapper (With Trim Handle) -->
+                        <Grid HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- The Audio Clip Inner Block -->
+                            <Border x:Name="AudioClipBlock" Grid.Column="0" Background="#1A10B981" CornerRadius="4" Height="30"
+                                    BorderBrush="#4D10B981" BorderThickness="1.5" Cursor="Hand" ToolTip="Arka Plan Müziği"
+                                    AllowDrop="True" Drop="AudioTrack_Drop">
+                                <Border.Width>
+                                    <MultiBinding Converter="{StaticResource DurationAndZoomMultiConverter}">
+                                        <Binding Path="AudioDuration" />
+                                        <Binding Path="ZoomScale" />
+                                    </MultiBinding>
+                                </Border.Width>
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#3310B981"/>
+                                                <Setter Property="BorderBrush" Value="#8010B981"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <Grid>
+                                    <!-- Simulated Waveform Background -->
+                                    <Path Fill="#3310B981" Stretch="Fill" Data="M 0,15 L 5,5 L 10,12 L 15,3 L 20,18 L 25,6 L 30,14 L 35,5 L 40,11 L 45,2 L 50,16 L 55,7 L 60,13 L 65,4 L 70,17 L 75,8 L 80,15 L 85,6 L 90,12 L 95,3 L 100,15 Z" Opacity="0.5" VerticalAlignment="Bottom" Height="20" HorizontalAlignment="Left" Width="100"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0" ClipToBounds="True">
+                                        <TextBlock Text="🎵 BGM" FontSize="10" Foreground="#10B981" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding AudioDuration, StringFormat='{} ({0:F1}s)'}" FontSize="9" Foreground="#6EE7B7" Margin="8,0,0,0" VerticalAlignment="Center" FontStyle="Italic"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Audio Right Resize Handle -->
+                            <Border Grid.Column="1" Width="8" Background="#1AFFFFFF" Cursor="SizeWE" Margin="-4,0,0,0"
+                                    ToolTip="Sesi Kırp / Uzat"
+                                    MouseLeftButtonDown="AudioRightEdge_MouseLeftButtonDown"
+                                    MouseLeftButtonUp="AudioRightEdge_MouseLeftButtonUp"
+                                    MouseMove="AudioRightEdge_MouseMove">
+                                <Border Width="4" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20" Background="#66FFFFFF" CornerRadius="2"/>
+                            </Border>
+                        </Grid>
+                        
+                        <!-- Empty spacer so we can scroll past end -->
+                        <Border Width="100" HorizontalAlignment="Right"/>
+
+                        <!-- PLAYHEAD OVERLAY FOR AUDIO TRACK -->
+                        <Canvas IsHitTestVisible="False">
+                            <Canvas Canvas.Left="{Binding PlayheadPixelPosition}">
+                                <Line X1="0" Y1="0" X2="0" Y2="50" Stroke="#ED0B3E" StrokeThickness="1.5" Opacity="0.8"/>
+                            </Canvas>
+                        </Canvas>
                     </Grid>
                 </ScrollViewer>
             </DockPanel>
