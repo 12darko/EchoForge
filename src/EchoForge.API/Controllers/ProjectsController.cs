@@ -88,8 +88,10 @@ public class ProjectsController : ControllerBase
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null) return NotFound();
 
-        if (project.Status != ProjectStatus.AwaitingApproval)
-            return BadRequest("Project is not awaiting approval");
+        if (project.Status != ProjectStatus.AwaitingApproval && 
+            project.Status != ProjectStatus.Uploading &&
+            project.Status != ProjectStatus.Failed)
+            return BadRequest("Project is not in a valid state for approval");
 
         // Queue upload job
         project.Status = ProjectStatus.Uploading;
