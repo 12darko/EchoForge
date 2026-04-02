@@ -50,7 +50,7 @@ public class VideoComposerService : IVideoComposerService
 
         var outputPath = Path.Combine(targetDir, $"echoforge_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
         
-        var tempMainDir = Path.Combine(myDocs, "EchoForge", "Rendering");
+        var tempMainDir = Path.Combine(Path.GetTempPath(), "EchoForge_Rendering");
         var tempDir = Path.Combine(tempMainDir, "temp_" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(tempDir);
 
