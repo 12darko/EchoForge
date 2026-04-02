@@ -88,6 +88,9 @@ public class ProjectsController : ControllerBase
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null) return NotFound();
 
+        if (string.IsNullOrEmpty(project.OutputVideoPath))
+            return BadRequest("Video henüz render edilmedi. Lütfen önce 'Videoyu Oluştur' butonuna basın.");
+
         // Queue upload job
         project.Status = ProjectStatus.Uploading;
         await _projectRepository.UpdateAsync(project);
