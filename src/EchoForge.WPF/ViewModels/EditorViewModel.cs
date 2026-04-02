@@ -855,8 +855,9 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         StatusMessage = "⏳ Proje onaylanıyor...";
         try
         {
-            await _apiClient.ApproveProjectAsync(_project.Id);
-            StatusMessage = "✅ Proje başarıyla kuyruğa alındı!";
+            // Just mark the project as approved (status update only)
+            await _apiClient.UpdateProjectStatusAsync(_project.Id, EchoForge.Core.Models.ProjectStatus.Completed);
+            StatusMessage = "✅ Proje başarıyla onaylandı!";
         }
         catch (Exception ex)
         {
@@ -872,11 +873,34 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     private async Task UploadToYouTubeAsync()
     {
         IsLoading = true;
-        StatusMessage = "⏳ YouTube'a yükleme işlemi başlatılıyor...";
+        StatusMessage = "⏳ YouTube'a yükleme başlatılıyor...";
         try
         {
-            await _apiClient.ApproveProjectAsync(_project.Id);
-            StatusMessage = "🚀 Yayın planına eklendi (Upload kuyruğunda)!";
+            // Check if video file exists locally
+            if (string.IsNullOrEmpty(_project.OutputVideoPath) || !System.IO.File.Exists(_project.OutputVideoPath))
+            {
+                StatusMessage = "❌ Video dosyası bulunamadı. Lütfen önce 'Videoyu Oluştur' butonuna basın.";
+                return;
+            }
+
+            // Upload via server API (server handles YouTube OAuth + upload)
+            var success = await _apiClient.UploadToYouTubeAsync(
+                _project.Id,
+                _project.OutputVideoPath,
+                _project.SeoTitle ?? _project.Title,
+                _project.SeoDescription ?? "",
+                _project.SeoTags ?? "",
+                _project.PrivacyStatus ?? "private");
+
+            if (success)
+            {
+                await _apiClient.UpdateProjectStatusAsync(_project.Id, EchoForge.Core.Models.ProjectStatus.Completed);
+                StatusMessage = "✅ Video başarıyla YouTube'a yüklendi!";
+            }
+            else
+            {
+                StatusMessage = "❌ YouTube yükleme başarısız oldu.";
+            }
         }
         catch (Exception ex)
         {

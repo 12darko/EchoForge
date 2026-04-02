@@ -260,6 +260,32 @@ public class ApiClient
         return null;
     }
 
+    public async Task<bool> UploadToYouTubeAsync(int projectId, string localVideoPath, string title, string description, string tags, string privacyStatus)
+    {
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent(projectId.ToString()), "ProjectId");
+        content.Add(new StringContent(title), "Title");
+        content.Add(new StringContent(description), "Description");
+        content.Add(new StringContent(tags), "Tags");
+        content.Add(new StringContent(privacyStatus), "PrivacyStatus");
+
+        var fileStream = new FileStream(localVideoPath, FileMode.Open, FileAccess.Read);
+        var streamContent = new StreamContent(fileStream);
+        streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("video/mp4");
+        content.Add(streamContent, "VideoFile", Path.GetFileName(localVideoPath));
+
+        // Long timeout for large video uploads
+        using var uploadClient = new HttpClient { BaseAddress = _httpClient.BaseAddress, Timeout = TimeSpan.FromMinutes(30) };
+        foreach (var header in _httpClient.DefaultRequestHeaders)
+        {
+            uploadClient.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
+        }
+
+        var response = await uploadClient.PostAsync("api/projects/upload-youtube", content);
+        await EnsureSuccessOrThrowAsync(response);
+        return true;
+    }
+
     // Users (Admin)
     public async Task<List<UserDto>> GetUsersAsync()
     {

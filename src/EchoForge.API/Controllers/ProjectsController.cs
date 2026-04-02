@@ -88,16 +88,87 @@ public class ProjectsController : ControllerBase
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null) return NotFound();
 
-        if (string.IsNullOrEmpty(project.OutputVideoPath))
-            return BadRequest("Video henüz render edilmedi. Lütfen önce 'Videoyu Oluştur' butonuna basın.");
-
-        // Queue upload job
-        project.Status = ProjectStatus.Uploading;
+        project.Status = ProjectStatus.Completed;
         await _projectRepository.UpdateAsync(project);
-        
-        _jobClient.Enqueue<EchoForge.API.Jobs.JobOrchestrator>(x => x.UploadAsync(id, CancellationToken.None));
-        
         return Ok();
+    }
+
+    [HttpPost("upload-youtube")]
+    [RequestSizeLimit(2_000_000_000)] // 2GB limit for video files
+    [DisableRequestSizeLimit]
+    public async Task<ActionResult> UploadToYouTube(
+        [FromForm] int ProjectId,
+        [FromForm] string Title,
+        [FromForm] string Description,
+        [FromForm] string Tags,
+        [FromForm] string PrivacyStatus,
+        IFormFile VideoFile)
+    {
+        if (VideoFile == null || VideoFile.Length == 0)
+            return BadRequest("Video dosyası bulunamadı.");
+
+        var project = await _projectRepository.GetByIdAsync(ProjectId);
+        if (project == null) return NotFound();
+
+        // Save uploaded video to temp file
+        var tempDir = Path.Combine(Path.GetTempPath(), "EchoForge_Uploads");
+        Directory.CreateDirectory(tempDir);
+        var tempPath = Path.Combine(tempDir, $"{ProjectId}_{Guid.NewGuid()}.mp4");
+
+        try
+        {
+            using (var stream = new FileStream(tempPath, FileMode.Create))
+            {
+                await VideoFile.CopyToAsync(stream);
+            }
+
+            project.Status = ProjectStatus.Uploading;
+            project.OutputVideoPath = tempPath;
+            await _projectRepository.UpdateAsync(project);
+
+            // Get the upload service and perform YouTube upload
+            var uploadService = HttpContext.RequestServices.GetRequiredService<IYouTubeUploadService>();
+            var uploadRequest = new YouTubeUploadRequest
+            {
+                ProjectId = ProjectId,
+                VideoFilePath = tempPath,
+                Title = Title,
+                Description = Description,
+                Tags = Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+                CategoryId = "10",
+                PrivacyStatus = PrivacyStatus
+            };
+
+            var result = await uploadService.UploadVideoAsync(uploadRequest);
+            
+            if (result.Success)
+            {
+                project.YouTubeVideoId = result.VideoId;
+                project.Status = ProjectStatus.Completed;
+                await _projectRepository.UpdateAsync(project);
+                return Ok(new { result.VideoId, result.VideoUrl });
+            }
+            else
+            {
+                project.Status = ProjectStatus.Failed;
+                project.ErrorMessage = result.ErrorMessage;
+                await _projectRepository.UpdateAsync(project);
+                return BadRequest(result.ErrorMessage);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "YouTube upload failed for project {Id}", ProjectId);
+            project.Status = ProjectStatus.Failed;
+            project.ErrorMessage = ex.Message;
+            await _projectRepository.UpdateAsync(project);
+            return StatusCode(500, ex.Message);
+        }
+        finally
+        {
+            // Cleanup temp file
+            try { if (System.IO.File.Exists(tempPath)) System.IO.File.Delete(tempPath); } catch { }
+        }
     }
 
     [HttpPost("{id}/retry")]
