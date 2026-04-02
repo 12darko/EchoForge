@@ -855,9 +855,8 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         StatusMessage = "⏳ Proje onaylanıyor...";
         try
         {
-            // Update project status via API
-            await _apiClient.UpdateProjectStatusAsync(_project.Id, EchoForge.Core.Models.ProjectStatus.Uploading);
-            StatusMessage = "✅ Proje başarıyla onaylandı!";
+            await _apiClient.ApproveProjectAsync(_project.Id);
+            StatusMessage = "✅ Proje başarıyla kuyruğa alındı!";
         }
         catch (Exception ex)
         {
@@ -876,8 +875,7 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         StatusMessage = "⏳ YouTube'a yükleme işlemi başlatılıyor...";
         try
         {
-            // In a real scenario, we would trigger the upload background job here
-            await Task.Delay(1000);
+            await _apiClient.ApproveProjectAsync(_project.Id);
             StatusMessage = "🚀 Yayın planına eklendi (Upload kuyruğunda)!";
         }
         catch (Exception ex)

@@ -263,6 +263,7 @@ public class JobOrchestrator
 
             var uploadRequest = new YouTubeUploadRequest
             {
+                ProjectId = projectId,
                 VideoFilePath = project.OutputVideoPath!,
                 Title = project.SeoTitle ?? project.Title,
                 Description = project.SeoDescription ?? "",
