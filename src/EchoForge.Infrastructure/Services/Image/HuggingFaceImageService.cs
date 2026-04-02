@@ -31,7 +31,6 @@ public class HuggingFaceImageService : IImageGenerationService
     public HuggingFaceImageService(HttpClient httpClient, ILogger<HuggingFaceImageService> logger, IAppSettingsService appSettingsService, string? cacheDir = null)
     {
         _httpClient = httpClient;
-        _httpClient.Timeout = TimeSpan.FromMinutes(5);
         _logger = logger;
         _appSettingsService = appSettingsService;
         _cacheDir = cacheDir ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cache", "images");

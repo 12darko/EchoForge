@@ -119,10 +119,9 @@ public class ClientJobOrchestrator
                 throw new Exception("HuggingFace API key is missing. Please configure it in settings.");
             }
             
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.HuggingFaceKey);
-            
-            var dummySettings = new DummySettingsService(config.HuggingFaceKey);
-            var imageService = new HuggingFaceImageService(_httpClient, NullLogger<HuggingFaceImageService>.Instance, dummySettings);
+            var hfClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+            hfClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.HuggingFaceKey);
+            var imageService = new HuggingFaceImageService(hfClient, NullLogger<HuggingFaceImageService>.Instance, dummySettings);
             var renderSettings = VideoRenderSettings.FromFormatType(project.FormatType, 0, 0);
             renderSettings.FPS = config.VideoFps;
 
@@ -236,6 +235,8 @@ public class ClientJobOrchestrator
         }
         catch (Exception ex)
         {
+            var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt");
+            File.AppendAllText(logPath, $"[{DateTime.Now}] ResumePipelineAsync Error ({projectId}): {ex}\n\n");
             await _apiClient.UpdateProjectStatusAsync(projectId, ProjectStatus.Failed, ex.Message);
         }
     }
