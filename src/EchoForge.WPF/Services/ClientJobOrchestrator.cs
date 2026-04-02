@@ -121,6 +121,7 @@ public class ClientJobOrchestrator
             
             var hfClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
             hfClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.HuggingFaceKey);
+            var dummySettings = new DummySettingsService(config.HuggingFaceKey);
             var imageService = new HuggingFaceImageService(hfClient, NullLogger<HuggingFaceImageService>.Instance, dummySettings);
             var renderSettings = VideoRenderSettings.FromFormatType(project.FormatType, 0, 0);
             renderSettings.FPS = config.VideoFps;
