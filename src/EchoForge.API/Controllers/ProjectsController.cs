@@ -211,8 +211,7 @@ public class ProjectsController : ControllerBase
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null) return NotFound();
 
-        if (project.Status != ProjectStatus.ReviewingScenes)
-            return BadRequest("Project is not in ReviewingScenes status.");
+        // Allow re-rendering of projects regardless of status
 
         project.Status = ProjectStatus.ComposingVideo;
         await _projectRepository.UpdateAsync(project);
@@ -228,8 +227,7 @@ public class ProjectsController : ControllerBase
         if (project == null) return NotFound();
 
         // Allow scene updates during reviewing or before composing starts
-        if (project.Status != ProjectStatus.ReviewingScenes && project.Status != ProjectStatus.ComposingVideo)
-            return BadRequest("Scenes can only be updated while in ReviewingScenes or ComposingVideo status.");
+        // Allow scene updates regardless of status so users can re-render failed/completed projects
 
         project.TimelineJson = System.Text.Json.JsonSerializer.Serialize(updatedScenes);
         project.UpdatedAt = DateTime.UtcNow;
