@@ -95,6 +95,8 @@ public class ProjectsController : ControllerBase
         project.Status = ProjectStatus.Uploading;
         await _projectRepository.UpdateAsync(project);
         
+        _jobClient.Enqueue<EchoForge.API.Jobs.JobOrchestrator>(x => x.UploadAsync(id, CancellationToken.None));
+        
         return Ok();
     }
 
