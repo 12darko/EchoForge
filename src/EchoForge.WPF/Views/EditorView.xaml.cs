@@ -720,6 +720,7 @@ public partial class EditorView : UserControl
         // Hide all panels
         PanelProperties.Visibility = Visibility.Collapsed;
         PanelEffects.Visibility = Visibility.Collapsed;
+        PanelPublish.Visibility = Visibility.Collapsed;
 
         // Show selected based on which RadioButton was clicked
         if (sender == TabProperties) 
@@ -729,6 +730,10 @@ public partial class EditorView : UserControl
         else if (sender == TabEffects) 
         {
             PanelEffects.Visibility = Visibility.Visible;
+        }
+        else if (sender == TabPublish)
+        {
+            PanelPublish.Visibility = Visibility.Visible;
         }
     }
 
@@ -794,6 +799,20 @@ public partial class EditorView : UserControl
     }
 
     // ═══ AUDIO TRACK DROP TARGET (From Windows File Explorer or Internal) ═══
+    private void AudioTrack_DragEnter(object sender, DragEventArgs e)
+    {
+        // Only allow dropping files, deny custom UI effects/transitions
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            e.Effects = DragDropEffects.Copy;
+        }
+        else
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+        }
+    }
+
     private void AudioTrack_Drop(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))

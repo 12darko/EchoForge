@@ -136,9 +136,7 @@ public class DurationToWidthConverter : IValueConverter
 
         if (value is double duration)
         {
-            double width = duration * 8 * zoom;
-            if (width < 60) width = 60;
-            if (width > 1000) width = 1000;
+            double width = duration * 50.0 * zoom;
             return width;
         }
         return 140.0;
@@ -152,7 +150,7 @@ public class DurationToWidthConverter : IValueConverter
 
 /// <summary>
 /// MultiValueConverter: values[0] = Duration (double), values[1] = ZoomScale (double).
-/// Returns pixel width = Duration * 8 * ZoomScale, clamped 60-1000px.
+/// Returns pixel width = Duration * 50 * ZoomScale.
 /// </summary>
 public class DurationAndZoomMultiConverter : IMultiValueConverter
 {
@@ -163,9 +161,7 @@ public class DurationAndZoomMultiConverter : IMultiValueConverter
         if (values.Length > 0 && values[0] is double d) duration = d;
         if (values.Length > 1 && values[1] is double z) zoom = z;
 
-        double width = duration * 8 * zoom;
-        if (width < 60) width = 60;
-        if (width > 1000) width = 1000;
+        double width = duration * 50 * zoom;
         return width;
     }
 

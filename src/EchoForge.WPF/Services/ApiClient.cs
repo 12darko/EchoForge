@@ -249,9 +249,9 @@ public class ApiClient
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<ProjectDto?> RegenerateSceneAsync(int id, int sceneNumber, string prompt)
+    public async Task<ProjectDto?> RegenerateSceneAsync(int id, int sceneNumber, string prompt, int? width = null, int? height = null)
     {
-        var request = new { SceneNumber = sceneNumber, Prompt = prompt };
+        var request = new { SceneNumber = sceneNumber, Prompt = prompt, Width = width, Height = height };
         var response = await _httpClient.PostAsJsonAsync($"api/projects/{id}/scenes/regenerate", request);
         if (response.IsSuccessStatusCode)
         {

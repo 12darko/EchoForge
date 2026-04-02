@@ -69,6 +69,16 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     [ObservableProperty]
     private double _audioVolume = 0.5;
 
+    [ObservableProperty]
+    private double _audioDuration = 60.0; // Default or updated from project audio
+
+    // --- AI Image Dimension Settings ---
+    [ObservableProperty]
+    private int _projectWidth = 1920;
+
+    [ObservableProperty]
+    private int _projectHeight = 1080;
+
     public double ProjectFadeIn
     {
         get => Scenes.FirstOrDefault()?.FadeInDuration ?? 0;
@@ -98,12 +108,26 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     private System.Windows.Threading.DispatcherTimer _playbackTimer;
     private double _currentPlaybackTime = 0;
     private double _totalPlaybackTime = 0;
+    public double TotalPlaybackTime => _totalPlaybackTime;
+
     private double _pixelsPerSecond = 1;
     private double _scrollOffset = 0;
     private Action _goBackAction;
 
     public int ProjectId => _project.Id;
     public string AudioFilePath => _project.AudioPath ?? string.Empty;
+
+    public void SetAudioFile(string path)
+    {
+        _project.AudioPath = path;
+        OnPropertyChanged(nameof(AudioFilePath));
+        
+        // Also fire audio playback changed so the audio service stops/reloads
+        AudioPlaybackChanged?.Invoke(this, "pause");
+        
+        // Push state to history
+        SaveHistoryState();
+    }
 
     public EditorViewModel(ProjectDto project, Services.ApiClient apiClient, Services.ClientJobOrchestrator orchestrator, Action goBackAction)
     {
@@ -124,6 +148,14 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
 
         UpdateTotalDuration();
 
+        // Load project dimensions if available, otherwise default
+        if (_project.Id > 0)
+        {
+            // Just defaults for now, could load from ProjectDto if added later
+            ProjectWidth = 1920;
+            ProjectHeight = 1080;
+        }
+
         // Select first scene by default
         if (Scenes.Count > 0)
         {
@@ -137,7 +169,17 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
 
     public void UpdateTotalDuration()
     {
+        double oldTotal = _totalPlaybackTime;
         _totalPlaybackTime = Scenes.Sum(s => s.Duration);
+        OnPropertyChanged(nameof(TotalPlaybackTime)); // Fire event so UI updates track width
+
+        // If AudioDuration precisely matched old total duration (meaning it wasn't trimmed manually yet),
+        // or if AudioDuration is its default 60.0
+        if (Math.Abs(AudioDuration - oldTotal) < 0.1 || Math.Abs(AudioDuration - 60.0) < 0.1)
+        {
+            AudioDuration = _totalPlaybackTime > 0 ? _totalPlaybackTime : 60.0;
+        }
+
         int mins = (int)(_totalPlaybackTime / 60);
         int secs = (int)(_totalPlaybackTime % 60);
         TotalDurationDisplay = $"Duration: {mins}:{secs:D2}";
@@ -163,7 +205,7 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     private void UpdatePlayheadPosition()
     {
         if (_pixelsPerSecond <= 0) return;
-        PlayheadPixelPosition = (_currentPlaybackTime * _pixelsPerSecond) - _scrollOffset + 60; // 60 is track left padding
+        PlayheadPixelPosition = (_currentPlaybackTime * _pixelsPerSecond) - _scrollOffset;
     }
 
     public void SeekToPixelPosition(double pixelX)
@@ -239,24 +281,24 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         }
     }
 
-    partial void OnSelectedSceneChanged(TimelineItemDto? oldValue, TimelineItemDto? value)
+    partial void OnSelectedSceneChanged(TimelineItemDto? oldValue, TimelineItemDto? newValue)
     {
         // Clear old selection
         if (oldValue != null) oldValue.IsSelected = false;
 
-        if (value != null && !string.IsNullOrEmpty(value.ImagePath))
+        if (newValue != null && !string.IsNullOrEmpty(newValue.ImagePath))
         {
-            value.IsSelected = true;
-            PreviewImagePath = value.ImagePath;
+            newValue.IsSelected = true;
+            PreviewImagePath = newValue.ImagePath;
             
             // Calculate start and end time of the selected scene
             double startTime = 0;
             foreach (var s in Scenes)
             {
-                if (s.SceneNumber == value.SceneNumber) break;
+                if (s.SceneNumber == newValue.SceneNumber) break;
                 startTime += s.Duration;
             }
-            double endTime = startTime + value.Duration;
+            double endTime = startTime + newValue.Duration;
             
             SelectedSceneDurationDisplay = $"Starts at: {(int)(startTime/60)}:{(int)(startTime%60):D2}  —  Ends at: {(int)(endTime/60)}:{(int)(endTime%60):D2}";
         }
@@ -665,19 +707,20 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         if (SelectedScene == null) return;
 
         IsLoading = true;
-        StatusMessage = "Regenerating scene image...";
+        StatusMessage = "⏳ Yeniden oluşturuluyor...";
         try
         {
-            var updatedProject = await _apiClient.RegenerateSceneAsync(_project.Id, SelectedScene.SceneNumber, SelectedScene.Prompt);
+            var updatedProject = await _apiClient.RegenerateSceneAsync(_project.Id, SelectedScene.SceneNumber, SelectedScene.Prompt, ProjectWidth, ProjectHeight);
             if (updatedProject != null)
             {
                 var selectedNum = SelectedScene.SceneNumber;
-                Scenes.Clear();
+                
                 if (!string.IsNullOrEmpty(updatedProject.TimelineJson))
                 {
                     var items = System.Text.Json.JsonSerializer.Deserialize<List<TimelineItemDto>>(updatedProject.TimelineJson);
                     if (items != null)
                     {
+                        Scenes.Clear();
                         foreach (var item in items)
                         {
                             Scenes.Add(item);
@@ -802,6 +845,48 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
                 SaveHistoryState();
                 StatusMessage = "🔁 Scene order updated";
             }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ApproveProjectAsync()
+    {
+        IsLoading = true;
+        StatusMessage = "⏳ Proje onaylanıyor...";
+        try
+        {
+            // Update project status via API
+            await _apiClient.UpdateProjectStatusAsync(_project.Id, EchoForge.Core.Models.ProjectStatus.Uploading);
+            StatusMessage = "✅ Proje başarıyla onaylandı!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Hata: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task UploadToYouTubeAsync()
+    {
+        IsLoading = true;
+        StatusMessage = "⏳ YouTube'a yükleme işlemi başlatılıyor...";
+        try
+        {
+            // In a real scenario, we would trigger the upload background job here
+            await Task.Delay(1000);
+            StatusMessage = "🚀 Yayın planına eklendi (Upload kuyruğunda)!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Hata: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 }

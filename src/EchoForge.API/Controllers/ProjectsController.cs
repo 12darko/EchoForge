@@ -169,6 +169,8 @@ public class ProjectsController : ControllerBase
     {
         public int SceneNumber { get; set; }
         public string Prompt { get; set; } = string.Empty;
+        public int? Width { get; set; }
+        public int? Height { get; set; }
     }
 
     [HttpPost("{id}/scenes/regenerate")]
@@ -194,11 +196,14 @@ public class ProjectsController : ControllerBase
             var imageService = HttpContext.RequestServices.GetRequiredService<IImageGenerationService>();
             var renderSettings = VideoRenderSettings.FromFormatType(project.FormatType, project.CustomWidth, project.CustomHeight);
 
+            int targetWidth = request.Width ?? renderSettings.Width;
+            int targetHeight = request.Height ?? renderSettings.Height;
+
             var newImagePaths = await imageService.GenerateImagesAsync(
                 request.Prompt,
                 1, 
-                renderSettings.Width,
-                renderSettings.Height,
+                targetWidth,
+                targetHeight,
                 project.ImageModel,
                 project.UniqueImageCount,
                 CancellationToken.None);

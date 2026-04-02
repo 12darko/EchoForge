@@ -97,7 +97,12 @@ public class VideoComposerService : IVideoComposerService
                     FadeInDuration = hasTimeline ? timelineItems![i].FadeInDuration : 0,
                     FadeOutDuration = hasTimeline ? timelineItems![i].FadeOutDuration : 0,
                     Filter = hasTimeline ? timelineItems![i].Filter : "none",
-                    Prompt = hasTimeline ? timelineItems![i].Prompt : "Auto-generated scene"
+                    Prompt = hasTimeline ? timelineItems![i].Prompt : "Auto-generated scene",
+                    Brightness = hasTimeline ? timelineItems![i].Brightness : 0,
+                    Contrast = hasTimeline ? timelineItems![i].Contrast : 1.0,
+                    Saturation = hasTimeline ? timelineItems![i].Saturation : 1.0,
+                    Temperature = hasTimeline ? timelineItems![i].Temperature : 6500,
+                    Tint = hasTimeline ? timelineItems![i].Tint : 0
                 });
             }
             var timelineJson = System.Text.Json.JsonSerializer.Serialize(resultTimelineItems);
@@ -257,23 +262,71 @@ public class VideoComposerService : IVideoComposerService
                 sbFilter.Append($",setpts=PTS/{scene.Speed.ToString("F2", CultureInfo.InvariantCulture)}");
             }
 
-            // Per-scene color filter
+            // ═══ Per-scene COLOR FILTER (15 filters matching sidebar) ═══
             var sceneFilter = scene.Filter?.ToLowerInvariant() ?? "none";
-            if (sceneFilter != "none")
+            var filterStr = sceneFilter switch
             {
-                var filterStr = sceneFilter switch
-                {
-                    "grayscale" => ",colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3",
-                    "sepia" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131",
-                    "warm" => ",colortemperature=temperature=6500",
-                    "cool" => ",colortemperature=temperature=3500",
-                    "highcontrast" => ",eq=contrast=1.4:saturation=1.2",
-                    "vintage" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131,vignette=PI/4",
-                    "vignette" => ",vignette=PI/4",
-                    "blur" => ",gblur=sigma=5",
-                    _ => ""
-                };
+                "grayscale" => ",colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3",
+                "sepia" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131",
+                "warm" => ",colortemperature=temperature=6500",
+                "cool" => ",colortemperature=temperature=3500",
+                "highcontrast" => ",eq=contrast=1.4:saturation=1.2",
+                "vintage" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131,vignette=PI/4",
+                "vivid" => ",eq=contrast=1.15:brightness=0.03:saturation=1.5",
+                "dreamy" => ",gblur=sigma=3:steps=1,eq=brightness=0.06:saturation=1.2",
+                "faded" => ",eq=contrast=0.8:brightness=0.08:saturation=0.6",
+                "muted" => ",eq=saturation=0.4:contrast=0.9",
+                "bwfilm" => ",colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3,noise=c0s=8:c0f=t+u,eq=contrast=1.15",
+                "tealorange" => ",colorbalance=rs=0.15:gs=-0.05:bs=-0.15:rh=-0.1:gh=0.05:bh=0.2",
+                "cinematic" => ",eq=contrast=1.2:saturation=1.1:brightness=-0.03,vignette=PI/4",
+                "vignette" => ",vignette=PI/4",
+                "blur" => ",gblur=sigma=5",
+                _ => ""
+            };
+            if (!string.IsNullOrEmpty(filterStr))
                 sbFilter.Append(filterStr);
+
+            // ═══ Per-scene VISUAL EFFECT (12 effects matching sidebar) ═══
+            // Effects are applied as filtergraph elements that add motion/distortion
+            var sceneEffect = scene.Filter?.ToLowerInvariant() ?? "none";
+            // Check if the "Filter" field actually holds an effect name (from EffectCard_Click)
+            var effectStr = sceneEffect switch
+            {
+                "flash" => "", // flash is a transition preview, no per-frame FFmpeg filter
+                "pulse" => "", // pulse is a transition preview
+                "spin" => "",  // spin is a transition preview
+                "vhs" => ",rgbashift=rh=-3:bh=3,noise=c0s=11:c0f=t+u",
+                "glitch" => ",rgbashift=rh=-5:bv=5,noise=c0s=15:c0f=t+u",
+                "vaporwave" => ",eq=saturation=1.6:contrast=1.1,colorbalance=rs=0.3:gs=-0.1:bs=0.2",
+                "chromatic" => ",rgbashift=rh=-2:bh=2:rv=1:bv=-1",
+                "slowzoom" => "", // handled via zoompan separately
+                "crashzoom" => "", // handled via zoompan separately
+                "smoke" => ",gblur=sigma=2:steps=2",
+                _ => ""
+            };
+            // Only add effect if filter wasn't already applied (avoid double-applying)
+            if (!string.IsNullOrEmpty(effectStr) && string.IsNullOrEmpty(filterStr))
+                sbFilter.Append(effectStr);
+
+            // ═══ Per-scene COLOR ADJUSTMENTS (Brightness, Contrast, Saturation, Temperature, Tint) ═══
+            bool hasColorAdj = Math.Abs(scene.Brightness) > 0.001 || Math.Abs(scene.Contrast - 1.0) > 0.01 || Math.Abs(scene.Saturation - 1.0) > 0.01;
+            if (hasColorAdj)
+            {
+                sbFilter.Append($",eq=brightness={scene.Brightness.ToString("F3", CultureInfo.InvariantCulture)}:contrast={scene.Contrast.ToString("F2", CultureInfo.InvariantCulture)}:saturation={scene.Saturation.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+
+            // Temperature (default 6500K — only apply if changed)
+            if (Math.Abs(scene.Temperature - 6500) > 50)
+            {
+                sbFilter.Append($",colortemperature=temperature={scene.Temperature.ToString("F0", CultureInfo.InvariantCulture)}");
+            }
+
+            // Tint (shifts green-magenta axis via colorbalance)
+            if (Math.Abs(scene.Tint) > 0.01)
+            {
+                var tintG = (-scene.Tint * 0.3).ToString("F3", CultureInfo.InvariantCulture);
+                var tintM = (scene.Tint * 0.3).ToString("F3", CultureInfo.InvariantCulture);
+                sbFilter.Append($",colorbalance=gs={tintG}:gm={tintG}:gh={tintG}:rs={tintM}:rm={tintM}:rh={tintM}");
             }
 
             // FadeIn / FadeOut per scene
@@ -292,6 +345,10 @@ public class VideoComposerService : IVideoComposerService
         }
 
         // 3. XFade transitions between scenes
+        // FFmpeg xfade supported: fade, fadeblack, fadewhite, dissolve, 
+        //   wipeleft, wiperight, wipeup, wipedown, slideleft, slideright,
+        //   pixelize, circlecrop, horzopen, vertopen, diagtl, diagtr, diagbl, diagbr,
+        //   smoothleft, smoothright, smoothup, smoothdown, ...
         string lastNode = "[v0]";
         double cumulativeOffset = 0;
         
@@ -303,9 +360,8 @@ public class VideoComposerService : IVideoComposerService
             double offset = cumulativeOffset - transitionDuration;
             if (offset < 0) offset = 0;
 
-            string xfadeEffect = scene.Transition;
-            if (string.IsNullOrWhiteSpace(xfadeEffect) || xfadeEffect == "none") xfadeEffect = "fade";
-            if (xfadeEffect == "zoompan") xfadeEffect = "fade";
+            // Normalize transition name to valid FFmpeg xfade transition
+            string xfadeEffect = NormalizeXfadeTransition(scene.Transition);
 
             sbFilter.Append($"{lastNode}[v{i}]xfade=transition={xfadeEffect}:duration={transitionDuration.ToString("F2", CultureInfo.InvariantCulture)}:offset={offset.ToString("F4", CultureInfo.InvariantCulture)}[f{i}];\n");
             lastNode = $"[f{i}]";
@@ -330,6 +386,41 @@ public class VideoComposerService : IVideoComposerService
         await RunFfmpegAsync(argsBuilder.ToString(), progressCallback, effectiveDuration, cancellationToken);
         
         return outputPath;
+    }
+
+    /// <summary>
+    /// Maps UI transition names to valid FFmpeg xfade transition names.
+    /// FFmpeg supports: fade, fadeblack, fadewhite, dissolve, wipeleft, wiperight, wipeup, wipedown,
+    /// slideleft, slideright, pixelize, circlecrop, horzopen, vertopen, diagtl, diagtr, diagbl, diagbr,
+    /// smoothleft, smoothright, smoothup, smoothdown, radial, etc.
+    /// </summary>
+    private static string NormalizeXfadeTransition(string? transition)
+    {
+        var t = transition?.ToLowerInvariant()?.Trim() ?? "none";
+        return t switch
+        {
+            "none" or "" => "fade",
+            "zoompan" => "fade",
+            "crossfade" => "fade",
+            "diamond" => "radial",          // diamond shape → radial is closest
+            "shake" => "fade",              // no FFmpeg equivalent → fallback
+            "glitch" => "pixelize",         // visual glitch → pixelize
+            "flash" => "fade",              // flash → fade
+            "pulse" => "fade",              // pulse → fade
+            "spin" => "radial",             // spin → radial
+            "blinds" => "horzopen",         // blinds → horizontal open
+            "wipe" => "wipeleft",           // generic wipe → wipe left
+            // Direct FFmpeg xfade names — pass through
+            "fade" or "fadeblack" or "fadewhite" or "dissolve" => t,
+            "wipeleft" or "wiperight" or "wipeup" or "wipedown" => t,
+            "slideleft" or "slideright" => t,
+            "pixelize" or "circlecrop" => t,
+            "horzopen" or "vertopen" => t,
+            "diagtl" or "diagtr" or "diagbl" or "diagbr" => t,
+            "smoothleft" or "smoothright" or "smoothup" or "smoothdown" => t,
+            "radial" => t,
+            _ => "fade" // safe fallback
+        };
     }
 
     private async Task<double> GetAudioDurationAsync(string audioPath, CancellationToken cancellationToken)

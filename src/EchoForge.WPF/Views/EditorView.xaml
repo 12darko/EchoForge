@@ -85,7 +85,7 @@
                                 <!-- The Image & Effects Preview Overlays -->
                                 <Grid Margin="16" Opacity="{Binding PreviewOpacity, FallbackValue=1.0}">
                                     
-                                    <Image Source="{Binding PreviewImagePath}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Image Source="{Binding PreviewImagePath}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality">
                                         <Image.Style>
                                             <Style TargetType="Image">
                                                 <Style.Triggers>
@@ -337,6 +337,14 @@
                             <TextBox Text="{Binding SelectedScene.Prompt, UpdateSourceTrigger=PropertyChanged}" 
                                      Style="{StaticResource ModernTextBox}" Height="90" 
                                      TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,12"/>
+
+                            <!-- Image Dimensions (AI Generation resolution) -->
+                            <TextBlock Text="Görsel Boyutu (Genişlik x Yükseklik)" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBox Text="{Binding DataContext.ProjectWidth, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue=1920}" Style="{StaticResource ModernTextBox}" Width="70" TextAlignment="Center" ToolTip="Genişlik (Piksel)"/>
+                                <TextBlock Text="x" Foreground="#64748B" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0"/>
+                                <TextBox Text="{Binding DataContext.ProjectHeight, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue=1080}" Style="{StaticResource ModernTextBox}" Width="70" TextAlignment="Center" ToolTip="Yükseklik (Piksel)"/>
+                            </StackPanel>
 
                             <!-- Regenerate Scene Image -->
                             <Button Style="{StaticResource SecondaryButton}" 
@@ -684,6 +692,48 @@
                             </UniformGrid>
                         </StackPanel>
 
+                        <!-- ════ PANEL: PUBLISH / APPROVAL ════ -->
+                        <StackPanel x:Name="PanelPublish" Visibility="Collapsed">
+                            <!-- Publish Header -->
+                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#1A1040" Offset="0"/>
+                                        <GradientStop Color="#0F172A" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel>
+                                    <TextBlock Text="Yayınlama ve Onay" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                    <TextBlock Text="Videonuzu onaylayarak YouTube API üzerinden planlanan zamana gönderebilirsiniz." FontSize="11" Foreground="#64748B" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Approve Video Card -->
+                            <Border Background="#1A10B981" BorderBrush="#3310B981" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="✅ Onay Bekliyor (Awaiting Approval)" FontSize="14" FontWeight="Bold" Foreground="#10B981" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Bu proje tamamlandıysa onaylayarak yayın akışına alabilirsiniz." FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                    <Button Content="Projeyi Onayla" Command="{Binding ApproveProjectCommand}" 
+                                            Padding="12,10" FontWeight="Bold" Foreground="#0B0E14" Margin="0,0,0,8" Cursor="Hand">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                                <Setter Property="Background" Value="#10B981"/>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                    <Button Content="YouTube'a Yükle" Command="{Binding UploadToYouTubeCommand}" 
+                                            Padding="12,10" FontWeight="Bold" Cursor="Hand">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                                <Setter Property="Background" Value="#EF4444"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
                         <!-- Loading Indicator -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,24,0,0"
                                     Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
@@ -707,6 +757,11 @@
                     
                     <!-- Tabbox: Effects -->
                     <RadioButton x:Name="TabEffects" Tag="✨" ToolTip="Görsel Efektler (Effects)" 
+                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"
+                                 Click="SidebarTab_Click"/>
+
+                    <!-- Tabbox: Publish / Approve -->
+                    <RadioButton x:Name="TabPublish" Tag="🚀" ToolTip="Yayınla / Onayla (Publish)" 
                                  Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"
                                  Click="SidebarTab_Click"/>
 
@@ -1145,7 +1200,7 @@
                             <!-- The Audio Clip Inner Block -->
                             <Border x:Name="AudioClipBlock" Grid.Column="0" Background="#1A10B981" CornerRadius="4" Height="30"
                                     BorderBrush="#4D10B981" BorderThickness="1.5" Cursor="Hand" ToolTip="Arka Plan Müziği"
-                                    AllowDrop="True" Drop="AudioTrack_Drop">
+                                    AllowDrop="True" Drop="AudioTrack_Drop" DragEnter="AudioTrack_DragEnter">
                                 <Border.Width>
                                     <MultiBinding Converter="{StaticResource DurationAndZoomMultiConverter}">
                                         <Binding Path="AudioDuration" />

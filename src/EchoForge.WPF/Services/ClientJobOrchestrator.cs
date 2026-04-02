@@ -130,8 +130,19 @@ public class ClientJobOrchestrator
             var basePrompt = $"{project.Title}, cinematic lighting, high quality";
             if (!string.IsNullOrWhiteSpace(project.ImageStyle)) basePrompt = $"{project.ImageStyle} style, {basePrompt}";
 
+            // Map target format to HuggingFace SDXL safe resolutions
+            int aiWidth = 1024;
+            int aiHeight = 1024;
+            var formatStr = project.FormatType.ToString();
+            if (formatStr == "Shorts" || formatStr == "Tiktok" || formatStr == "Reels") {
+                aiWidth = 768; aiHeight = 1344;
+            }
+            else if (formatStr == "Standard" || formatStr == "Youtube") {
+                aiWidth = 1344; aiHeight = 768;
+            }
+
             var imagePaths = await imageService.GenerateImagesAsync(
-                basePrompt, targetSceneCount, renderSettings.Width, renderSettings.Height,
+                basePrompt, targetSceneCount, aiWidth, aiHeight,
                 project.ImageModel, targetSceneCount, cancellationToken);
                 
             // Timeline Json creation
