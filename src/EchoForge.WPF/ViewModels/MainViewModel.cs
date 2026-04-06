@@ -35,6 +35,7 @@ public partial class MainViewModel : ObservableObject
     private YouTubeVideosViewModel? _youtubeVideosVm;
     private UsersViewModel? _usersVm;
     private LoginViewModel? _loginVm;
+    private MixViewModel? _mixVm;
 
     [ObservableProperty]
     private bool _isTutorialVisible;
@@ -176,6 +177,15 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void NavigateToMix()
+    {
+        CurrentPage = "Mix";
+        _mixVm ??= new MixViewModel(_apiClient);
+        CurrentView = _mixVm;
+        _mixVm.LoadAvailableTracksCommand.Execute(null);
+    }
+
+    [RelayCommand]
     private void ToggleTutorial()
     {
         if (IsTutorialVisible)
@@ -221,6 +231,11 @@ public partial class MainViewModel : ObservableObject
                 TutorialTitle = "Kullanıcı Yönetimi";
                 TutorialText = "Bu panel sadece Admin kullanıcılarına açıktır.\n\n• Sol taraftaki formdan yeni kullanıcı hesabı oluşturabilirsiniz.\n• Sağ taraftaki listeden mevcut kullanıcıları görüntüleyebilir, devre dışı bırakabilir veya silebilirsiniz.\n• Admin hesabı silinemez.";
                 TutorialIcon = "👥";
+                break;
+            case "Mix":
+                TutorialTitle = "Mix Studio";
+                TutorialText = "Render edilmiş projelerinizi birleştirin!\n\n• Sol tarafta tamamlanmış projeler listelenir — ➕ ile mix sırasına ekleyin.\n• Sağ tarafta mix sırasını düzenleyin, sürükleyin ve sıralayın.\n• 'Otomatik Mix' hedef süreye göre rastgele bir mix oluşturur.\n• 'Mix Render' FFmpeg ile videoları birleştirir.";
+                TutorialIcon = "🎧";
                 break;
             default:
                 TutorialTitle = "Need Help?";

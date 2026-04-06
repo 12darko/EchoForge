@@ -34,6 +34,12 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     private string _statusMessage = "";
 
     [ObservableProperty]
+    private string _outputVideoPath = "";
+
+    [ObservableProperty]
+    private string _youTubeVideoUrl = "";
+
+    [ObservableProperty]
     private string _totalDurationDisplay = "";
 
     [ObservableProperty]
@@ -78,6 +84,47 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
 
     [ObservableProperty]
     private int _projectHeight = 1080;
+
+    [ObservableProperty]
+    private DateTime? _scheduledPublishDate;
+
+    [ObservableProperty]
+    private string _scheduledPublishTime = "18:00";
+
+    partial void OnScheduledPublishDateChanged(DateTime? value)
+    {
+        UpdateProjectScheduledDate();
+    }
+
+    partial void OnScheduledPublishTimeChanged(string value)
+    {
+        UpdateProjectScheduledDate();
+    }
+
+    private void UpdateProjectScheduledDate()
+    {
+        if (ScheduledPublishDate.HasValue)
+        {
+            if (TimeSpan.TryParse(ScheduledPublishTime, out var time))
+            {
+                _project.ScheduledPublishAt = ScheduledPublishDate.Value.Date + time;
+            }
+            else
+            {
+                _project.ScheduledPublishAt = ScheduledPublishDate.Value.Date;
+            }
+        }
+        else
+        {
+            _project.ScheduledPublishAt = null;
+        }
+
+        // Project privacy MUST be private if scheduled
+        if (_project.ScheduledPublishAt.HasValue)
+        {
+            _project.PrivacyStatus = "private";
+        }
+    }
 
     public double ProjectFadeIn
     {
@@ -135,7 +182,17 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         _orchestrator = orchestrator;
         _project = project;
         _projectTitle = project.Title ?? "Untitled Project";
+        _outputVideoPath = project.OutputVideoPath ?? "";
+        _youTubeVideoUrl = !string.IsNullOrEmpty(project.YouTubeVideoId) 
+            ? $"https://youtube.com/watch?v={project.YouTubeVideoId}" 
+            : "";
         _goBackAction = goBackAction;
+
+        if (_project.ScheduledPublishAt.HasValue)
+        {
+            _scheduledPublishDate = _project.ScheduledPublishAt.Value.Date;
+            _scheduledPublishTime = _project.ScheduledPublishAt.Value.ToString("HH:mm");
+        }
 
         _playbackTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
         _playbackTimer.Tick += PlaybackTimer_Tick;
@@ -749,6 +806,126 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         }
     }
 
+    // ─── Replace Scene Image from Local File ───
+    // This event is raised to request the View to open a file dialog
+    public event EventHandler? RequestOpenFileDialog;
+
+    [ObservableProperty]
+    private string _imageUrlInput = "";
+
+    [RelayCommand]
+    private void ReplaceSceneImageFromFile()
+    {
+        if (SelectedScene == null)
+        {
+            StatusMessage = "⚠️ Önce bir sahne seçin.";
+            return;
+        }
+        // Raise event for View to open the file dialog
+        RequestOpenFileDialog?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ApplyReplacementImage(string sourceFilePath)
+    {
+        if (SelectedScene == null || string.IsNullOrEmpty(sourceFilePath)) return;
+
+        try
+        {
+            // Determine the project images directory
+            string projectDir = System.IO.Path.GetDirectoryName(_project.AudioPath) ?? "";
+            string imagesDir = System.IO.Path.Combine(projectDir, "images");
+            if (!System.IO.Directory.Exists(imagesDir))
+            {
+                System.IO.Directory.CreateDirectory(imagesDir);
+            }
+
+            // Copy the file with a unique name
+            string ext = System.IO.Path.GetExtension(sourceFilePath);
+            string newFileName = $"custom_scene{SelectedScene.SceneNumber}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+            string destPath = System.IO.Path.Combine(imagesDir, newFileName);
+
+            System.IO.File.Copy(sourceFilePath, destPath, true);
+
+            // Update the scene
+            SelectedScene.ImagePath = destPath;
+            PreviewImagePath = destPath;
+            OnPropertyChanged(nameof(SelectedScene));
+            SaveHistoryState();
+            StatusMessage = $"✅ Görsel başarıyla değiştirildi!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"❌ Görsel değiştirilemedi: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task ReplaceSceneImageFromUrl()
+    {
+        if (SelectedScene == null)
+        {
+            StatusMessage = "⚠️ Önce bir sahne seçin.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ImageUrlInput))
+        {
+            StatusMessage = "⚠️ Lütfen bir URL girin.";
+            return;
+        }
+
+        IsLoading = true;
+        StatusMessage = "⏳ Görsel indiriliyor...";
+        try
+        {
+            using var httpClient = new System.Net.Http.HttpClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(30);
+            var bytes = await httpClient.GetByteArrayAsync(ImageUrlInput);
+
+            // Determine file extension from URL or default to .jpg
+            string ext = ".jpg";
+            var uri = new Uri(ImageUrlInput);
+            string urlPath = uri.AbsolutePath;
+            if (urlPath.Contains('.'))
+            {
+                string urlExt = System.IO.Path.GetExtension(urlPath).ToLowerInvariant();
+                if (urlExt == ".png" || urlExt == ".jpg" || urlExt == ".jpeg" || urlExt == ".gif" || urlExt == ".webp" || urlExt == ".bmp")
+                {
+                    ext = urlExt;
+                }
+            }
+
+            // Save to project images directory
+            string projectDir = System.IO.Path.GetDirectoryName(_project.AudioPath) ?? "";
+            string imagesDir = System.IO.Path.Combine(projectDir, "images");
+            if (!System.IO.Directory.Exists(imagesDir))
+            {
+                System.IO.Directory.CreateDirectory(imagesDir);
+            }
+
+            string newFileName = $"url_scene{SelectedScene.SceneNumber}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+            string destPath = System.IO.Path.Combine(imagesDir, newFileName);
+
+            await System.IO.File.WriteAllBytesAsync(destPath, bytes);
+
+            // Update the scene
+            SelectedScene.ImagePath = destPath;
+            PreviewImagePath = destPath;
+            OnPropertyChanged(nameof(SelectedScene));
+            SaveHistoryState();
+            ImageUrlInput = "";
+            StatusMessage = $"✅ Görsel URL'den başarıyla indirildi ve uygulandı!";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"❌ URL'den indirilemedi: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
     [RelayCommand]
     private async Task ApplySceneEdits()
     {
@@ -802,7 +979,7 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
             StatusMessage = "🎬 Video rendering started! You can close this editor.";
             EchoForge.WPF.Views.EchoMessageBox.Show("Video rendering has been started locally! The process will run in the background.", "Rendering Started", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);
             
-            // Navigate back to dashboard instead of closing a window wrapper
+            // Navigate back to dashboard
             _goBackAction?.Invoke();
         }
         catch (Exception ex)
@@ -849,6 +1026,60 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     }
 
     [RelayCommand]
+    private void OpenVideoFile()
+    {
+        if (string.IsNullOrEmpty(OutputVideoPath)) return;
+        if (!System.IO.File.Exists(OutputVideoPath))
+        {
+            StatusMessage = "❌ Video dosyası bulunamadı: " + OutputVideoPath;
+            return;
+        }
+        try
+        {
+            // Use explorer /select to highlight the file
+            System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{OutputVideoPath}\"");
+        }
+        catch (Exception ex) { StatusMessage = $"Hata: {ex.Message}"; }
+    }
+
+    [RelayCommand]
+    private void OpenVideoFolder()
+    {
+        if (string.IsNullOrEmpty(OutputVideoPath)) return;
+        var dir = System.IO.Path.GetDirectoryName(OutputVideoPath);
+        if (string.IsNullOrEmpty(dir))
+        {
+            StatusMessage = "❌ Klasör yolu bulunamadı.";
+            return;
+        }
+        if (!System.IO.Directory.Exists(dir))
+        {
+            // Try to create it
+            try { System.IO.Directory.CreateDirectory(dir); } catch { }
+        }
+        try
+        {
+            System.Diagnostics.Process.Start("explorer.exe", $"\"{dir}\"");
+        }
+        catch (Exception ex) { StatusMessage = $"Hata: {ex.Message}"; }
+    }
+
+    [RelayCommand]
+    private void OpenYouTubeLink()
+    {
+        if (string.IsNullOrEmpty(YouTubeVideoUrl)) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = YouTubeVideoUrl,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex) { StatusMessage = $"Hata: {ex.Message}"; }
+    }
+
+    [RelayCommand]
     private async Task ApproveProjectAsync()
     {
         IsLoading = true;
@@ -890,10 +1121,18 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
                 _project.SeoTitle ?? _project.Title,
                 _project.SeoDescription ?? "",
                 _project.SeoTags ?? "",
-                _project.PrivacyStatus ?? "private");
+                _project.PrivacyStatus ?? "private",
+                _project.ScheduledPublishAt);
 
             if (success)
             {
+                // Refresh project from API to get the YouTubeVideoId
+                var updated = await _apiClient.GetProjectAsync(_project.Id);
+                if (updated != null && !string.IsNullOrEmpty(updated.YouTubeVideoId))
+                {
+                    _project.YouTubeVideoId = updated.YouTubeVideoId;
+                    YouTubeVideoUrl = $"https://youtube.com/watch?v={updated.YouTubeVideoId}";
+                }
                 await _apiClient.UpdateProjectStatusAsync(_project.Id, EchoForge.Core.Models.ProjectStatus.Completed);
                 StatusMessage = "✅ Video başarıyla YouTube'a yüklendi!";
             }

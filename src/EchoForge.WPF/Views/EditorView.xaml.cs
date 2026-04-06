@@ -25,6 +25,7 @@ public partial class EditorView : UserControl
                 oldVm.AudioPlaybackChanged -= Vm_AudioPlaybackChanged;
                 oldVm.AudioSeeked -= Vm_AudioSeeked;
                 oldVm.PropertyChanged -= Vm_PropertyChangedForAudio;
+                oldVm.RequestOpenFileDialog -= Vm_RequestOpenFileDialog;
             }
 
             if (e.NewValue is EditorViewModel vm)
@@ -52,6 +53,7 @@ public partial class EditorView : UserControl
                 vm.AudioPlaybackChanged += Vm_AudioPlaybackChanged;
                 vm.AudioSeeked += Vm_AudioSeeked;
                 vm.PropertyChanged += Vm_PropertyChangedForAudio;
+                vm.RequestOpenFileDialog += Vm_RequestOpenFileDialog;
 
                 TryLoadAudio(vm);
                 WatchSceneTransition(vm);
@@ -855,6 +857,22 @@ public partial class EditorView : UserControl
             vm.SelectedScene.Saturation = 1.0;
             vm.SelectedScene.Temperature = 6500;
             vm.SelectedScene.Tint = 0;
+        }
+    }
+
+    private void Vm_RequestOpenFileDialog(object? sender, EventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Sahne Görseli Seç",
+            Filter = "Görsel Dosyaları|*.png;*.jpg;*.jpeg;*.gif;*.webp;*.bmp|Tüm Dosyalar|*.*",
+            Multiselect = false
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            var vm = DataContext as EditorViewModel;
+            vm?.ApplyReplacementImage(dialog.FileName);
         }
     }
 }

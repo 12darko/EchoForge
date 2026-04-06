@@ -48,6 +48,9 @@
         <DataTemplate DataType="{x:Type vm:UsersViewModel}">
             <views:UsersView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MixViewModel}">
+            <views:MixView/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -244,6 +247,14 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🎬" FontSize="16" Margin="0,0,14,0"/>
                                 <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Nav_MyVideos]}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding NavigateToMixCommand}" Margin="0,2"
+                                Style="{StaticResource NavButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🎧" FontSize="16" Margin="0,0,14,0"/>
+                                <TextBlock Text="Mix Studio"/>
                             </StackPanel>
                         </Button>
 

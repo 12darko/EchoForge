@@ -260,7 +260,7 @@ public class ApiClient
         return null;
     }
 
-    public async Task<bool> UploadToYouTubeAsync(int projectId, string localVideoPath, string title, string description, string tags, string privacyStatus)
+    public async Task<bool> UploadToYouTubeAsync(int projectId, string localVideoPath, string title, string description, string tags, string privacyStatus, DateTime? scheduledPublishAt = null)
     {
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(projectId.ToString()), "ProjectId");
@@ -268,6 +268,11 @@ public class ApiClient
         content.Add(new StringContent(description), "Description");
         content.Add(new StringContent(tags), "Tags");
         content.Add(new StringContent(privacyStatus), "PrivacyStatus");
+
+        if (scheduledPublishAt.HasValue)
+        {
+            content.Add(new StringContent(scheduledPublishAt.Value.ToString("o")), "ScheduledPublishAt");
+        }
 
         var fileStream = new FileStream(localVideoPath, FileMode.Open, FileAccess.Read);
         var streamContent = new StreamContent(fileStream);

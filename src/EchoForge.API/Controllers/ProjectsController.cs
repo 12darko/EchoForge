@@ -102,6 +102,7 @@ public class ProjectsController : ControllerBase
         [FromForm] string Description,
         [FromForm] string Tags,
         [FromForm] string PrivacyStatus,
+        [FromForm] string? ScheduledPublishAt,
         IFormFile VideoFile)
     {
         if (VideoFile == null || VideoFile.Length == 0)
@@ -136,7 +137,8 @@ public class ProjectsController : ControllerBase
                 Description = Description,
                 Tags = Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
                 CategoryId = "10",
-                PrivacyStatus = PrivacyStatus
+                PrivacyStatus = PrivacyStatus,
+                ScheduledPublishAt = !string.IsNullOrEmpty(ScheduledPublishAt) ? DateTime.Parse(ScheduledPublishAt).ToUniversalTime() : null
             };
 
             var result = await uploadService.UploadVideoAsync(uploadRequest);
@@ -321,6 +323,7 @@ public class ProjectsController : ControllerBase
         if (!string.IsNullOrEmpty(updateDto.SeoTags)) project.SeoTags = updateDto.SeoTags;
         if (!string.IsNullOrEmpty(updateDto.SeoHashtags)) project.SeoHashtags = updateDto.SeoHashtags;
         if (!string.IsNullOrEmpty(updateDto.YouTubeVideoId)) project.YouTubeVideoId = updateDto.YouTubeVideoId;
+        if (updateDto.ScheduledPublishAt.HasValue) project.ScheduledPublishAt = updateDto.ScheduledPublishAt;
 
         project.UpdatedAt = DateTime.UtcNow;
         if (updateDto.Status == ProjectStatus.Completed && project.CompletedAt == null)
@@ -382,6 +385,7 @@ public class ProjectsController : ControllerBase
         TimelineJson = p.TimelineJson,
         ErrorMessage = p.ErrorMessage,
         CreatedAt = p.CreatedAt,
-        CompletedAt = p.CompletedAt
+        CompletedAt = p.CompletedAt,
+        ScheduledPublishAt = p.ScheduledPublishAt
     };
 }

@@ -85,6 +85,7 @@ public class Project
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public DateTime? ScheduledPublishAt { get; set; }
 
     [MaxLength(8000)] // Store serialized JSON of scenes
     public string? TimelineJson { get; set; }

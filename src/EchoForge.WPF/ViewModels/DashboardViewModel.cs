@@ -96,8 +96,19 @@ public partial class DashboardViewModel : ObservableObject
             var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
             RecentProjectsCount = Projects.Count(p => p.CreatedAt >= sevenDaysAgo);
 
-            // Mock storage used based on project count
-            TotalStorageUsed = $"{Projects.Count * 125} MB";
+            // Calculate real storage used from output video files
+            long totalBytes = 0;
+            foreach (var p in Projects)
+            {
+                if (!string.IsNullOrEmpty(p.OutputVideoPath) && System.IO.File.Exists(p.OutputVideoPath))
+                {
+                    try { totalBytes += new System.IO.FileInfo(p.OutputVideoPath).Length; } catch { }
+                }
+            }
+            if (totalBytes >= 1_073_741_824)
+                TotalStorageUsed = $"{totalBytes / 1_073_741_824.0:F1} GB";
+            else
+                TotalStorageUsed = $"{totalBytes / 1_048_576.0:F0} MB";
         }
         catch (Exception ex)
         {
@@ -299,7 +310,7 @@ public partial class DashboardViewModel : ObservableObject
         var targetProject = project ?? SelectedProject;
         if (targetProject == null) return;
 
-        var allowedStatuses = new[] { ProjectStatus.ReviewingScenes, ProjectStatus.AwaitingApproval, ProjectStatus.Completed };
+        var allowedStatuses = new[] { ProjectStatus.ReviewingScenes, ProjectStatus.AwaitingApproval, ProjectStatus.Completed, ProjectStatus.Failed };
         if (!allowedStatuses.Contains(targetProject.Status))
         {
             return; // Block entry if project is still generating

@@ -146,6 +146,7 @@ using (var scope = app.Services.CreateScope())
     // TEMPORARY DB SCHEMA PATCH FOR PHASE 5 AND LATER
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "PipelineProgress", "INT NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "PrivacyStatus", "VARCHAR(20) NOT NULL DEFAULT 'private'");
+    await AddColumnIfNotExistsAsync(db.Database, "Projects", "ScheduledPublishAt", "DATETIME(6) NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "OutputVideoPath", "VARCHAR(500) NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "YouTubeVideoId", "VARCHAR(50) NULL");
     await AddColumnIfNotExistsAsync(db.Database, "Projects", "SeoTitle", "VARCHAR(200) NULL");

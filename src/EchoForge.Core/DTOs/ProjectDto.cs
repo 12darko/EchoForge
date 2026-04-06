@@ -37,6 +37,7 @@ public class ProjectDto
     public string? ErrorMessage { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
+    public DateTime? ScheduledPublishAt { get; set; }
     public string? TimelineJson { get; set; }
     
     // Virtual property for UI usage

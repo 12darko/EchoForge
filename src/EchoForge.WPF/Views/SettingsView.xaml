@@ -110,6 +110,12 @@
                                 <TextBox Text="{Binding GrokApiKey}" Style="{StaticResource ModernTextBox}" Margin="0,0,0,24"/>
 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock Text="Gemini 2.5 API Key (Görsel için)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
+                                    <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="Go to aistudio.google.com to get a Gemini token"/>
+                                </StackPanel>
+                                <TextBox Text="{Binding GeminiApiKey}" Style="{StaticResource ModernTextBox}" Margin="0,0,0,24"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                     <TextBlock Text="API Base URL (Internal Engine)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
                                     <TextBlock Text="❓" Foreground="{StaticResource AccentBlueBrush}" FontSize="12" Margin="8,0,0,0" Cursor="Help" ToolTip="The local or remote IP where the EchoForge background services are running."/>
                                 </StackPanel>

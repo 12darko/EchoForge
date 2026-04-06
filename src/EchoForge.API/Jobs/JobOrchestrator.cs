@@ -261,6 +261,13 @@ public class JobOrchestrator
             _logger.LogInformation("[{ProjectId}] Uploading to YouTube", projectId);
             await _projectRepository.UpdateStatusAsync(projectId, ProjectStatus.Uploading);
 
+            var privacy = project.PrivacyStatus ?? "private";
+            // Important: YouTube API requires scheduled videos to have a 'private' status initially.
+            if (project.ScheduledPublishAt.HasValue)
+            {
+                privacy = "private";
+            }
+
             var uploadRequest = new YouTubeUploadRequest
             {
                 ProjectId = projectId,
@@ -269,7 +276,8 @@ public class JobOrchestrator
                 Description = project.SeoDescription ?? "",
                 Tags = (project.SeoTags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
                 CategoryId = "10", // Music
-                PrivacyStatus = project.PrivacyStatus ?? "private"
+                PrivacyStatus = privacy,
+                ScheduledPublishAt = project.ScheduledPublishAt
             };
 
             var result = await _uploadService.UploadVideoAsync(uploadRequest, cancellationToken);

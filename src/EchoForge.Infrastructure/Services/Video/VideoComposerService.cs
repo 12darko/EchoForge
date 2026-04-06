@@ -108,7 +108,8 @@ public class VideoComposerService : IVideoComposerService
             var timelineJson = System.Text.Json.JsonSerializer.Serialize(resultTimelineItems);
 
             // Always use the advanced pipeline when we have timeline data
-            bool useAdvancedPipeline = hasTimeline || !string.IsNullOrWhiteSpace(visualEffect) && visualEffect != "none" 
+            bool useAdvancedPipeline = hasTimeline 
+                || (!string.IsNullOrWhiteSpace(visualEffect) && visualEffect != "none")
                 || (!string.IsNullOrWhiteSpace(transition) && transition != "none" && imagePaths.Count > 1);
 
             if (!useAdvancedPipeline && imagePaths.Count == 1)

@@ -14,6 +14,9 @@ public partial class SettingsViewModel : ObservableObject
     private string _grokApiKey = string.Empty;
 
     [ObservableProperty]
+    private string _geminiApiKey = string.Empty;
+
+    [ObservableProperty]
     private string _seoLanguage = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "tr" ? "Turkish" : "English";
 
     [ObservableProperty]
@@ -85,6 +88,9 @@ public partial class SettingsViewModel : ObservableObject
                 var hfKey = settings.FirstOrDefault(s => s.Key == "HuggingFace:ApiKey")?.Value;
                 if (!string.IsNullOrEmpty(hfKey)) HuggingFaceApiKey = hfKey;
 
+                var geminiKey = settings.FirstOrDefault(s => s.Key == "Gemini:ApiKey")?.Value;
+                if (!string.IsNullOrEmpty(geminiKey)) GeminiApiKey = geminiKey;
+
                 var seoLang = settings.FirstOrDefault(s => s.Key == "Seo:Language")?.Value;
                 if (!string.IsNullOrEmpty(seoLang)) SeoLanguage = seoLang;
 
@@ -139,6 +145,9 @@ public partial class SettingsViewModel : ObservableObject
                 
             if (!string.IsNullOrEmpty(HuggingFaceApiKey))
                 await _apiClient.SaveSettingAsync("HuggingFace:ApiKey", HuggingFaceApiKey, true);
+
+            if (!string.IsNullOrEmpty(GeminiApiKey))
+                await _apiClient.SaveSettingAsync("Gemini:ApiKey", GeminiApiKey, true);
             
             await _apiClient.SaveSettingAsync("Seo:Language", SeoLanguage, false);
             await _apiClient.SaveSettingAsync("App:Language", AppLanguage, false);
