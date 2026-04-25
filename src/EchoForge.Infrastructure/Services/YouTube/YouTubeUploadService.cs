@@ -331,18 +331,39 @@ public class YouTubeUploadService : IYouTubeUploadService
         {
             _logger.LogInformation("Starting YouTube upload: {Title}", request.Title);
 
-            // Fetch Project to find the TargetChannelId
             var project = await _context.Projects.FindAsync(new object[] { request.ProjectId }, cancellationToken);
-            if (project?.TargetChannelId == null)
+            if (project == null)
             {
-                return new YouTubeUploadResult { Success = false, ErrorMessage = "No target channel selected." };
+                return new YouTubeUploadResult { Success = false, ErrorMessage = "Project not found." };
             }
 
-            var channel = await _context.YouTubeChannels.FindAsync(new object[] { project.TargetChannelId }, cancellationToken);
+            EchoForge.Core.Entities.YouTubeChannel? channel = null;
+            if (project.TargetChannelId != null)
+            {
+                channel = await _context.YouTubeChannels.FindAsync(new object[] { project.TargetChannelId }, cancellationToken);
+            }
+            
+            // Fallback 1: Try matching by UserId
+            if (channel == null && project.UserId != null)
+            {
+                channel = await _context.YouTubeChannels.FirstOrDefaultAsync(c => c.UserId == project.UserId, cancellationToken);
+            }
+            
+            // Fallback 2: Grab ANY connected channel (single-user app scenario)
             if (channel == null)
             {
-                return new YouTubeUploadResult { Success = false, ErrorMessage = "Selected channel not found." };
+                channel = await _context.YouTubeChannels.FirstOrDefaultAsync(c => c.AccessToken != null, cancellationToken);
+                if (channel != null)
+                {
+                    _logger.LogInformation("No specific channel selected, using first available: {ChannelName} ({ChannelId})", channel.ChannelName, channel.ChannelId);
+                }
             }
+            
+            if (channel == null)
+            {
+                return new YouTubeUploadResult { Success = false, ErrorMessage = "Lütfen önce sağ üstteki Ayarlar > YouTube bölümünden bir kanal bağlayın!" };
+            }
+
 
             var credential = await GetCredentialAsync(channel.ChannelId, cancellationToken);
             if (credential == null)

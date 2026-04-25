@@ -48,7 +48,7 @@ public partial class ChannelsViewModel : ObservableObject
     public ChannelsViewModel(ApiClient apiClient, bool isAdmin = false)
     {
         _apiClient = apiClient;
-        _isAdmin = isAdmin;
+        IsAdmin = isAdmin;
         LoadChannelsCommand.Execute(null);
         LoadCredentials();
     }

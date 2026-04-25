@@ -87,14 +87,25 @@ public class ApiClient
             try
             {
                 var content = await response.Content.ReadAsStringAsync();
-                using var doc = System.Text.Json.JsonDocument.Parse(content);
-                if (doc.RootElement.TryGetProperty("message", out var msgElement) || 
-                    doc.RootElement.TryGetProperty("Message", out msgElement))
+                try
                 {
-                    errorMessage = msgElement.GetString() ?? errorMessage;
+                    using var doc = System.Text.Json.JsonDocument.Parse(content);
+                    if (doc.RootElement.TryGetProperty("message", out var msgElement) || 
+                        doc.RootElement.TryGetProperty("Message", out msgElement))
+                    {
+                        errorMessage = msgElement.GetString() ?? errorMessage;
+                    }
+                }
+                catch 
+                { 
+                    // Fallback to raw content if it's plain text
+                    if (!string.IsNullOrWhiteSpace(content) && content.Length < 300 && !content.Contains("<html", StringComparison.OrdinalIgnoreCase))
+                    {
+                        errorMessage = content;
+                    }
                 }
             }
-            catch { /* Ignore parsing errors, fallback to ReasonPhrase */ }
+            catch { /* Ignore reading errors */ }
             
             throw new Exception(errorMessage);
         }
@@ -182,7 +193,7 @@ public class ApiClient
 
     public async Task<ProjectDto?> CreateProjectAsync(string title, int templateId, FormatType format, string audioFilePath,
         bool extractAutoShorts = false, string transitionStyle = "fade", string privacyStatus = "private", string imageModel = "flux", int uniqueImageCount = 8, double? manualImageDurationSec = null, string imageStyle = "",
-        string? customInstructions = null, string? targetPlatforms = null, int? targetChannelId = null, string? visualEffect = null)
+        string? customInstructions = null, string? targetPlatforms = null, int? targetChannelId = null, string? visualEffect = null, int? customWidth = null, int? customHeight = null)
     {
         var request = new CreateProjectRequest
         {
@@ -201,6 +212,8 @@ public class ApiClient
             TargetPlatforms = targetPlatforms,
             TargetChannelId = targetChannelId,
             VisualEffect = visualEffect,
+            CustomWidth = customWidth,
+            CustomHeight = customHeight,
             UserId = CurrentUserId
         };
 
@@ -259,8 +272,12 @@ public class ApiClient
         }
         return null;
     }
+    public async Task<List<EchoForge.Core.Entities.YouTubeChannel>> GetYouTubeChannelsAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<EchoForge.Core.Entities.YouTubeChannel>>($"api/youtubechannels?userId={CurrentUserId}") ?? new();
+    }
 
-    public async Task<bool> UploadToYouTubeAsync(int projectId, string localVideoPath, string title, string description, string tags, string privacyStatus, DateTime? scheduledPublishAt = null)
+    public async Task<bool> UploadToYouTubeAsync(int projectId, string localVideoPath, string title, string description, string tags, string privacyStatus, int? targetChannelId = null, DateTime? scheduledPublishAt = null)
     {
         using var content = new MultipartFormDataContent();
         content.Add(new StringContent(projectId.ToString()), "ProjectId");
@@ -268,6 +285,11 @@ public class ApiClient
         content.Add(new StringContent(description), "Description");
         content.Add(new StringContent(tags), "Tags");
         content.Add(new StringContent(privacyStatus), "PrivacyStatus");
+
+        if (targetChannelId.HasValue)
+        {
+            content.Add(new StringContent(targetChannelId.Value.ToString()), "TargetChannelId");
+        }
 
         if (scheduledPublishAt.HasValue)
         {

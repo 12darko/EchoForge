@@ -73,6 +73,12 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
     private bool _hasRange;
 
     [ObservableProperty]
+    private bool _isAssetLibraryOpen;
+
+    [ObservableProperty]
+    private string _assetLibraryMode = "Media";
+
+    [ObservableProperty]
     private double _audioVolume = 0.5;
 
     [ObservableProperty]
@@ -84,6 +90,27 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
 
     [ObservableProperty]
     private int _projectHeight = 1080;
+
+    public class SimpleImageModelOption
+    {
+        public string Value { get; set; } = "";
+        public string Label { get; set; } = "";
+        public override string ToString() => Label;
+    }
+
+    [ObservableProperty]
+    private List<SimpleImageModelOption> _editorRegenerateImageModels = new()
+    {
+        new() { Value = "comfyui:local", Label = "🖥️ Local (ComfyUI) - Native HD" },
+        new() { Value = "pollinations:flux", Label = "Pollinations - Flux" },
+        new() { Value = "pollinations:turbo", Label = "Pollinations - SD Turbo" },
+        new() { Value = "pollinations:flux-realism", Label = "Pollinations - Realism" },
+        new() { Value = "gemini:gemini-2.5-flash", Label = "Gemini 2.5 Flash" },
+        new() { Value = "huggingface:flux", Label = "HuggingFace - Flux" }
+    };
+
+    [ObservableProperty]
+    private SimpleImageModelOption? _selectedEditorImageModel;
 
     [ObservableProperty]
     private DateTime? _scheduledPublishDate;
@@ -222,6 +249,11 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
 
         // Initialize history with initial state
         SaveHistoryState();
+        
+        // Ensure image model dropdown has a selection so it doesn't break RegenerateImage
+        var mappedModel = string.IsNullOrWhiteSpace(_project.ImageModel) ? "comfyui:local" : _project.ImageModel;
+        SelectedEditorImageModel = EditorRegenerateImageModels.FirstOrDefault(x => x.Value == mappedModel) 
+            ?? EditorRegenerateImageModels.First(x => x.Value == "comfyui:local");
     }
 
     public void UpdateTotalDuration()
@@ -405,6 +437,44 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         UpdateTimeDisplay();
         UpdatePlayheadPosition();
         AudioSeeked?.Invoke(this, _currentPlaybackTime);
+    }
+
+    [RelayCommand]
+    private void ToggleAssetLibrary(string mode)
+    {
+        if (IsAssetLibraryOpen && AssetLibraryMode == mode)
+        {
+            // Close if clicking the same tab twice
+            IsAssetLibraryOpen = false;
+        }
+        else
+        {
+            // Switch mode or open
+            AssetLibraryMode = mode;
+            IsAssetLibraryOpen = true;
+        }
+    }
+
+    [RelayCommand]
+    private void DuplicateScene()
+    {
+        if (SelectedScene == null) return;
+        
+        var newScene = SelectedScene.Clone();
+        newScene.SceneNumber = Scenes.Count > 0 ? Scenes.Max(s => s.SceneNumber) + 1 : 1;
+        
+        var index = Scenes.IndexOf(SelectedScene);
+        if (index >= 0)
+        {
+            Scenes.Insert(index + 1, newScene);
+        }
+        else
+        {
+            Scenes.Add(newScene);
+        }
+        
+        UpdateTotalDuration();
+        SaveHistoryState();
     }
 
     // --- History Control (Undo / Redo) ---
@@ -758,53 +828,6 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         _goBackAction?.Invoke();
     }
 
-    [RelayCommand]
-    private async Task RegenerateScene()
-    {
-        if (SelectedScene == null) return;
-
-        IsLoading = true;
-        StatusMessage = "⏳ Yeniden oluşturuluyor...";
-        try
-        {
-            var updatedProject = await _apiClient.RegenerateSceneAsync(_project.Id, SelectedScene.SceneNumber, SelectedScene.Prompt, ProjectWidth, ProjectHeight);
-            if (updatedProject != null)
-            {
-                var selectedNum = SelectedScene.SceneNumber;
-                
-                if (!string.IsNullOrEmpty(updatedProject.TimelineJson))
-                {
-                    var items = System.Text.Json.JsonSerializer.Deserialize<List<TimelineItemDto>>(updatedProject.TimelineJson);
-                    if (items != null)
-                    {
-                        Scenes.Clear();
-                        foreach (var item in items)
-                        {
-                            Scenes.Add(item);
-                            if (item.SceneNumber == selectedNum)
-                            {
-                                SelectedScene = item;
-                            }
-                        }
-                    }
-                }
-                SaveHistoryState();
-                StatusMessage = "✅ Scene regenerated successfully!";
-            }
-            else
-            {
-                StatusMessage = "❌ Failed to regenerate scene.";
-            }
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"❌ Error: {ex.Message}";
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
 
     // ─── Replace Scene Image from Local File ───
     // This event is raised to request the View to open a file dialog
@@ -849,6 +872,10 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
             // Update the scene
             SelectedScene.ImagePath = destPath;
             PreviewImagePath = destPath;
+            
+            int index = Scenes.IndexOf(SelectedScene);
+            if (index >= 0) Scenes[index] = SelectedScene;
+            
             OnPropertyChanged(nameof(SelectedScene));
             SaveHistoryState();
             StatusMessage = $"✅ Görsel başarıyla değiştirildi!";
@@ -856,6 +883,85 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
         catch (Exception ex)
         {
             StatusMessage = $"❌ Görsel değiştirilemedi: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private void RemoveSceneImage()
+    {
+        if (SelectedScene == null)
+        {
+            StatusMessage = "⚠️ Önce bir sahne seçin.";
+            return;
+        }
+        
+        SelectedScene.ImagePath = "";
+        PreviewImagePath = "";
+        
+        int index = Scenes.IndexOf(SelectedScene);
+        if (index >= 0) Scenes[index] = SelectedScene;
+        
+        OnPropertyChanged(nameof(SelectedScene));
+        SaveHistoryState();
+        StatusMessage = "🗑️ Görsel sahneden kaldırıldı.";
+    }
+
+    [RelayCommand]
+    private async Task RegenerateSceneAsync()
+    {
+        if (SelectedScene == null)
+        {
+            StatusMessage = "⚠️ Önce görseli yeniden oluşturulacak sahneyi seçin.";
+            return;
+        }
+
+        IsLoading = true;
+        StatusMessage = "⏳ Seçili sahne için yeni görsel oluşturuluyor...";
+        
+        try
+        {
+            string prompt = SelectedScene.Prompt;
+            if (string.IsNullOrWhiteSpace(prompt))
+            {
+                prompt = $"{_project.Title}, cinematic lighting, high quality";
+            }
+
+            Action<int, string> progressCallback = (percent, message) => 
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() => 
+                {
+                    StatusMessage = $"⏳ {message}";
+                });
+            };
+
+            string newImagePath = await Task.Run(() => 
+                _orchestrator.GenerateSingleImageAsync(_project.Id, prompt, SelectedEditorImageModel?.Value, ProjectWidth, ProjectHeight, progressCallback, System.Threading.CancellationToken.None)
+            );
+            
+            if (!string.IsNullOrEmpty(newImagePath) && System.IO.File.Exists(newImagePath))
+            {
+                SelectedScene.ImagePath = newImagePath;
+                PreviewImagePath = newImagePath;
+                
+                int index = Scenes.IndexOf(SelectedScene);
+                if (index >= 0) Scenes[index] = SelectedScene;
+                
+                OnPropertyChanged(nameof(SelectedScene));
+                SaveHistoryState();
+                StatusMessage = "✅ Görsel başarıyla yeniden oluşturuldu!";
+            }
+            else
+            {
+                StatusMessage = "❌ Görsel oluşturulamadı (boş sonuç döndü).";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"❌ Yeniden oluşturma hatası: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 
@@ -911,6 +1017,10 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
             // Update the scene
             SelectedScene.ImagePath = destPath;
             PreviewImagePath = destPath;
+            
+            int index = Scenes.IndexOf(SelectedScene);
+            if (index >= 0) Scenes[index] = SelectedScene;
+            
             OnPropertyChanged(nameof(SelectedScene));
             SaveHistoryState();
             ImageUrlInput = "";
@@ -1004,23 +1114,67 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
 
     public void Drop(IDropInfo dropInfo)
     {
-        if (dropInfo.Data is TimelineItemDto sourceItem && dropInfo.TargetItem is TimelineItemDto targetItem)
+        // 1. Timeline Reordering
+        if (dropInfo.Data is TimelineItemDto sourceItem && (dropInfo.TargetItem is TimelineItemDto targetItem || dropInfo.TargetItem == null))
         {
             int sourceIndex = Scenes.IndexOf(sourceItem);
-            
-            // Getting index BEFORE insertion
             int targetIndex = dropInfo.InsertIndex;
             
-            if (sourceIndex != targetIndex)
+            if (sourceIndex != targetIndex && sourceIndex >= 0)
             {
-                // Simple ObservableCollection Move
                 Scenes.Move(sourceIndex, sourceIndex < targetIndex ? targetIndex - 1 : targetIndex);
                 
                 RenumberScenes();
                 UpdateTotalDuration();
                 UpdateActiveSceneBasedOnTime();
                 SaveHistoryState();
-                StatusMessage = "🔁 Scene order updated";
+                StatusMessage = "🔁 Sahne sırası güncellendi";
+            }
+        }
+        // 2. Drag & Drop File from external (or internal media browser)
+        else if (dropInfo.Data is System.Windows.DataObject dataObj && dataObj.ContainsFileDropList())
+        {
+            var files = dataObj.GetFileDropList();
+            if (files.Count > 0 && SelectedScene != null)
+            {
+                string droppedFile = files[0];
+                string ext = System.IO.Path.GetExtension(droppedFile).ToLowerInvariant();
+                
+                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" || ext == ".webp")
+                {
+                    try
+                    {
+                        string projectDir = System.IO.Path.GetDirectoryName(_project.AudioPath) ?? "";
+                        string imagesDir = System.IO.Path.Combine(projectDir, "images");
+                        if (!System.IO.Directory.Exists(imagesDir)) System.IO.Directory.CreateDirectory(imagesDir);
+
+                        string newFileName = $"drop_scene{SelectedScene.SceneNumber}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+                        string destPath = System.IO.Path.Combine(imagesDir, newFileName);
+                        System.IO.File.Copy(droppedFile, destPath, true);
+
+                        SelectedScene.ImagePath = destPath;
+                        PreviewImagePath = destPath;
+                        
+                        int index = Scenes.IndexOf(SelectedScene);
+                        if (index >= 0) Scenes[index] = SelectedScene;
+                        
+                        OnPropertyChanged(nameof(SelectedScene));
+                        SaveHistoryState();
+                        StatusMessage = "✅ Sürüklenen görsel eklendi!";
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusMessage = $"❌ Görsel kopyalanamadı: {ex.Message}";
+                    }
+                }
+                else
+                {
+                    StatusMessage = "⚠️ Sadece resim dosyaları desteklenir.";
+                }
+            }
+            else if (SelectedScene == null)
+            {
+                StatusMessage = "⚠️ Önce görselin ekleneceği sahneyi seçin.";
             }
         }
     }
@@ -1122,6 +1276,7 @@ public partial class EditorViewModel : ObservableObject, IDropTarget
                 _project.SeoDescription ?? "",
                 _project.SeoTags ?? "",
                 _project.PrivacyStatus ?? "private",
+                null,
                 _project.ScheduledPublishAt);
 
             if (success)

@@ -71,7 +71,7 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsViewModel(Services.ApiClient apiClient, bool isAdmin = false)
     {
         _apiClient = apiClient;
-        _isAdmin = isAdmin;
+        IsAdmin = isAdmin;
         LoadInitialSettings();
     }
 
@@ -79,7 +79,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            var settings = await _apiClient.GetAllSettingsAsync(_isAdmin);
+            var settings = await _apiClient.GetAllSettingsAsync(IsAdmin);
             if (settings.Count > 0)
             {
                 var grokKey = settings.FirstOrDefault(s => s.Key == "Grok:ApiKey")?.Value;

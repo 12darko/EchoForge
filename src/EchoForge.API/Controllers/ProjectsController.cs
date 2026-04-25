@@ -103,6 +103,7 @@ public class ProjectsController : ControllerBase
         [FromForm] string Tags,
         [FromForm] string PrivacyStatus,
         [FromForm] string? ScheduledPublishAt,
+        [FromForm] int? TargetChannelId,
         IFormFile VideoFile)
     {
         if (VideoFile == null || VideoFile.Length == 0)
@@ -125,6 +126,10 @@ public class ProjectsController : ControllerBase
 
             project.Status = ProjectStatus.Uploading;
             project.OutputVideoPath = tempPath;
+            if (TargetChannelId.HasValue) 
+            {
+                project.TargetChannelId = TargetChannelId;
+            }
             await _projectRepository.UpdateAsync(project);
 
             // Get the upload service and perform YouTube upload
@@ -279,6 +284,7 @@ public class ProjectsController : ControllerBase
                 targetHeight,
                 project.ImageModel,
                 project.UniqueImageCount,
+                null,
                 CancellationToken.None);
 
             if (newImagePaths != null && newImagePaths.Count > 0)

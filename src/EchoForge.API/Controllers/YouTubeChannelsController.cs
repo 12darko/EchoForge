@@ -17,12 +17,12 @@ public class YouTubeChannelsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<YouTubeChannel>>> GetChannels([FromQuery] int userId)
+    public async Task<ActionResult<List<YouTubeChannel>>> GetChannels([FromQuery] int? userId = null)
     {
-        var channels = await _dbContext.YouTubeChannels
-            .Where(c => c.UserId == userId)
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync();
+        var query = _dbContext.YouTubeChannels.AsQueryable();
+        if (userId.HasValue)
+            query = query.Where(c => c.UserId == userId.Value);
+        var channels = await query.OrderByDescending(c => c.CreatedAt).ToListAsync();
         return Ok(channels);
     }
 
