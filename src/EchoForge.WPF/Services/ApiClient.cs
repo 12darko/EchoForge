@@ -95,6 +95,22 @@ public class ApiClient
                     {
                         errorMessage = msgElement.GetString() ?? errorMessage;
                     }
+                    else if (doc.RootElement.TryGetProperty("title", out var titleElement))
+                    {
+                        errorMessage = titleElement.GetString() ?? errorMessage;
+                        if (doc.RootElement.TryGetProperty("errors", out var errorsElement) && errorsElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+                        {
+                            var errorsList = new List<string>();
+                            foreach (var property in errorsElement.EnumerateObject())
+                            {
+                                errorsList.Add($"{property.Name}: {string.Join(", ", property.Value.EnumerateArray().Select(v => v.GetString()))}");
+                            }
+                            if (errorsList.Any())
+                            {
+                                errorMessage += "\nDetay: " + string.Join(" | ", errorsList);
+                            }
+                        }
+                    }
                 }
                 catch 
                 { 

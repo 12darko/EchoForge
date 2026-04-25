@@ -99,8 +99,8 @@ public class ProjectsController : ControllerBase
     public async Task<ActionResult> UploadToYouTube(
         [FromForm] int ProjectId,
         [FromForm] string Title,
-        [FromForm] string Description,
-        [FromForm] string Tags,
+        [FromForm] string? Description,
+        [FromForm] string? Tags,
         [FromForm] string PrivacyStatus,
         [FromForm] string? ScheduledPublishAt,
         [FromForm] int? TargetChannelId,
