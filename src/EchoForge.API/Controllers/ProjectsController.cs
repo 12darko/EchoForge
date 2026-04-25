@@ -140,7 +140,7 @@ public class ProjectsController : ControllerBase
                 VideoFilePath = tempPath,
                 Title = Title,
                 Description = Description,
-                Tags = Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+                Tags = Tags?.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList() ?? new List<string>(),
                 CategoryId = "10",
                 PrivacyStatus = PrivacyStatus,
                 ScheduledPublishAt = !string.IsNullOrEmpty(ScheduledPublishAt) ? DateTime.Parse(ScheduledPublishAt).ToUniversalTime() : null
