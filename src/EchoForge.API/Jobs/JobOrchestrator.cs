@@ -125,6 +125,7 @@ public class JobOrchestrator
                 renderSettings.Height,
                 project.ImageModel,
                 project.UniqueImageCount,
+                null,
                 cancellationToken);
 
             // Create initial TimelineJson
@@ -209,7 +210,10 @@ public class JobOrchestrator
                 {
                     await _projectRepository.UpdateProgressAsync(projectId, progressPercent, cancellationToken);
                 },
-                cancellationToken);
+                cancellationToken,
+                timelineItems,
+                0, // Hardcoded bypass until schema migration
+                0); // Hardcoded bypass until schema migration
 
             project.OutputVideoPath = videoResult.VideoFilePath;
             project.TimelineJson = videoResult.TimelineJson;

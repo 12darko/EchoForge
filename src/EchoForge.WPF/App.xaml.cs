@@ -13,6 +13,11 @@ namespace EchoForge.WPF;
 /// </summary>
 public partial class App : Application
 {
+    /// <summary>
+    /// Global ComfyUI process manager — starts hidden when app opens, stops when app closes.
+    /// </summary>
+    public static Services.ComfyUIProcessManager? ComfyUI { get; private set; }
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         this.DispatcherUnhandledException += (s, args) =>
@@ -32,12 +37,55 @@ public partial class App : Application
                           || CultureInfo.InstalledUICulture.TwoLetterISOLanguageName == "tr";
             EchoForge.WPF.Localization.TranslationManager.Instance.CurrentLanguage = isTurkish ? "tr" : "en";
 
+            // Start ComfyUI in background (hidden) if configured
+            _ = Task.Run(async () => await StartComfyUIAsync());
+
             await CheckForUpdatesAsync();
         }
         catch (Exception ex)
         {
             File.WriteAllText("crash_log_startup.txt", ex.ToString());
             MessageBox.Show("Startup Crash: " + ex.Message);
+        }
+    }
+
+    protected override async void OnExit(ExitEventArgs e)
+    {
+        // Stop ComfyUI when app closes
+        if (ComfyUI != null)
+        {
+            await ComfyUI.StopAsync();
+            ComfyUI.Dispose();
+        }
+        base.OnExit(e);
+    }
+
+    private async Task StartComfyUIAsync()
+    {
+        try
+        {
+            // Check for ComfyUI path in a settings file
+            var comfySettingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "comfyui_path.txt");
+            if (!File.Exists(comfySettingsPath)) return;
+
+            var comfyUIPath = File.ReadAllText(comfySettingsPath).Trim();
+            if (string.IsNullOrEmpty(comfyUIPath) || !Directory.Exists(comfyUIPath)) return;
+
+            ComfyUI = new Services.ComfyUIProcessManager();
+            var started = await ComfyUI.StartAsync(comfyUIPath);
+            
+            if (started)
+            {
+                File.AppendAllText(
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt"),
+                    $"[{DateTime.Now}] ComfyUI started successfully (hidden) at {ComfyUI.BaseUrl}\n");
+            }
+        }
+        catch (Exception ex)
+        {
+            File.AppendAllText(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt"),
+                $"[{DateTime.Now}] ComfyUI auto-start failed: {ex.Message}\n");
         }
     }
 

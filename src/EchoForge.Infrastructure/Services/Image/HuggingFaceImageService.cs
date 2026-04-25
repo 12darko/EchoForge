@@ -13,8 +13,8 @@ public class HuggingFaceImageService : IImageGenerationService
     private readonly string _cacheDir;
     private readonly Random _random = new();
 
-    private const int MaxRetries = 5;
-    private const int BaseRetryDelayMs = 4000;
+    private const int MaxRetries = 7;
+    private const int BaseRetryDelayMs = 6000;
     private const int DefaultMaxUniqueImages = 8;
 
     private static readonly string[] PromptVariations =
@@ -38,7 +38,7 @@ public class HuggingFaceImageService : IImageGenerationService
     }
 
     public async Task<List<string>> GenerateImagesAsync(string basePrompt, int count, int width, int height,
-        string? model = null, int? maxUniqueImages = null, CancellationToken cancellationToken = default)
+        string? model = null, int? maxUniqueImages = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         var apiKey = await _appSettingsService.GetSettingAsync("HuggingFace:ApiKey");
         if (string.IsNullOrEmpty(apiKey))
@@ -77,7 +77,7 @@ public class HuggingFaceImageService : IImageGenerationService
                     var prompt = $"{basePrompt}, {variation}";
                     var seed = _random.Next(1, 999999999);
 
-                    var imagePath = await GenerateSingleImageAsync(prompt, width, height, seed, effectiveModel, cancellationToken);
+                    var imagePath = await GenerateSingleImageAsync(prompt, width, height, seed, effectiveModel, progressCallback, cancellationToken);
                     uniqueImages[currentIndex] = imagePath;
 
                     _logger.LogInformation("Generated unique image {Index}/{Total}: {Path}", currentIndex + 1, uniqueCount, imagePath);
@@ -102,7 +102,7 @@ public class HuggingFaceImageService : IImageGenerationService
     }
 
     public async Task<string> GenerateSingleImageAsync(string prompt, int width, int height, int? seed = null,
-        string? model = null, CancellationToken cancellationToken = default)
+        string? model = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         var actualSeed = seed ?? _random.Next(1, 999999999);
         var effectiveModel = string.IsNullOrWhiteSpace(model) ? "stabilityai/stable-diffusion-xl-base-1.0" : model;
@@ -137,6 +137,8 @@ public class HuggingFaceImageService : IImageGenerationService
             throw new Exception("HuggingFace API Key is missing. Please add your token via Settings.");
         }
 
+        string lastErrorDetail = "Unknown";
+
         for (int attempt = 1; attempt <= MaxRetries; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -163,12 +165,14 @@ public class HuggingFaceImageService : IImageGenerationService
                     }
                     else
                     {
-                        _logger.LogWarning("HuggingFace returned tiny response, retrying...");
+                        lastErrorDetail = $"Response too small ({imageBytes.Length} bytes)";
+                        _logger.LogWarning("HuggingFace returned tiny response ({Bytes} bytes), retrying...", imageBytes.Length);
                     }
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                    lastErrorDetail = $"HTTP {(int)response.StatusCode}: {(errorContent.Length > 150 ? errorContent[..150] : errorContent)}";
                     
                     if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable && errorContent.Contains("is currently loading"))
                     {
@@ -183,6 +187,11 @@ public class HuggingFaceImageService : IImageGenerationService
                         _logger.LogError("HuggingFace Permission Error! Your token needs 'Make calls to the serverless Inference API' permission.");
                         throw new Exception("Hugging Face API Hatası: Token yetersiz. Hugging Face'te token oluştururken (Fine-grained) 'Make calls to the serverless Inference API' kutucuğunu işaretlemelisiniz.");
                     }
+                    else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        _logger.LogError("HuggingFace Unauthorized! API key is invalid.");
+                        throw new Exception("HuggingFace API Hatası: API anahtarı geçersiz. Ayarlardan doğru token'ı girdiğinizden emin olun.");
+                    }
                     else
                     {
                         _logger.LogError("HuggingFace API failed {Status}: {Error}", response.StatusCode, errorContent.Length > 200 ? errorContent[..200] : errorContent);
@@ -191,10 +200,12 @@ public class HuggingFaceImageService : IImageGenerationService
             }
             catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
+                lastErrorDetail = "Request timed out";
                 _logger.LogWarning("HuggingFace attempt {Attempt} timed out", attempt);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                lastErrorDetail = ex.Message;
                 _logger.LogWarning(ex, "HuggingFace attempt {Attempt} network error", attempt);
             }
 
@@ -207,11 +218,11 @@ public class HuggingFaceImageService : IImageGenerationService
             }
         }
 
-        throw new Exception($"Failed to generate image via HuggingFace API after {MaxRetries} attempts.");
+        throw new Exception($"HuggingFace API {MaxRetries} deneme sonrası başarısız oldu. Son hata: {lastErrorDetail}. Model: {effectiveModel}");
     }
 
     public Task<string> GenerateSingleImageAsync(string prompt, int width, int height, int? seed = null, CancellationToken cancellationToken = default)
     {
-        return GenerateSingleImageAsync(prompt, width, height, seed, null, cancellationToken);
+        return GenerateSingleImageAsync(prompt, width, height, seed, null, null, cancellationToken);
     }
 }

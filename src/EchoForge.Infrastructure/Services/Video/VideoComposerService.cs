@@ -24,7 +24,16 @@ public class VideoComposerService : IVideoComposerService
         }
 
         _outputDir = !string.IsNullOrWhiteSpace(outputDir) ? outputDir : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "output");
-        Directory.CreateDirectory(_outputDir);
+        
+        try
+        {
+            Directory.CreateDirectory(_outputDir);
+        }
+        catch (Exception)
+        {
+            _outputDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "output");
+            Directory.CreateDirectory(_outputDir);
+        }
     }
 
     public async Task<VideoCompositionResult> ComposeVideoAsync(
@@ -39,14 +48,24 @@ public class VideoComposerService : IVideoComposerService
         string? outroVideoPath = null,
         Action<int>? progressCallback = null,
         CancellationToken cancellationToken = default,
-        List<TimelineItemDto>? timelineItems = null)
+        List<TimelineItemDto>? timelineItems = null,
+        double audioFadeInDuration = 0,
+        double audioFadeOutDuration = 0)
     {
         _logger.LogInformation("Starting video composition: {ImageCount} images, {Width}x{Height}",
             imagePaths.Count, settings.Width, settings.Height);
 
         var myDocs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         var targetDir = !string.IsNullOrWhiteSpace(outputDirectory) ? outputDirectory : Path.Combine(myDocs, "EchoForge", "Publishing");
-        Directory.CreateDirectory(targetDir);
+        try
+        {
+            Directory.CreateDirectory(targetDir);
+        }
+        catch (Exception)
+        {
+            targetDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "output");
+            Directory.CreateDirectory(targetDir);
+        }
 
         var outputPath = Path.Combine(targetDir, $"echoforge_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
         
@@ -93,6 +112,8 @@ public class VideoComposerService : IVideoComposerService
                     Duration = sceneDurations[i],
                     ImagePath = imagePaths[i],
                     Transition = hasTimeline ? timelineItems![i].Transition : transition,
+                    TransitionDuration = hasTimeline ? timelineItems![i].TransitionDuration : null,
+                    TransitionDirection = hasTimeline ? timelineItems![i].TransitionDirection : null,
                     Speed = hasTimeline ? timelineItems![i].Speed : 1.0,
                     FadeInDuration = hasTimeline ? timelineItems![i].FadeInDuration : 0,
                     FadeOutDuration = hasTimeline ? timelineItems![i].FadeOutDuration : 0,
@@ -130,7 +151,7 @@ public class VideoComposerService : IVideoComposerService
             else
             {
                 // Advanced pipeline with per-scene support
-                outputPath = await ComposeVideoWithTimelineAsync(imagePaths, audioPath, settings, resultTimelineItems, visualEffect, targetDir, tempDir, effectiveDuration, sceneDurations, progressCallback, cancellationToken);
+                outputPath = await ComposeVideoWithTimelineAsync(imagePaths, audioPath, settings, resultTimelineItems, visualEffect, targetDir, tempDir, effectiveDuration, sceneDurations, progressCallback, cancellationToken, audioFadeInDuration, audioFadeOutDuration);
             }
 
             if (!File.Exists(outputPath) || new FileInfo(outputPath).Length < 1000)
@@ -172,7 +193,7 @@ public class VideoComposerService : IVideoComposerService
             inputs.Append($"-i \"{path}\" ");
             
             // Normalize video for concat: scale/pad to target width/height, set framerate, set format
-            filter.Append($"[{inputIndex}:v]scale={settings.Width}:{settings.Height}:force_original_aspect_ratio=decrease,pad={settings.Width}:{settings.Height}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps={settings.FPS},format=yuv420p[v{inputIndex}]; ");
+            filter.Append($"[{inputIndex}:v]scale={settings.Width}:{settings.Height}:force_original_aspect_ratio=decrease:flags=lanczos,pad={settings.Width}:{settings.Height}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,fps={settings.FPS},format=yuv420p[v{inputIndex}]; ");
             
             // Normalize audio for concat: 44.1kHz, stereo
             filter.Append($"[{inputIndex}:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a{inputIndex}]; ");
@@ -211,7 +232,7 @@ public class VideoComposerService : IVideoComposerService
         List<string> imagePaths, string audioPath, VideoRenderSettings settings, 
         List<TimelineItemDto> timeline, string? visualEffect, 
         string targetDir, string tempDir, double effectiveDuration, List<double> sceneDurations,
-        Action<int>? progressCallback, CancellationToken cancellationToken)
+        Action<int>? progressCallback, CancellationToken cancellationToken, double audioFadeInDuration, double audioFadeOutDuration)
     {
         var outputPath = Path.Combine(targetDir, $"echoforge_{DateTime.Now:yyyyMMdd_HHmmss}.mp4");
         
@@ -248,7 +269,7 @@ public class VideoComposerService : IVideoComposerService
             var scene = timeline[i];
             var dur = sceneDurations[i];
 
-            sbFilter.Append($"[{i}:v]scale={settings.Width}:{settings.Height}:force_original_aspect_ratio=increase,crop={settings.Width}:{settings.Height},setsar=1,fps={settings.FPS}");
+            sbFilter.Append($"[{i}:v]scale={settings.Width}:{settings.Height}:force_original_aspect_ratio=increase:flags=lanczos,crop={settings.Width}:{settings.Height},setsar=1,fps={settings.FPS}");
 
             // Zoompan if transition is zoompan
             if (scene.Transition == "zoompan")
@@ -263,6 +284,12 @@ public class VideoComposerService : IVideoComposerService
                 sbFilter.Append($",setpts=PTS/{scene.Speed.ToString("F2", CultureInfo.InvariantCulture)}");
             }
 
+            // Reverse playback
+            if (scene.IsReversed)
+            {
+                sbFilter.Append($",reverse");
+            }
+
             // ═══ Per-scene COLOR FILTER (15 filters matching sidebar) ═══
             var sceneFilter = scene.Filter?.ToLowerInvariant() ?? "none";
             var filterStr = sceneFilter switch
@@ -271,6 +298,7 @@ public class VideoComposerService : IVideoComposerService
                 "sepia" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131",
                 "warm" => ",colortemperature=temperature=6500",
                 "cool" => ",colortemperature=temperature=3500",
+                "winter" => ",colortemperature=temperature=3200,eq=brightness=-0.02:saturation=0.85",
                 "highcontrast" => ",eq=contrast=1.4:saturation=1.2",
                 "vintage" => ",colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131,vignette=PI/4",
                 "vivid" => ",eq=contrast=1.15:brightness=0.03:saturation=1.5",
@@ -279,9 +307,11 @@ public class VideoComposerService : IVideoComposerService
                 "muted" => ",eq=saturation=0.4:contrast=0.9",
                 "bwfilm" => ",colorchannelmixer=.3:.4:.3:0:.3:.4:.3:0:.3:.4:.3,noise=c0s=8:c0f=t+u,eq=contrast=1.15",
                 "tealorange" => ",colorbalance=rs=0.15:gs=-0.05:bs=-0.15:rh=-0.1:gh=0.05:bh=0.2",
-                "cinematic" => ",eq=contrast=1.2:saturation=1.1:brightness=-0.03,vignette=PI/4",
+                "cinematic" or "cinema" => ",eq=contrast=1.2:saturation=1.1:brightness=-0.03,vignette=PI/4",
                 "vignette" => ",vignette=PI/4",
                 "blur" => ",gblur=sigma=5",
+                "retro" => ",eq=contrast=1.1:saturation=0.7:brightness=0.05,colorbalance=rs=0.15:bh=-0.1,noise=c0s=6:c0f=t+u",
+                "35mm" => ",noise=c0s=10:c0f=t+u,eq=contrast=1.15:saturation=0.9,vignette=PI/5",
                 _ => ""
             };
             if (!string.IsNullOrEmpty(filterStr))
@@ -303,6 +333,8 @@ public class VideoComposerService : IVideoComposerService
                 "slowzoom" => "", // handled via zoompan separately
                 "crashzoom" => "", // handled via zoompan separately
                 "smoke" => ",gblur=sigma=2:steps=2",
+                "sharpen" => ",unsharp=5:5:1.5",
+                "denoise" => ",hqdn3d=4:3:6:4.5",
                 _ => ""
             };
             // Only add effect if filter wasn't already applied (avoid double-applying)
@@ -328,6 +360,75 @@ public class VideoComposerService : IVideoComposerService
                 var tintG = (-scene.Tint * 0.3).ToString("F3", CultureInfo.InvariantCulture);
                 var tintM = (scene.Tint * 0.3).ToString("F3", CultureInfo.InvariantCulture);
                 sbFilter.Append($",colorbalance=gs={tintG}:gm={tintG}:gh={tintG}:rs={tintM}:rm={tintM}:rh={tintM}");
+            }
+
+            // ═══ Text Overlays ═══
+            if (scene.TextOverlays != null && scene.TextOverlays.Any())
+            {
+                foreach (var overlay in scene.TextOverlays)
+                {
+                    if (string.IsNullOrWhiteSpace(overlay.Text)) continue;
+                    
+                    var escapedText = overlay.Text.Replace("'", "'\\''").Replace(":", "\\:");
+                    var fontColorList = overlay.Color ?? "#FFFFFF";
+                    if (fontColorList.StartsWith("#")) fontColorList = "0x" + fontColorList.Substring(1) + 
+                        (overlay.Transparency < 100 ? ((int)(2.55 * overlay.Transparency)).ToString("X2") : "FF");
+
+                    var fontSize = overlay.FontSize > 0 ? overlay.FontSize : 48;
+                    
+                    // ═══ XY Positioning & Animations ═══
+                    var posXStr = overlay.PositionX.ToString("F3", CultureInfo.InvariantCulture);
+                    var posYStr = overlay.PositionY.ToString("F3", CultureInfo.InvariantCulture);
+                    
+                    string xExpr = $"(w-text_w)*{posXStr}";
+                    string yExpr = $"(h-text_h)*{posYStr}";
+                    string alphaExpr = "";
+
+                    var anim = overlay.Animation?.ToLowerInvariant() ?? "none";
+                    if (anim == "fade")
+                    {
+                        alphaExpr = ":alpha='min(t\\,1)'";
+                    }
+                    else if (anim == "slide-in")
+                    {
+                        xExpr = $"(w-text_w)*{posXStr}-w*max(1-t\\,0)";
+                    }
+                    else if (anim == "typewriter")
+                    {
+                        // Reveal characters one-by-one over 2 seconds
+                        alphaExpr = ":alpha='if(lt(t\\,0.1)\\,0\\,1)'";
+                        // Use enable to simulate typewriter by showing text only after delay
+                        // FFmpeg doesn't have native per-char reveal, so we use a rapid fade-in as approximation
+                        alphaExpr = ":alpha='min(t*3\\,1)'";
+                    }
+                    else if (anim == "bounce")
+                    {
+                        // Vertical oscillation: bounce up/down using abs(sin) 
+                        yExpr = $"(h-text_h)*{posYStr}-abs(sin(t*4))*50";
+                    }
+
+                    // Handle SRT / Subtitle StartTime & EndTime
+                    string enableExpr = "";
+                    if (overlay.StartTime.HasValue && overlay.EndTime.HasValue)
+                    {
+                        enableExpr = $"enable='between(t\\,{overlay.StartTime.Value.ToString("F2", CultureInfo.InvariantCulture)}\\,{overlay.EndTime.Value.ToString("F2", CultureInfo.InvariantCulture)})':";
+                    }
+
+                    string alignPos = $"x={xExpr}:y={yExpr}{alphaExpr}";
+                    string textFilter = $"drawtext={enableExpr}text='{escapedText}':fontfile='C\\:/Windows/Fonts/arial.ttf':fontcolor={fontColorList}:fontsize={(int)fontSize}:{alignPos}";
+                    
+                    if (overlay.OutlineThickness > 0)
+                    {
+                        textFilter += $":borderw={(int)overlay.OutlineThickness}:bordercolor=black";
+                    }
+                    if (overlay.ShadowOpacity > 0)
+                    {
+                        var alpha = (int)(255 * overlay.ShadowOpacity);
+                        textFilter += $":shadowx=4:shadowy=4:shadowcolor=0x000000{alpha:X2}";
+                    }
+                    
+                    sbFilter.Append($",{textFilter}");
+                }
             }
 
             // FadeIn / FadeOut per scene
@@ -357,15 +458,40 @@ public class VideoComposerService : IVideoComposerService
         {
             cumulativeOffset += sceneDurations[i - 1];
             var scene = timeline[i];
-            double transitionDuration = Math.Min(1.0, sceneDurations[i - 1] * 0.3);
+            
+            // Allow user-defined transition duration or default to 30% of previous scene (max 1.0s)
+            double transitionDuration = scene.TransitionDuration ?? Math.Min(1.0, sceneDurations[i - 1] * 0.3);
+            
             double offset = cumulativeOffset - transitionDuration;
             if (offset < 0) offset = 0;
 
-            // Normalize transition name to valid FFmpeg xfade transition
-            string xfadeEffect = NormalizeXfadeTransition(scene.Transition);
+            // Normalize transition name to valid FFmpeg xfade transition, considering direction
+            string xfadeEffect = NormalizeXfadeTransition(scene.Transition, scene.TransitionDirection);
 
             sbFilter.Append($"{lastNode}[v{i}]xfade=transition={xfadeEffect}:duration={transitionDuration.ToString("F2", CultureInfo.InvariantCulture)}:offset={offset.ToString("F4", CultureInfo.InvariantCulture)}[f{i}];\n");
             lastNode = $"[f{i}]";
+        }
+
+        // 4. Handle global project audio fades
+        string audioMapNode = $"{imagePaths.Count}:a";
+        if (audioFadeInDuration > 0 || audioFadeOutDuration > 0)
+        {
+            var audioFilterStr = new System.Text.StringBuilder();
+            audioFilterStr.Append($"[{imagePaths.Count}:a]");
+            if (audioFadeInDuration > 0)
+            {
+                audioFilterStr.Append($"afade=t=in:st=0:d={audioFadeInDuration.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+            if (audioFadeOutDuration > 0)
+            {
+                if (audioFadeInDuration > 0) audioFilterStr.Append(",");
+                var outStart = effectiveDuration - audioFadeOutDuration;
+                if (outStart < 0) outStart = 0;
+                audioFilterStr.Append($"afade=t=out:st={outStart.ToString("F2", CultureInfo.InvariantCulture)}:d={audioFadeOutDuration.ToString("F2", CultureInfo.InvariantCulture)}");
+            }
+            audioFilterStr.Append("[aout];\n");
+            sbFilter.Append(audioFilterStr.ToString());
+            audioMapNode = "\"[aout]\"";
         }
 
         var filterScriptPath = Path.Combine(tempDir, "filter.txt");
@@ -376,7 +502,7 @@ public class VideoComposerService : IVideoComposerService
         argsBuilder.Append(sbInputs.ToString());
         argsBuilder.Append($"-i \"{audioPath}\" ");
         argsBuilder.Append($"-filter_complex_script \"{filterScriptPath}\" ");
-        argsBuilder.Append($"-map \"{lastNode}\" -map {imagePaths.Count}:a ");
+        argsBuilder.Append($"-map \"{lastNode}\" -map {audioMapNode} ");
         argsBuilder.Append($"-c:v {settings.Codec} -preset fast -pix_fmt yuv420p ");
         argsBuilder.Append($"-c:a aac -b:a 192k ");
         argsBuilder.Append($"-t {effectiveDuration.ToString("F2", CultureInfo.InvariantCulture)} -shortest ");
@@ -395,9 +521,21 @@ public class VideoComposerService : IVideoComposerService
     /// slideleft, slideright, pixelize, circlecrop, horzopen, vertopen, diagtl, diagtr, diagbl, diagbr,
     /// smoothleft, smoothright, smoothup, smoothdown, radial, etc.
     /// </summary>
-    private static string NormalizeXfadeTransition(string? transition)
+    private static string NormalizeXfadeTransition(string? transition, string? direction)
     {
         var t = transition?.ToLowerInvariant()?.Trim() ?? "none";
+        var dir = direction?.ToLowerInvariant()?.Trim() ?? "";
+
+        // Apply direction if it's a generic wipe or slide
+        if (!string.IsNullOrEmpty(dir))
+        {
+            if (t == "wipe" || t == "slide" || t == "smooth")
+            {
+                if (dir == "left" || dir == "right" || dir == "up" || dir == "down")
+                    return t + dir;
+            }
+        }
+
         return t switch
         {
             "none" or "" => "fade",

@@ -115,11 +115,37 @@ public class ClientJobOrchestrator
             var targetSceneCount = Math.Max(userRequestedImages, analysis.SceneCount);
             if (targetSceneCount < 1) targetSceneCount = 1;
 
-            // Generate Images
-            await _apiClient.UpdateProjectStatusAsync(projectId, ProjectStatus.GeneratingImages);
+            // Moved UpdateProjectStatusAsync down to be able to access the provider name
             
+            string provider = "";
+            string modelName = project.ImageModel;
+
+            if (project.ImageModel != null && project.ImageModel.Contains(":"))
+            {
+                var parts = project.ImageModel.Split(':');
+                provider = parts[0];
+                modelName = parts[1];
+            }
+            else
+            {
+                if (project.ImageModel == "gemini-2.5-flash") provider = "gemini";
+                else if (project.ImageModel == "local" || project.ImageModel == "comfyui") provider = "comfyui";
+                else if (!string.IsNullOrEmpty(config.HuggingFaceKey)) provider = "huggingface";
+                else provider = "pollinations";
+            }
+
+            if (provider == "comfyui" && (modelName == "local" || modelName == "comfyui" || string.IsNullOrEmpty(modelName)))
+            {
+                modelName = "sd_xl_base_1.0.safetensors";
+            }
+
+            // Generate Images
+            await _apiClient.UpdateProjectStatusAsync(projectId, ProjectStatus.GeneratingImages, $"Generating {targetSceneCount} images via {provider} ({modelName})...");
+
             IImageGenerationService imageService;
-            if (project.ImageModel == "gemini-2.5-flash")
+            bool usingFallback = false;
+            
+            if (provider == "gemini")
             {
                 if (string.IsNullOrEmpty(config.GeminiKey))
                 {
@@ -129,16 +155,24 @@ public class ClientJobOrchestrator
                 var dummySettingsGemini = new DummySettingsService("Gemini:ApiKey", config.GeminiKey);
                 imageService = new GeminiImageService(geminiClient, NullLogger<GeminiImageService>.Instance, dummySettingsGemini);
             }
-            else
+            else if (provider == "huggingface" && !string.IsNullOrEmpty(config.HuggingFaceKey))
             {
-                if (string.IsNullOrEmpty(config.HuggingFaceKey))
-                {
-                    throw new Exception("HuggingFace API key is missing. Please configure it in settings.");
-                }
                 var hfClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
                 hfClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.HuggingFaceKey);
                 var dummySettingsHf = new DummySettingsService("HuggingFace:ApiKey", config.HuggingFaceKey);
                 imageService = new HuggingFaceImageService(hfClient, NullLogger<HuggingFaceImageService>.Instance, dummySettingsHf);
+            }
+            else if (provider == "comfyui" || provider == "local")
+            {
+                var comfyClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+                imageService = new ComfyUIImageService(comfyClient);
+            }
+            else
+            {
+                // Pollinations is the fallback or explicit choice
+                var pollClient = new HttpClient { Timeout = TimeSpan.FromMinutes(3) };
+                imageService = new PollinationsImageService(pollClient, NullLogger<PollinationsImageService>.Instance);
+                usingFallback = true;
             }
 
             var renderSettings = VideoRenderSettings.FromFormatType(project.FormatType, 0, 0);
@@ -148,20 +182,28 @@ public class ClientJobOrchestrator
             var basePrompt = $"{project.Title}, cinematic lighting, high quality";
             if (!string.IsNullOrWhiteSpace(project.ImageStyle)) basePrompt = $"{project.ImageStyle} style, {basePrompt}";
 
-            // Map target format to HuggingFace SDXL safe resolutions
-            int aiWidth = 1024;
-            int aiHeight = 1024;
-            var formatStr = project.FormatType.ToString();
-            if (formatStr == "Shorts" || formatStr == "Tiktok" || formatStr == "Reels") {
-                aiWidth = 768; aiHeight = 1344;
-            }
-            else if (formatStr == "Standard" || formatStr == "Youtube") {
-                aiWidth = 1344; aiHeight = 768;
-            }
+            int aiWidth = renderSettings.Width;
+            int aiHeight = renderSettings.Height;
 
-            var imagePaths = await imageService.GenerateImagesAsync(
-                basePrompt, targetSceneCount, aiWidth, aiHeight,
-                project.ImageModel, targetSceneCount, cancellationToken);
+            List<string> imagePaths;
+            try
+            {
+                imagePaths = await imageService.GenerateImagesAsync(
+                    basePrompt, targetSceneCount, aiWidth, aiHeight,
+                    modelName, targetSceneCount, null, cancellationToken);
+            }
+            catch (Exception imgEx) when (!usingFallback)
+            {
+                // HuggingFace/Gemini failed → fallback to Pollinations (free, no key)
+                var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt");
+                File.AppendAllText(logPath, $"[{DateTime.Now}] Primary image service failed, falling back to Pollinations.ai: {imgEx.Message}\n\n");
+                
+                var pollClient = new HttpClient { Timeout = TimeSpan.FromMinutes(3) };
+                var fallbackService = new PollinationsImageService(pollClient, NullLogger<PollinationsImageService>.Instance);
+                imagePaths = await fallbackService.GenerateImagesAsync(
+                    basePrompt, targetSceneCount, aiWidth, aiHeight,
+                    "flux", targetSceneCount, null, cancellationToken);
+            }
                 
             // Timeline Json creation
             var sceneDuration = Math.Min(analysis.Duration, renderSettings.MaxDurationSeconds) / imagePaths.Count;
@@ -194,6 +236,93 @@ public class ClientJobOrchestrator
             var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt");
             File.AppendAllText(logPath, $"[{DateTime.Now}] StartPipelineAsync Error ({projectId}): {ex}\n\n");
             await _apiClient.UpdateProjectStatusAsync(projectId, ProjectStatus.Failed, ex.Message);
+        }
+    }
+
+    public async Task<string> GenerateSingleImageAsync(int projectId, string prompt, string? overrideImageModel = null, int? customWidth = null, int? customHeight = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
+    {
+        var project = await _apiClient.GetProjectAsync(projectId);
+        if (project == null) throw new Exception("Project not found.");
+
+        var config = await GetSettingsAsync();
+
+        string provider = "";
+        string modelName = overrideImageModel ?? project.ImageModel;
+
+        if (modelName != null && modelName.Contains(":"))
+        {
+            var parts = modelName.Split(':');
+            provider = parts[0];
+            modelName = parts[1];
+        }
+        else
+        {
+            if (modelName == "gemini-2.5-flash") provider = "gemini";
+            else if (modelName == "local" || modelName == "comfyui") provider = "comfyui";
+            else if (!string.IsNullOrEmpty(config.HuggingFaceKey)) provider = "huggingface";
+            else provider = "pollinations";
+        }
+
+        if (provider == "comfyui" && (modelName == "local" || modelName == "comfyui" || string.IsNullOrEmpty(modelName)))
+        {
+            modelName = "sd_xl_base_1.0.safetensors";
+        }
+
+        IImageGenerationService imageService;
+        bool usingFallback = false;
+        
+        if (provider == "gemini")
+        {
+            if (string.IsNullOrEmpty(config.GeminiKey)) throw new Exception("Gemini API key is missing. Please configure it in settings.");
+            var geminiClient = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
+            var dummySettingsGemini = new DummySettingsService("Gemini:ApiKey", config.GeminiKey);
+            imageService = new GeminiImageService(geminiClient, NullLogger<GeminiImageService>.Instance, dummySettingsGemini);
+        }
+        else if (provider == "huggingface" && !string.IsNullOrEmpty(config.HuggingFaceKey))
+        {
+            var hfClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+            hfClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.HuggingFaceKey);
+            var dummySettingsHf = new DummySettingsService("HuggingFace:ApiKey", config.HuggingFaceKey);
+            imageService = new HuggingFaceImageService(hfClient, NullLogger<HuggingFaceImageService>.Instance, dummySettingsHf);
+        }
+        else if (provider == "comfyui" || provider == "local")
+        {
+            var comfyClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+            imageService = new ComfyUIImageService(comfyClient);
+        }
+        else
+        {
+            var pollClient = new HttpClient { Timeout = TimeSpan.FromMinutes(3) };
+            imageService = new PollinationsImageService(pollClient, NullLogger<PollinationsImageService>.Instance);
+            usingFallback = true;
+        }
+
+        var renderSettings = VideoRenderSettings.FromFormatType(project.FormatType, customWidth, customHeight);
+        int aiWidth = renderSettings.Width;
+        int aiHeight = renderSettings.Height;
+
+        try
+        {
+            var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt");
+            _ = File.AppendAllTextAsync(logPath, $"[{DateTime.Now}] Editor: Regenerating image with {provider} ({modelName})\n");
+            
+            var imagePaths = await imageService.GenerateImagesAsync(
+                prompt, 1, aiWidth, aiHeight,
+                modelName, 1, progressCallback, cancellationToken);
+                
+            return imagePaths.FirstOrDefault() ?? "";
+        }
+        catch (Exception imgEx) when (!usingFallback)
+        {
+            var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "orchestrator_errors.txt");
+            _ = File.AppendAllTextAsync(logPath, $"[{DateTime.Now}] Editor Regenerate Service failed, falling back to Pollinations.ai: {imgEx.Message}\n");
+            
+            var pollClient = new HttpClient { Timeout = TimeSpan.FromMinutes(3) };
+            var fallbackService = new PollinationsImageService(pollClient, NullLogger<PollinationsImageService>.Instance);
+            var imagePaths = await fallbackService.GenerateImagesAsync(
+                prompt, 1, aiWidth, aiHeight,
+                "flux", 1, null, cancellationToken);
+            return imagePaths.FirstOrDefault() ?? "";
         }
     }
 

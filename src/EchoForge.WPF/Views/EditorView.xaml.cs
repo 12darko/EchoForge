@@ -716,32 +716,14 @@ public partial class EditorView : UserControl
         }
     }
 
-    // ═══ SIDEBAR TAB SWITCHING ═══
-    private void SidebarTab_Click(object sender, RoutedEventArgs e)
-    {
-        // Hide all panels
-        PanelProperties.Visibility = Visibility.Collapsed;
-        PanelEffects.Visibility = Visibility.Collapsed;
-        PanelPublish.Visibility = Visibility.Collapsed;
 
-        // Show selected based on which RadioButton was clicked
-        if (sender == TabProperties) 
-        {
-            PanelProperties.Visibility = Visibility.Visible;
-        }
-        else if (sender == TabEffects) 
-        {
-            PanelEffects.Visibility = Visibility.Visible;
-        }
-        else if (sender == TabPublish)
-        {
-            PanelPublish.Visibility = Visibility.Visible;
-        }
-    }
 
     // ═══ EFFECT CARD CLICK & DRAG ═══
+    private Point _effectDragStartPoint;
+
     private void EffectCard_Click(object sender, MouseButtonEventArgs e)
     {
+        _effectDragStartPoint = e.GetPosition(null);
         if (sender is FrameworkElement fe && fe.Tag is string effectTag)
         {
             var vm = DataContext as EditorViewModel;
@@ -757,7 +739,12 @@ public partial class EditorView : UserControl
     {
         if (e.LeftButton == MouseButtonState.Pressed && sender is FrameworkElement fe && fe.Tag is string effectTag)
         {
-            DragDrop.DoDragDrop(fe, new DataObject("EffectOrFilter", effectTag), DragDropEffects.Copy);
+            Vector diff = _effectDragStartPoint - e.GetPosition(null);
+            if (Math.Abs(diff.X) >= SystemParameters.MinimumHorizontalDragDistance ||
+                Math.Abs(diff.Y) >= SystemParameters.MinimumVerticalDragDistance)
+            {
+                DragDrop.DoDragDrop(fe, new DataObject("EffectOrFilter", effectTag), DragDropEffects.Copy);
+            }
         }
     }
 

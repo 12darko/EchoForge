@@ -50,7 +50,7 @@ public class PollinationsImageService : IImageGenerationService
     }
 
     public async Task<List<string>> GenerateImagesAsync(string basePrompt, int count, int width, int height,
-        string? model = null, int? maxUniqueImages = null, CancellationToken cancellationToken = default)
+        string? model = null, int? maxUniqueImages = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         var effectiveModel = string.IsNullOrWhiteSpace(model) ? "flux" : model;
         var uniqueCount = Math.Min(count, maxUniqueImages ?? DefaultMaxUniqueImages);
@@ -78,7 +78,7 @@ public class PollinationsImageService : IImageGenerationService
                     var prompt = $"{basePrompt}, {variation}";
                     var seed = _random.Next(1, 999999999);
 
-                    var imagePath = await GenerateSingleImageAsync(prompt, width, height, seed, effectiveModel, cancellationToken);
+                    var imagePath = await GenerateSingleImageAsync(prompt, width, height, seed, effectiveModel, progressCallback, cancellationToken);
                     uniqueImages[currentIndex] = imagePath;
 
                     _logger.LogInformation("Generated unique image {Index}/{Total}: {Path}", currentIndex + 1, uniqueCount, imagePath);
@@ -104,7 +104,7 @@ public class PollinationsImageService : IImageGenerationService
     }
 
     public async Task<string> GenerateSingleImageAsync(string prompt, int width, int height,
-        int? seed = null, string? model = null, CancellationToken cancellationToken = default)
+        int? seed = null, string? model = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         var actualSeed = seed ?? _random.Next(1, 999999999);
         var effectiveModel = string.IsNullOrWhiteSpace(model) ? "flux" : model;

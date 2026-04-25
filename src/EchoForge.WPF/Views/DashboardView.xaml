@@ -171,12 +171,18 @@
                                         Visibility="{Binding Status, Converter={StaticResource StatusVisibility}, ConverterParameter='Created,AnalyzingAudio,GeneratingImages,ComposingVideo,GeneratingSEO,Uploading'}">
                                     <Grid>
                                         <!-- Header Actions (Delete inside Overlay) -->
-                                        <Button Content="✕ Cancel / Delete" Style="{StaticResource SecondaryButton}" 
-                                                Foreground="{StaticResource AccentRedBrush}" Background="#20FF3333" BorderBrush="{StaticResource AccentRedBrush}"
-                                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="16" Padding="12,6" FontSize="12"
-                                                Command="{Binding DataContext.DeleteProjectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                CommandParameter="{Binding}"/>
-                                                
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="16">
+                                            <Button Content="🔄 Retry" Style="{StaticResource SecondaryButton}" 
+                                                    Foreground="{StaticResource AccentBlueBrush}" Background="#203B82F6" BorderBrush="{StaticResource AccentBlueBrush}"
+                                                    Padding="12,6" FontSize="12" Margin="0,0,8,0"
+                                                    Command="{Binding DataContext.RetryProjectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                            <Button Content="✕ Cancel" Style="{StaticResource SecondaryButton}" 
+                                                    Foreground="{StaticResource AccentRedBrush}" Background="#20FF3333" BorderBrush="{StaticResource AccentRedBrush}"
+                                                    Padding="12,6" FontSize="12"
+                                                    Command="{Binding DataContext.DeleteProjectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </StackPanel>
                                         <!-- Centered Progress Info -->
                                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="24">
                                             <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Dash_RenderActive]}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentPurpleBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>

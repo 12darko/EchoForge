@@ -42,6 +42,9 @@
         <DataTemplate DataType="{x:Type vm:YouTubeVideosViewModel}">
             <views:YouTubeVideosView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StandaloneEditorViewModel}">
+            <views:StandaloneEditorView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:LoginViewModel}">
             <views:LoginView/>
         </DataTemplate>
@@ -273,6 +276,18 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📽️" FontSize="16" Margin="0,0,14,0"/>
                                 <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Cat_Storyboard]}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- ──── CATEGORY: Editor ──── -->
+                        <TextBlock Text="EDİTÖR" FontSize="10" FontWeight="Bold" Foreground="#484F58" 
+                                   Margin="16,20,0,8"/>
+                        
+                        <Button Command="{Binding NavigateToStandaloneEditorCommand}" Margin="0,2"
+                                Style="{StaticResource NavButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🎬" FontSize="16" Margin="0,0,14,0"/>
+                                <TextBlock Text="Açık Editör"/>
                             </StackPanel>
                         </Button>
 

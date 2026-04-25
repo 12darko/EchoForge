@@ -9,7 +9,9 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.73.0.4053" />
+    <PackageReference Include="LibVLCSharp.WPF" Version="3.9.6" />
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.23" />
   </ItemGroup>
 
   <PropertyGroup>

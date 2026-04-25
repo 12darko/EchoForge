@@ -12,6 +12,7 @@
 
     <UserControl.Resources>
         <converters:DurationAndZoomMultiConverter x:Key="DurationAndZoomMultiConverter"/>
+        <converters:StringMatchToVisibilityConverter x:Key="StringMatchVisibilityConverter"/>
     </UserControl.Resources>
     
     <Grid>
@@ -59,20 +60,256 @@
         <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="200"/>
-                <ColumnDefinition Width="340"/>
-                <ColumnDefinition Width="64"/>
+                <ColumnDefinition Width="64"/> <!-- Primary Nav Ribbon -->
+                <ColumnDefinition Width="Auto" MaxWidth="300" /> <!-- Expanding Asset Library -->
+                <ColumnDefinition Width="*" MinWidth="200"/> <!-- Center Preview/Canvas -->
+                <ColumnDefinition Width="360"/> <!-- Contextual Properties Panel -->
             </Grid.ColumnDefinitions>
 
-            <!-- ──── LEFT: PREVIEW AREA & PLAYBACK ──── -->
-            <Grid Grid.Column="0" Margin="8,8,4,8">
+            <!-- ──── EXTREME LEFT: PRIMARY NAV RIBBON ──── -->
+            <Border Grid.Column="0" Background="#080A0F" BorderBrush="#1A1F2B" BorderThickness="0,0,1,0">
+                <StackPanel Margin="0,16,0,0">
+                    <!-- Media -->
+                    <Button ToolTip="Your Media" Background="Transparent" BorderThickness="0" Padding="0,12" Cursor="Hand" Margin="0,0,0,8"
+                            Command="{Binding ToggleAssetLibraryCommand}" CommandParameter="Media">
+                        <StackPanel>
+                            <TextBlock Text="📁" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Media" FontSize="10" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#A0AEC0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AssetLibraryMode}" Value="Media">
+                                                <Setter Property="Foreground" Value="#60A5FA"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Record -->
+                    <Button ToolTip="Record" Background="Transparent" BorderThickness="0" Padding="0,12" Cursor="Hand" Margin="0,0,0,8"
+                            Command="{Binding ToggleAssetLibraryCommand}" CommandParameter="Record">
+                        <StackPanel>
+                            <TextBlock Text="🔴" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Record" FontSize="10" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#A0AEC0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AssetLibraryMode}" Value="Record">
+                                                <Setter Property="Foreground" Value="#60A5FA"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Library -->
+                    <Button ToolTip="Content Library" Background="Transparent" BorderThickness="0" Padding="0,12" Cursor="Hand" Margin="0,0,0,8"
+                            Command="{Binding ToggleAssetLibraryCommand}" CommandParameter="Library">
+                        <StackPanel>
+                            <TextBlock Text="📚" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Library" FontSize="10" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#A0AEC0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AssetLibraryMode}" Value="Library">
+                                                <Setter Property="Foreground" Value="#60A5FA"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Music -->
+                    <Button ToolTip="Music" Background="Transparent" BorderThickness="0" Padding="0,12" Cursor="Hand" Margin="0,0,0,8"
+                            Command="{Binding ToggleAssetLibraryCommand}" CommandParameter="Music">
+                        <StackPanel>
+                            <TextBlock Text="🎵" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Music" FontSize="10" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#A0AEC0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AssetLibraryMode}" Value="Music">
+                                                <Setter Property="Foreground" Value="#60A5FA"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Text -->
+                    <Button ToolTip="Text" Background="Transparent" BorderThickness="0" Padding="0,12" Cursor="Hand" Margin="0,0,0,8"
+                            Command="{Binding ToggleAssetLibraryCommand}" CommandParameter="Text">
+                        <StackPanel>
+                            <TextBlock Text="T" FontWeight="Bold" FontSize="20" Foreground="#F8FAFC" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Text" FontSize="10" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#A0AEC0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AssetLibraryMode}" Value="Text">
+                                                <Setter Property="Foreground" Value="#60A5FA"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Transitions -->
+                    <Button ToolTip="Transitions" Background="Transparent" BorderThickness="0" Padding="0,12" Cursor="Hand" Margin="0,0,0,8"
+                            Command="{Binding ToggleAssetLibraryCommand}" CommandParameter="Transitions">
+                        <StackPanel>
+                            <TextBlock Text="✨" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <TextBlock Text="Transitions" FontSize="10" HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#A0AEC0"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AssetLibraryMode}" Value="Transitions">
+                                                <Setter Property="Foreground" Value="#60A5FA"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- ──── LEFT: EXTENDED ASSET LIBRARY ──── -->
+            <Border Grid.Column="1" Background="#0C1017" BorderBrush="#1A1F2B" BorderThickness="0,0,1,0" Width="300"
+                    Visibility="{Binding IsAssetLibraryOpen, Converter={StaticResource BoolToVisibility}}">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                        <TextBlock Text="{Binding AssetLibraryMode}" FontSize="18" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center"/>
+                        <Button Content="✕" Command="{Binding ToggleAssetLibraryCommand}" CommandParameter="{Binding AssetLibraryMode}" 
+                                DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Style="{StaticResource SecondaryButton}" Padding="6,4" ToolTip="Close Panel"/>
+                    </DockPanel>
+
+                    <!-- Dynamic content switches based on AssetLibraryMode -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <!-- Media Tab -->
+                            <StackPanel Visibility="{Binding AssetLibraryMode, Converter={StaticResource StringMatchVisibilityConverter}, ConverterParameter='Media'}">
+                                <TextBlock Text="Imported media will appear here." Foreground="#94A3B8" Padding="0,0,0,16" TextWrapping="Wrap"/>
+                                <Button Content="➕ Import Media" Style="{StaticResource PrimaryButton}" Padding="12,10" Margin="0,0,0,12"/>
+                                <Border BorderBrush="#333B82F6" BorderThickness="1" CornerRadius="8" Padding="16" Background="#0A3B82F6">
+                                    <TextBlock Text="Drag and drop files here" Foreground="#94A3B8" TextAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Record Tab -->
+                            <StackPanel Visibility="{Binding AssetLibraryMode, Converter={StaticResource StringMatchVisibilityConverter}, ConverterParameter='Record'}">
+                                <TextBlock Text="Create a new recording directly." Foreground="#94A3B8" Padding="0,0,0,16" TextWrapping="Wrap"/>
+                                <Button Content="📹 Screen &amp; Camera" Style="{StaticResource PrimaryButton}" Padding="12,10" Margin="0,0,0,8" Background="#EAB308" Foreground="#1F2937"/>
+                                <Button Content="📸 Camera Only" Style="{StaticResource SecondaryButton}" Padding="12,10" Margin="0,0,0,8"/>
+                                <Button Content="🎤 Audio Only" Style="{StaticResource SecondaryButton}" Padding="12,10" Margin="0,0,0,8"/>
+                            </StackPanel>
+
+                            <!-- Library Tab -->
+                            <StackPanel Visibility="{Binding AssetLibraryMode, Converter={StaticResource StringMatchVisibilityConverter}, ConverterParameter='Library'}">
+                                <TextBlock Text="Browse stock images and videos." Foreground="#94A3B8" Padding="0,0,0,16" TextWrapping="Wrap"/>
+                                <TextBox Style="{StaticResource ModernTextBox}" Margin="0,0,0,16" ToolTip="Search library..."/>
+                                <Border Background="#1A3B82F6" BorderBrush="#333B82F6" BorderThickness="1" CornerRadius="8" Padding="16">
+                                    <TextBlock Text="EchoForge content library coming soon." Foreground="#3B82F6" TextAlignment="Center"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Music Tab -->
+                            <StackPanel Visibility="{Binding AssetLibraryMode, Converter={StaticResource StringMatchVisibilityConverter}, ConverterParameter='Music'}">
+                                <TextBlock Text="Add background music and sound effects." Foreground="#94A3B8" Padding="0,0,0,16" TextWrapping="Wrap"/>
+                                <TextBox Style="{StaticResource ModernTextBox}" Margin="0,0,0,16" ToolTip="Search music..."/>
+                                <Button Content="🎵 Browse Royalty Free" Style="{StaticResource PrimaryButton}" Padding="12,10" Margin="0,0,0,12"/>
+                            </StackPanel>
+
+                            <!-- Text Tab -->
+                            <StackPanel Visibility="{Binding AssetLibraryMode, Converter={StaticResource StringMatchVisibilityConverter}, ConverterParameter='Text'}">
+                                <TextBlock Text="Add text over your video." Foreground="#94A3B8" Padding="0,0,0,16" TextWrapping="Wrap"/>
+                                <Button Content="T Add Plain Text" Style="{StaticResource SecondaryButton}" Padding="12,10" Margin="0,0,0,16" Foreground="#F8FAFC" FontWeight="Bold"/>
+                                <TextBlock Text="Styles" Foreground="#F8FAFC" FontWeight="Bold" Margin="0,0,0,8"/>
+                                <UniformGrid Columns="2">
+                                    <!-- Stubs for Text Styles -->
+                                    <Border Background="#1A1E293B" CornerRadius="8" Margin="0,0,8,8" Padding="8" MinHeight="60">
+                                        <TextBlock Text="Header" Foreground="#F8FAFC" FontWeight="Bold" TextAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+                                    </Border>
+                                    <Border Background="#1A1E293B" CornerRadius="8" Margin="0,0,0,8" Padding="8" MinHeight="60">
+                                        <TextBlock Text="Subtitle" Foreground="#94A3B8" TextAlignment="Center" VerticalAlignment="Center" FontSize="14"/>
+                                    </Border>
+                                    <Border Background="#1A1E293B" CornerRadius="8" Margin="0,0,8,0" Padding="8" MinHeight="60">
+                                        <TextBlock Text="Neon" Foreground="#EC4899" FontWeight="Bold" TextAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+                                    </Border>
+                                    <Border Background="#1A1E293B" CornerRadius="8" Padding="8" MinHeight="60">
+                                        <TextBlock Text="Glitch" Foreground="#10B981" FontWeight="Bold" TextAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+
+                            <!-- Transitions Tab -->
+                            <StackPanel Visibility="{Binding AssetLibraryMode, Converter={StaticResource StringMatchVisibilityConverter}, ConverterParameter='Transitions'}">
+                                <TextBlock Text="Add transitions between scenes." Foreground="#94A3B8" Padding="0,0,0,16" TextWrapping="Wrap"/>
+                                <TextBlock Text="Note: Drag a transition between clips." Foreground="#EAB308" FontSize="11" Margin="0,0,0,16"/>
+                                <UniformGrid Columns="2">
+                                    <!-- Stubs for Transitions -->
+                                    <Border Background="#1A1E293B" CornerRadius="8" Margin="0,0,8,8" Padding="8" MinHeight="60">
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="↔️" FontSize="16" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Crossfade" Foreground="#F8FAFC" FontSize="11" TextAlignment="Center" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#1A1E293B" CornerRadius="8" Margin="0,0,0,8" Padding="8" MinHeight="60">
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="⬛" FontSize="16" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Fade to Black" Foreground="#F8FAFC" FontSize="11" TextAlignment="Center" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#1A1E293B" CornerRadius="8" Margin="0,0,8,0" Padding="8" MinHeight="60">
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="🔜" FontSize="16" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Push" Foreground="#F8FAFC" FontSize="11" TextAlignment="Center" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- ──── CENTER: PREVIEW AREA & PLAYBACK ──── -->
+            <Grid Grid.Column="2" Margin="8,8,4,8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" Background="#0D1117" CornerRadius="12" ClipToBounds="True">
-                    <Grid>
+                    <Grid Background="Transparent" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
                         <!-- Scene Preview Image (Always shows the image at playhead) -->
                         <Border Background="#161B22" CornerRadius="12">
                             <Grid>
@@ -85,7 +322,7 @@
                                 <!-- The Image & Effects Preview Overlays -->
                                 <Grid Margin="16" Opacity="{Binding PreviewOpacity, FallbackValue=1.0}">
                                     
-                                    <Image Source="{Binding PreviewImagePath}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Image Source="{Binding PreviewImagePath}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality">
                                         <Image.Style>
                                             <Style TargetType="Image">
                                                 <Style.Triggers>
@@ -226,15 +463,12 @@
             </Grid>
 
             <!-- ──── RIGHT: PROPERTIES PANEL ──── -->
-            <Border Grid.Column="1" Background="#12161F" Margin="4,8,8,8" CornerRadius="12">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="20,16">
-
-                        <!-- ════ PANEL: PROPERTIES ════ -->
-                        <StackPanel x:Name="PanelProperties">
-
-                        <!-- ═══════ PROJECT SETTINGS (shown when NO scene selected) ═══════ -->
-                        <StackPanel Visibility="{Binding SelectedScene, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Inverse}">
+            <Border Grid.Column="3" Background="#12161F" Margin="4,8,8,8" CornerRadius="12" ClipToBounds="True">
+                <Grid>
+                    <!-- Show Project Settings when NO scene selected -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  Visibility="{Binding SelectedScene, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Inverse}">
+                        <StackPanel Margin="20,16">
                             
                             <!-- Project Settings Header -->
                             <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
@@ -318,12 +552,13 @@
 
                             <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_SelectSceneHint]}" FontSize="11" Foreground="#475569" TextWrapping="Wrap" Margin="0,8,0,0"/>
                         </StackPanel>
+                    </ScrollViewer>
 
-                        <!-- ═══════ SCENE PROPERTIES (shown when a scene IS selected) ═══════ -->
-                        <StackPanel Visibility="{Binding SelectedScene, Converter={StaticResource NullToVisibilityConverter}}">
+                    <!-- ═══════ SCENE PROPERTIES (shown when a scene IS selected) ═══════ -->
+                    <DockPanel Visibility="{Binding SelectedScene, Converter={StaticResource NullToVisibilityConverter}}">
 
-                            <!-- Scene Number Header -->
-                            <Border CornerRadius="10" Padding="14,10" Margin="0,0,0,16">
+                        <!-- Scene Number Header (pinned at top) -->
+                        <Border DockPanel.Dock="Top" CornerRadius="10" Padding="14,10" Margin="16,16,16,0">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                         <GradientStop Color="#2D1B69" Offset="0"/>
@@ -334,10 +569,61 @@
                                     <TextBlock Text="🎬" FontSize="16" Margin="0,0,8,0"/>
                                     <TextBlock Text="{Binding SelectedScene.SceneNumber, StringFormat='Scene {0}'}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC"/>
                                 </StackPanel>
-                            </Border>
+                        </Border>
 
-                            <!-- Duration -->
-                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Duration]}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
+                        <!-- Restore Save Button, Loading, and Status at bottom of Scene Properties -->
+                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusMessage}" FontSize="13" Foreground="#10B981" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,4,0,12"
+                                   Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibility}}"/>
+                                   
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,4"
+                                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Processing]}" FontSize="13" Foreground="#A855F7" FontStyle="Italic"/>
+                        </StackPanel>
+
+                        <Border DockPanel.Dock="Bottom" Margin="16,8,16,12">
+                            <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_SaveAllChanges]}" 
+                                    Style="{StaticResource PrimaryButton}" 
+                                    Command="{Binding ApplySceneEditsCommand}"
+                                    Padding="12,10" HorizontalAlignment="Stretch"/>
+                        </Border>
+
+                        <!-- TabControl fills remaining space, headers always visible -->
+                        <TabControl Background="Transparent" BorderThickness="0" Margin="0,8,0,0">
+                                <TabControl.Resources>
+                                    <Style TargetType="TabItem">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="#94A3B8"/>
+                                        <Setter Property="FontSize" Value="12"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Padding" Value="10,8"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="TabItem">
+                                                    <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0,0,0,2">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" ContentSource="Header" Margin="{TemplateBinding Padding}"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="Border" Property="BorderBrush" Value="#8B5CF6"/>
+                                                            <Setter Property="Foreground" Value="#F8FAFC"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Foreground" Value="#E2E8F0"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </TabControl.Resources>
+
+                                <!-- TAB 1: Sahne & Görsel -->
+                                <TabItem Header="🖼 Sahne">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Margin="16,12,16,0">
+                                        <!-- Duration -->
+                                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Duration]}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
                             <TextBox Text="{Binding SelectedScene.Duration, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:F2}'}" 
                                      Style="{StaticResource ModernTextBox}" Margin="0,0,0,4"/>
                             <TextBlock Text="{Binding SelectedSceneDurationDisplay}" FontSize="11" Foreground="#4A5568" Margin="0,0,0,16"/>
@@ -355,6 +641,12 @@
                                 <TextBlock Text="x" Foreground="#64748B" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0"/>
                                 <TextBox Text="{Binding DataContext.ProjectHeight, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue=1080}" Style="{StaticResource ModernTextBox}" Width="70" TextAlignment="Center" ToolTip="Yükseklik (Piksel)"/>
                             </StackPanel>
+
+                            <!-- AI Model Selection for Regeneration -->
+                            <TextBlock Text="Yapay Zeka Modeli" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,6"/>
+                            <ComboBox ItemsSource="{Binding DataContext.EditorRegenerateImageModels, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      SelectedItem="{Binding DataContext.SelectedEditorImageModel, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                      Style="{StaticResource ModernComboBox}" Margin="0,0,0,12" ToolTip="Yeniden oluşturma için kullanılacak AI modeli"/>
 
                             <!-- Regenerate Scene Image -->
                             <Button Style="{StaticResource SecondaryButton}" 
@@ -378,15 +670,29 @@
                                         </StackPanel>
                                         
                                         <!-- Load from Computer -->
-                                        <Button x:Name="BtnReplaceFromFile" Style="{StaticResource SecondaryButton}" 
-                                                Command="{Binding ReplaceSceneImageFromFileCommand}"
-                                                Padding="10,10" Margin="0,0,0,8" HorizontalAlignment="Stretch"
-                                                BorderBrush="#F59E0B" BorderThickness="1" Background="#1A1A0D00">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="📁" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Bilgisayardan Yükle" FontWeight="SemiBold" Foreground="#F59E0B"/>
-                                            </StackPanel>
-                                        </Button>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <Button x:Name="BtnReplaceFromFile" Style="{StaticResource SecondaryButton}" 
+                                                    Command="{Binding ReplaceSceneImageFromFileCommand}"
+                                                    Padding="10,10" HorizontalAlignment="Stretch"
+                                                    BorderBrush="#F59E0B" BorderThickness="1" Background="#1A1A0D00" Margin="0,0,6,0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="📁" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="Bilgisayardan Yükle" FontWeight="SemiBold" Foreground="#F59E0B"/>
+                                                </StackPanel>
+                                            </Button>
+
+                                            <Button Grid.Column="1" Style="{StaticResource SecondaryButton}" 
+                                                    Command="{Binding RemoveSceneImageCommand}"
+                                                    ToolTip="Bu sahneden özel görseli sil"
+                                                    Padding="12,10" BorderBrush="#EF4444" BorderThickness="1" Background="#1A4A0000" Cursor="Hand">
+                                                <TextBlock Text="🗑️" FontSize="14" Foreground="#EF4444"/>
+                                            </Button>
+                                        </Grid>
                                         
                                         <!-- Load from URL -->
                                         <TextBlock Text="veya URL'den indir:" FontSize="11" Foreground="#64748B" Margin="0,4,0,6"/>
@@ -413,500 +719,417 @@
                                 </Grid>
                             </Border>
 
-                            <!-- ═══ Transition Effect Gallery (Redesigned with color preview tiles) ═══ -->
-                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,12">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#1A1040" Offset="0"/>
-                                        <GradientStop Color="#0F172A" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_TransitionEffect]}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
-                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_TransitionDesc]}" FontSize="11" Foreground="#64748B"/>
-                                </StackPanel>
-                            </Border>
-                            <ListBox SelectedValue="{Binding SelectedScene.Transition}" SelectedValuePath="Tag" 
-                                     Background="Transparent" BorderThickness="0" Margin="0,0,0,16" 
-                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                                <ListBox.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Columns="4" />
-                                    </ItemsPanelTemplate>
-                                </ListBox.ItemsPanel>
-                                <ListBox.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ListBoxItem">
-                                                    <Border x:Name="Bd" Background="#0D1117" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Margin="3" Padding="0" Cursor="Hand" Height="72">
-                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="Bd" Property="Background" Value="#1A2234"/>
-                                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#475569"/>
-                                                        </Trigger>
-                                                        <Trigger Property="IsSelected" Value="True">
-                                                            <Setter TargetName="Bd" Property="Background" Value="#2A1B54"/>
-                                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#8B5CF6"/>
-                                                            <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Style>
-                                </ListBox.ItemContainerStyle>
-                                <ListBoxItem Tag="none">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="🚫" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="None" FontSize="10" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
                                     </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="fade">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A3B82F6" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="🌫️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Fade" FontSize="10" Foreground="#3B82F6" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="smoothleft">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A10B981" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="⬅️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Left" FontSize="10" Foreground="#10B981" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="smoothright">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A10B981" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="➡️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Right" FontSize="10" Foreground="#10B981" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="zoompan">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AF59E0B" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="🔍" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Zoom" FontSize="10" Foreground="#F59E0B" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="circlecrop">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AEC4899" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="⭕" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Circle" FontSize="10" Foreground="#EC4899" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="dissolve">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A8B5CF6" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="✨" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Dissolve" FontSize="10" Foreground="#8B5CF6" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="pixelize">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A06B6D4" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="👾" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Pixel" FontSize="10" Foreground="#06B6D4" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="shake">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AEF4444" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="🫨" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Shake" FontSize="10" Foreground="#EF4444" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="glitch">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AEF4444" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="📺" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Glitch" FontSize="10" Foreground="#EF4444" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="flash">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AF59E0B" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="⚡" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Flash" FontSize="10" Foreground="#F59E0B" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="pulse">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AEC4899" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="💓" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Pulse" FontSize="10" Foreground="#EC4899" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="wipe">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A10B981" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="🧹" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Wipe" FontSize="10" Foreground="#10B981" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="blinds">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A06B6D4" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="🪟" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Blinds" FontSize="10" Foreground="#06B6D4" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                                <ListBoxItem Tag="spin">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AF59E0B" HorizontalAlignment="Center" Margin="0,0,0,4">
-                                            <TextBlock Text="🌀" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Text="Spin" FontSize="10" Foreground="#F59E0B" HorizontalAlignment="Center" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ListBoxItem>
-                            </ListBox>
+                                    </ScrollViewer>
+                                </TabItem>
 
-                            <!-- Save Button -->
-                            <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_SaveAllChanges]}" 
-                                    Style="{StaticResource PrimaryButton}" 
-                                    Command="{Binding ApplySceneEditsCommand}"
-                                    Padding="12,10" Margin="0,0,0,20" HorizontalAlignment="Stretch"/>
-
-                            <!-- ═══ VISUAL EFFECTS ═══ -->
-                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#1A1040" Offset="0"/>
-                                        <GradientStop Color="#0F172A" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VisualEffects]}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
-                                    <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_VisualEffectsDesc]}" FontSize="11" Foreground="#64748B"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Fade In Card -->
-                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,10" BorderBrush="#1E293B" BorderThickness="1">
-                                <Grid>
-                                    <Border Background="#8B5CF6" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
-                                    <StackPanel Margin="16,12">
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                            <TextBlock Text="🌅" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_FadeIn]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                <!-- TAB 2: Geçişler -->
+                                <TabItem Header="✨ Geçişler">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="16,12,16,0">
+                                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,12">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#1A1040" Offset="0"/>
+                                                        <GradientStop Color="#0F172A" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <StackPanel>
+                                                    <TextBlock Text="Geçiş Efektleri" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                                    <TextBlock Text="Sahneler arası geçişi yumuşatmak için bir efekt seçin." FontSize="11" Foreground="#64748B"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <ListBox SelectedValue="{Binding SelectedScene.Transition}" SelectedValuePath="Tag" 
+                                                     Background="Transparent" BorderThickness="0" Margin="0,0,0,16" 
+                                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                                <ListBox.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Columns="3" />
+                                                    </ItemsPanelTemplate>
+                                                </ListBox.ItemsPanel>
+                                                <ListBox.ItemContainerStyle>
+                                                    <Style TargetType="ListBoxItem">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="ListBoxItem">
+                                                                    <Border x:Name="Bd" Background="#0D1117" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Margin="3" Padding="0" Cursor="Hand" Height="72">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="Bd" Property="Background" Value="#1A2234"/>
+                                                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#475569"/>
+                                                                        </Trigger>
+                                                                        <Trigger Property="IsSelected" Value="True">
+                                                                            <Setter TargetName="Bd" Property="Background" Value="#2A1B54"/>
+                                                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#8B5CF6"/>
+                                                                            <Setter TargetName="Bd" Property="BorderThickness" Value="2"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </ListBox.ItemContainerStyle>
+                                                <!-- Transition Items -->
+                                                <ListBoxItem Tag="none">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1E293B" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="🚫" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Yok" FontSize="10" Foreground="#94A3B8" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="fade">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A3B82F6" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="🌫️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Fade" FontSize="10" Foreground="#3B82F6" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="smoothleft">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A10B981" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="⬅️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Sol" FontSize="10" Foreground="#10B981" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="smoothright">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A10B981" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="➡️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Sağ" FontSize="10" Foreground="#10B981" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="zoompan">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AF59E0B" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="🔍" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Yakınlaş" FontSize="10" Foreground="#F59E0B" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="spin">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AF59E0B" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="🌀" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Döndür" FontSize="10" Foreground="#F59E0B" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="glitch">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1AEF4444" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="📺" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Glitch" FontSize="10" Foreground="#EF4444" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="pixelize">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A06B6D4" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="👾" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Pixel" FontSize="10" Foreground="#06B6D4" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                                <ListBoxItem Tag="wipe">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <Border Width="28" Height="28" CornerRadius="14" Background="#1A10B981" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                            <TextBlock Text="🧹" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="Wipe" FontSize="10" Foreground="#10B981" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </ListBoxItem>
+                                            </ListBox>
                                         </StackPanel>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="45"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Slider Value="{Binding SelectedScene.FadeInDuration}" Minimum="0" Maximum="5" SmallChange="0.1" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding SelectedScene.FadeInDuration, StringFormat='{}{0:F1}s'}" FontSize="12" FontWeight="Bold" Foreground="#8B5CF6" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                                    </ScrollViewer>
+                                </TabItem>
 
-                            <!-- Fade Out Card -->
-                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,10" BorderBrush="#1E293B" BorderThickness="1">
-                                <Grid>
-                                    <Border Background="#EC4899" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
-                                    <StackPanel Margin="16,12">
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                            <TextBlock Text="🌙" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_FadeOut]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                <!-- TAB 3: Görsel Efektler (Visual Effects) -->
+                                <TabItem Header="🎭 Efektler">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="16,12,16,0">
+                                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#1A1040" Offset="0"/>
+                                                        <GradientStop Color="#0F172A" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <StackPanel>
+                                                    <TextBlock Text="Görsel Efektler" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                                    <TextBlock Text="Sahnenize sanatsal ve sinematik efektler ekleyin." FontSize="11" Foreground="#64748B"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Blur Effect Card -->
+                                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,8" BorderBrush="#1E293B" BorderThickness="1">
+                                                <Grid>
+                                                    <Border Background="#3B82F6" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
+                                                    <StackPanel Margin="16,12">
+                                                        <CheckBox Content="Odağı Bulanıklaştır (Blur)" IsChecked="{Binding SelectedScene.Filter, Converter={StaticResource EqualityConverter}, ConverterParameter=blur}" Foreground="#E2E8F0" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,8" BorderBrush="#1E293B" BorderThickness="1">
+                                                <Grid>
+                                                    <Border Background="#EF4444" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
+                                                    <StackPanel Margin="16,12">
+                                                        <CheckBox Content="Sarsıntı Etkisi (Shake)" IsChecked="False" Foreground="#E2E8F0" FontWeight="SemiBold" ToolTip="Gelecek güncellemede aktif olacak."/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Green Screen placeholder -->
+                                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,8" BorderBrush="#1E293B" BorderThickness="1">
+                                                <Grid>
+                                                    <Border Background="#10B981" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
+                                                    <StackPanel Margin="16,12">
+                                                        <CheckBox Content="Yeşil Ekran (Chroma Key)" IsChecked="False" Foreground="#E2E8F0" FontWeight="SemiBold" ToolTip="Gelecek güncellemede aktif olacak."/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
                                         </StackPanel>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="45"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Slider Value="{Binding SelectedScene.FadeOutDuration}" Minimum="0" Maximum="5" SmallChange="0.1" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding SelectedScene.FadeOutDuration, StringFormat='{}{0:F1}s'}" FontSize="12" FontWeight="Bold" Foreground="#EC4899" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                                    </ScrollViewer>
+                                </TabItem>
 
-                            <!-- Speed Card -->
-                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,10" BorderBrush="#1E293B" BorderThickness="1">
-                                <Grid>
-                                    <Border Background="#F59E0B" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
-                                    <StackPanel Margin="16,12">
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                            <TextBlock Text="⚡" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_PlaybackSpeed]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                <!-- TAB 4: Renk Filters (Color) -->
+                                <TabItem Header="🎨 Renk">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="16,12,16,0">
+                                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#1A1040" Offset="0"/>
+                                                        <GradientStop Color="#0F172A" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                                <StackPanel>
+                                                    <TextBlock Text="Renk Filtreleri" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                                    <TextBlock Text="Görüntünün renk tonunu ve atmosferini değiştirin." FontSize="11" Foreground="#64748B"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <ComboBox SelectedValue="{Binding SelectedScene.Filter}" SelectedValuePath="Tag" Style="{StaticResource ModernComboBox}" Height="36">
+                                                <ComboBoxItem Content="Orijinal Renkler (Yok)" Tag="none"/>
+                                                <ComboBoxItem Content="Retro (Vintage)" Tag="vintage"/>
+                                                <ComboBoxItem Content="Siyah Beyaz (Grayscale)" Tag="grayscale"/>
+                                                <ComboBoxItem Content="Nostaljik (Sepia)" Tag="sepia"/>
+                                                <ComboBoxItem Content="Sıcak Tonlar" Tag="warm"/>
+                                                <ComboBoxItem Content="Soğuk Tonlar" Tag="cool"/>
+                                                <ComboBoxItem Content="Yüksek Kontrast" Tag="highcontrast"/>
+                                                <ComboBoxItem Content="Vignette (Kenar Karartma)" Tag="vignette"/>
+                                            </ComboBox>
+
+                                            <!-- Intensity Slider Placeholder -->
+                                            <TextBlock Text="Filtre Yoğunluğu" Foreground="#94A3B8" FontSize="12" Margin="0,16,0,8"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="45"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Slider Minimum="0" Maximum="100" Value="100" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="1" Text="100%" FontSize="12" FontWeight="Bold" Foreground="#06B6D4" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            </Grid>
+                                            
                                         </StackPanel>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="45"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Slider Value="{Binding SelectedScene.Speed}" Minimum="0.25" Maximum="4.0" SmallChange="0.25" IsSnapToTickEnabled="True" TickFrequency="0.25" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding SelectedScene.Speed, StringFormat='{}{0:F2}x'}" FontSize="12" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                                    </ScrollViewer>
+                                </TabItem>
 
-                            <!-- Color Filter Card -->
-                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,10" BorderBrush="#1E293B" BorderThickness="1">
-                                <Grid>
-                                    <Border Background="#06B6D4" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
-                                    <StackPanel Margin="16,12">
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                            <TextBlock Text="🎨" FontSize="14" Margin="0,0,6,0"/>
-                                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_ColorFilter]}" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                <!-- TAB 5: Ayarlar (Speed & Audio) -->
+                                <TabItem Header="⚡ Ayarlar">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <StackPanel Margin="16,12,16,0">
+                                            
+                                            <!-- Speed Card -->
+                                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,10" BorderBrush="#1E293B" BorderThickness="1">
+                                                <Grid>
+                                                    <Border Background="#F59E0B" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
+                                                    <StackPanel Margin="16,12">
+                                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                            <TextBlock Text="⚡" FontSize="14" Margin="0,0,6,0"/>
+                                                            <TextBlock Text="Oynatma Hızı" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="45"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Slider Value="{Binding SelectedScene.Speed}" Minimum="0.25" Maximum="4.0" SmallChange="0.25" IsSnapToTickEnabled="True" TickFrequency="0.25" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding SelectedScene.Speed, StringFormat='{}{0:F2}x'}" FontSize="12" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Fade In Card -->
+                                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,10" BorderBrush="#1E293B" BorderThickness="1">
+                                                <Grid>
+                                                    <Border Background="#8B5CF6" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
+                                                    <StackPanel Margin="16,12">
+                                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                            <TextBlock Text="🌅" FontSize="14" Margin="0,0,6,0"/>
+                                                            <TextBlock Text="Sahnede Karararak Açıl (Fade In)" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="45"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Slider Value="{Binding SelectedScene.FadeInDuration}" Minimum="0" Maximum="5" SmallChange="0.1" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding SelectedScene.FadeInDuration, StringFormat='{}{0:F1}s'}" FontSize="12" FontWeight="Bold" Foreground="#8B5CF6" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Fade Out Card -->
+                                            <Border Background="#0D1117" CornerRadius="10" Margin="0,0,0,10" BorderBrush="#1E293B" BorderThickness="1">
+                                                <Grid>
+                                                    <Border Background="#EC4899" Width="4" HorizontalAlignment="Left" CornerRadius="10,0,0,10"/>
+                                                    <StackPanel Margin="16,12">
+                                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                            <TextBlock Text="🌙" FontSize="14" Margin="0,0,6,0"/>
+                                                            <TextBlock Text="Sahnede Karararak Kapan (Fade Out)" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="45"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Slider Value="{Binding SelectedScene.FadeOutDuration}" Minimum="0" Maximum="5" SmallChange="0.1" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding SelectedScene.FadeOutDuration, StringFormat='{}{0:F1}s'}" FontSize="12" FontWeight="Bold" Foreground="#EC4899" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
                                         </StackPanel>
-                                        <ComboBox SelectedValue="{Binding SelectedScene.Filter}" SelectedValuePath="Content" Style="{StaticResource ModernComboBox}">
-                                            <ComboBoxItem Content="none"/>
-                                            <ComboBoxItem Content="grayscale"/>
-                                            <ComboBoxItem Content="sepia"/>
-                                            <ComboBoxItem Content="vintage"/>
-                                            <ComboBoxItem Content="warm"/>
-                                            <ComboBoxItem Content="cool"/>
-                                            <ComboBoxItem Content="highcontrast"/>
-                                            <ComboBoxItem Content="vignette"/>
-                                            <ComboBoxItem Content="blur"/>
-                                        </ComboBox>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </StackPanel>
-                        </StackPanel> <!-- End PanelProperties -->
+                                    </ScrollViewer>
+                                </TabItem>
 
-                        <!-- ════ PANEL: EFFECTS ════ -->
-                        <StackPanel x:Name="PanelEffects" Visibility="Collapsed">
-                            <!-- Effects Header -->
-                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#1A1040" Offset="0"/>
-                                        <GradientStop Color="#0F172A" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="Görsel Efektler" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Efektleri kliplerin üzerine sürükleyip bırakabilirsiniz." FontSize="11" Foreground="#64748B" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
+                                <!-- TAB 3: Yayınla & Onay -->
+                                <TabItem Header="🚀 Yayınla">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Margin="16,12,16,0">
+                                        <!-- Publish Header -->
+                                        <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                    <GradientStop Color="#1A1040" Offset="0"/>
+                                                    <GradientStop Color="#0F172A" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                            <StackPanel>
+                                                <TextBlock Text="Yayınlama ve Onay" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
+                                                <TextBlock Text="Videonuzu onaylayarak YouTube API üzerinden planlanan zamana gönderebilirsiniz." FontSize="11" Foreground="#64748B" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
 
-                            <UniformGrid Columns="2" Margin="-4,0,-4,0">
-                                <!-- Blur Effect Card -->
-                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="blur" MouseMove="EffectCard_MouseMove">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="💧" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                                        <TextBlock Text="Bulanıklık" Foreground="#3B82F6" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                                
-                                <!-- Sepia Effect Card -->
-                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="sepia" MouseMove="EffectCard_MouseMove">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="🟤" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                                        <TextBlock Text="Sepya" Foreground="#D97706" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Vintage Effect Card -->
-                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="vintage" MouseMove="EffectCard_MouseMove">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="🎞️" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                                        <TextBlock Text="Vintage" Foreground="#8B5CF6" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- Cool Effect Card -->
-                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="cool" MouseMove="EffectCard_MouseMove">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="❄️" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                                        <TextBlock Text="Soğuk (Mavi)" Foreground="#0EA5E9" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                                
-                                <!-- Warm Effect Card -->
-                                <Border Margin="4" Padding="12" Background="#1A2234" BorderBrush="#33475569" BorderThickness="1" CornerRadius="8" Cursor="Hand" Tag="warm" MouseMove="EffectCard_MouseMove">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="🔥" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                                        <TextBlock Text="Sıcak" Foreground="#F97316" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                            </UniformGrid>
-                        </StackPanel>
-
-                        <!-- ════ PANEL: PUBLISH / APPROVAL ════ -->
-                        <StackPanel x:Name="PanelPublish" Visibility="Collapsed">
-                            <!-- Publish Header -->
-                            <Border CornerRadius="10" Padding="14,12" Margin="0,0,0,16">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#1A1040" Offset="0"/>
-                                        <GradientStop Color="#0F172A" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="Yayınlama ve Onay" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,0,0,4"/>
-                                    <TextBlock Text="Videonuzu onaylayarak YouTube API üzerinden planlanan zamana gönderebilirsiniz." FontSize="11" Foreground="#64748B" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Scheduling Options Card -->
-                            <Border Background="#1A1E293B" BorderBrush="#331E293B" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="⏳ İleri Tarihe Zamanla (İsteğe Bağlı)" FontSize="13" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,0,8"/>
-                                    <TextBlock Text="Eğer videonun hemen değil, ileride bir saatte yayınlanmasını istiyorsanız tarihi ayarlayın. (Zamanlanmış videolar 'Gizli' olarak yüklenir.)" 
-                                               FontSize="10" Foreground="#64748B" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                                    
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="8"/>
-                                            <ColumnDefinition Width="60"/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                        <DatePicker SelectedDate="{Binding ScheduledPublishDate, UpdateSourceTrigger=PropertyChanged}" 
-                                                    Grid.Column="0" Height="28" Foreground="Black" Background="White" ToolTip="Tarih seçin"/>
+                                        <!-- Scheduling Options Card -->
+                                        <Border Background="#1A1E293B" BorderBrush="#331E293B" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="⏳ İleri Tarihe Zamanla (İsteğe Bağlı)" FontSize="13" FontWeight="Bold" Foreground="#94A3B8" Margin="0,0,0,8"/>
+                                                <TextBlock Text="Eğer videonun hemen değil, ileride bir saatte yayınlanmasını istiyorsanız tarihi ayarlayın. (Zamanlanmış videolar 'Gizli' olarak yüklenir.)" 
+                                                           FontSize="10" Foreground="#64748B" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                                
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="8"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                    </Grid.ColumnDefinitions>
                                                     
-                                        <!-- Note: There is no native WPF TimePicker, so using TextBox -->
-                                        <TextBox Text="{Binding ScheduledPublishTime, UpdateSourceTrigger=PropertyChanged}" 
-                                                 Grid.Column="2" Style="{StaticResource ModernTextBox}" 
-                                                 ToolTip="Saat formatı: 18:00 vb." TextAlignment="Center"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
+                                                    <DatePicker SelectedDate="{Binding ScheduledPublishDate, UpdateSourceTrigger=PropertyChanged}" 
+                                                                Grid.Column="0" Height="28" Foreground="Black" Background="White" ToolTip="Tarih seçin"/>
+                                                                
+                                                    <TextBox Text="{Binding ScheduledPublishTime, UpdateSourceTrigger=PropertyChanged}" 
+                                                             Grid.Column="2" Style="{StaticResource ModernTextBox}" 
+                                                             ToolTip="Saat formatı: 18:00 vb." TextAlignment="Center"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
 
-                            <!-- Approve Video Card -->
-                            <Border Background="#1A10B981" BorderBrush="#3310B981" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="✅ Onay Bekliyor (Awaiting Approval)" FontSize="14" FontWeight="Bold" Foreground="#10B981" Margin="0,0,0,8"/>
-                                    <TextBlock Text="Bu proje tamamlandıysa onaylayarak yayın akışına alabilirsiniz." FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,12"/>
-                                    <Button Content="Projeyi Onayla" Command="{Binding ApproveProjectCommand}" 
-                                            Padding="12,10" FontWeight="Bold" Foreground="#0B0E14" Margin="0,0,0,8" Cursor="Hand">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                                                <Setter Property="Background" Value="#10B981"/>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                    <Button Content="YouTube'a Yükle" Command="{Binding UploadToYouTubeCommand}" 
-                                            Padding="12,10" FontWeight="Bold" Cursor="Hand">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                                                <Setter Property="Background" Value="#EF4444"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                </StackPanel>
-                            </Border>
+                                        <!-- Approve Video Card -->
+                                        <Border Background="#1A10B981" BorderBrush="#3310B981" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="✅ Onay Bekliyor (Awaiting Approval)" FontSize="14" FontWeight="Bold" Foreground="#10B981" Margin="0,0,0,8"/>
+                                                <TextBlock Text="Bu proje tamamlandıysa onaylayarak yayın akışına alabilirsiniz." FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                                                <Button Content="Projeyi Onayla" Command="{Binding ApproveProjectCommand}" 
+                                                        Padding="12,10" FontWeight="Bold" Foreground="#0B0E14" Margin="0,0,0,8" Cursor="Hand">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                                            <Setter Property="Background" Value="#10B981"/>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                <Button Content="YouTube'a Yükle" Command="{Binding UploadToYouTubeCommand}" 
+                                                        Padding="12,10" FontWeight="Bold" Cursor="Hand">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                                            <Setter Property="Background" Value="#EF4444"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </StackPanel>
+                                        </Border>
 
-                            <!-- Video Output Card -->
-                            <Border Background="#1A3B82F6" BorderBrush="#333B82F6" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="🎬 Oluşturulan Video" FontSize="14" FontWeight="Bold" Foreground="#3B82F6" Margin="0,0,0,8"/>
-                                    
-                                    <!-- Show video path if available -->
-                                    <TextBlock Text="{Binding OutputVideoPath}" FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,8"
-                                               Visibility="{Binding OutputVideoPath, Converter={StaticResource StringToVisibility}}"/>
-                                    
-                                    
-                                    <Button Content="📂 Videoyu Aç" Command="{Binding OpenVideoFileCommand}" 
-                                            Padding="12,10" FontWeight="Bold" Cursor="Hand" Margin="0,0,0,4"
-                                            Visibility="{Binding OutputVideoPath, Converter={StaticResource StringToVisibility}}">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                                                <Setter Property="Background" Value="#3B82F6"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                    
-                                    <Button Content="📁 Klasörü Aç" Command="{Binding OpenVideoFolderCommand}" 
-                                            Padding="12,8" Cursor="Hand"
-                                            Visibility="{Binding OutputVideoPath, Converter={StaticResource StringToVisibility}}">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-                                                <Setter Property="Foreground" Value="#94A3B8"/>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                </StackPanel>
-                            </Border>
+                                        <!-- Video Output Card -->
+                                        <Border Background="#1A3B82F6" BorderBrush="#333B82F6" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="🎬 Oluşturulan Video" FontSize="14" FontWeight="Bold" Foreground="#3B82F6" Margin="0,0,0,8"/>
+                                                <TextBlock Text="{Binding OutputVideoPath}" FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,8"
+                                                           Visibility="{Binding OutputVideoPath, Converter={StaticResource StringToVisibility}}"/>
+                                                <Button Content="📂 Videoyu Aç" Command="{Binding OpenVideoFileCommand}" 
+                                                        Padding="12,10" FontWeight="Bold" Cursor="Hand" Margin="0,0,0,4"
+                                                        Visibility="{Binding OutputVideoPath, Converter={StaticResource StringToVisibility}}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                                            <Setter Property="Background" Value="#3B82F6"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                <Button Content="📁 Klasörü Aç" Command="{Binding OpenVideoFolderCommand}" 
+                                                        Padding="12,8" Cursor="Hand"
+                                                        Visibility="{Binding OutputVideoPath, Converter={StaticResource StringToVisibility}}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                                            <Setter Property="Foreground" Value="#94A3B8"/>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </StackPanel>
+                                        </Border>
 
-                            <!-- YouTube Link Card -->
-                            <Border Background="#1AEF4444" BorderBrush="#33EF4444" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12"
-                                    Visibility="{Binding YouTubeVideoUrl, Converter={StaticResource StringToVisibility}}">
-                                <StackPanel>
-                                    <TextBlock Text="▶️ YouTube'da Yayında" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,0,8"/>
-                                    <TextBlock Text="{Binding YouTubeVideoUrl}" FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,10"/>
-                                    <Button Content="🔗 YouTube'da Aç" Command="{Binding OpenYouTubeLinkCommand}" 
-                                            Padding="12,10" FontWeight="Bold" Cursor="Hand">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                                                <Setter Property="Background" Value="#EF4444"/>
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Loading Indicator -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,24,0,0"
-                                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Processing]}" FontSize="13" Foreground="#A855F7" FontStyle="Italic"/>
-                        </StackPanel>
-                        
-                        <!-- Status message -->
-                        <TextBlock Text="{Binding StatusMessage}" FontSize="13" Foreground="#10B981" TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,12,0,0"
-                                   Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibility}}"/>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-
-            <!-- ──── FAR RIGHT: VERTICAL NAVBAR (Clipchamp style) ──── -->
-            <Border Grid.Column="2" Background="#0A0D14" BorderBrush="#1A1F2B" BorderThickness="1,0,0,0">
-                <StackPanel Margin="0,16,0,0" HorizontalAlignment="Center">
-                    <!-- Tabbox: Properties -->
-                    <RadioButton x:Name="TabProperties" Tag="🎛️" ToolTip="Özellikler (Properties)" 
-                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"
-                                 IsChecked="True" Click="SidebarTab_Click"/>
-                    
-                    <!-- Tabbox: Effects -->
-                    <RadioButton x:Name="TabEffects" Tag="✨" ToolTip="Görsel Efektler (Effects)" 
-                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"
-                                 Click="SidebarTab_Click"/>
-
-                    <!-- Tabbox: Publish / Approve -->
-                    <RadioButton x:Name="TabPublish" Tag="🚀" ToolTip="Yayınla / Onayla (Publish)" 
-                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"
-                                 Click="SidebarTab_Click"/>
-
-                    <!-- Dummy Tabboxes to complete the Clipchamp look -->
-                    <RadioButton Tag="🔄" ToolTip="Geçişler (Transitions)" 
-                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"/>
-                    
-                    <RadioButton Tag="📁" ToolTip="Medya (Media)" 
-                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"/>
-
-                    <RadioButton Tag="🎵" ToolTip="Ses &amp; Müzik (Audio)" 
-                                 Style="{StaticResource SidebarIconRadioButton}" GroupName="RightSidebar"/>
-                </StackPanel>
+                                        <!-- YouTube Link Card -->
+                                        <Border Background="#1AEF4444" BorderBrush="#33EF4444" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12"
+                                                Visibility="{Binding YouTubeVideoUrl, Converter={StaticResource StringToVisibility}}">
+                                            <StackPanel>
+                                                <TextBlock Text="▶️ YouTube'da Yayında" FontSize="14" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,0,8"/>
+                                                <TextBlock Text="{Binding YouTubeVideoUrl}" FontSize="10" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                                <Button Content="🔗 YouTube'da Aç" Command="{Binding OpenYouTubeLinkCommand}" 
+                                                        Padding="12,10" FontWeight="Bold" Cursor="Hand">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                                            <Setter Property="Background" Value="#EF4444"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                    </ScrollViewer>
+                                </TabItem>
+                        </TabControl>
+                    </DockPanel>
+                </Grid>
             </Border>
         </Grid>
 
@@ -914,12 +1137,21 @@
         <Border Grid.Row="2" Background="#12161F" Margin="16,0,16,0" Padding="8,6" CornerRadius="8,8,0,0">
             <DockPanel>
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                    <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Split]}" Command="{Binding SplitSceneCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,4,0" Padding="8,4" ToolTip="Split scene at the playhead"/>
-                    <Button Content="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Delete]}" Command="{Binding DeleteSceneCommand}" Style="{StaticResource SecondaryButton}" Foreground="#F43F5E" Padding="8,4" Margin="0,0,8,0" ToolTip="Delete selected scene"/>
+                    <!-- Undo / Redo -->
+                    <Button Content="↺" Command="{Binding UndoCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,4,0" ToolTip="Undo" FontSize="14" Foreground="#94A3B8"/>
+                    <Button Content="↻" Command="{Binding RedoCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,8,0" ToolTip="Redo" FontSize="14" Foreground="#94A3B8"/>
                     <Border Width="1" Background="#2A2F3A" Margin="0,2,8,2"/>
+
+                    <!-- Edit Tools -->
+                    <Button Content="✂️" Command="{Binding SplitSceneCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,4,0" Padding="8,4" ToolTip="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Split]}" FontSize="14"/>
+                    <Button Content="🗑️" Command="{Binding DeleteSceneCommand}" Style="{StaticResource SecondaryButton}" Foreground="#F43F5E" Padding="8,4" Margin="0,0,4,0" ToolTip="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Ed_Delete]}" FontSize="14"/>
+                    <Button Content="⧉" Command="{Binding DuplicateSceneCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,8,0" ToolTip="Duplicate" FontSize="14" Foreground="#60A5FA"/>
+                    <Border Width="1" Background="#2A2F3A" Margin="0,2,8,2"/>
+
+                    <!-- Trim Tools -->
                     <Button Content="[ In" Command="{Binding MarkInCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,4,0" ToolTip="Mark In point at current playhead position" Foreground="#3B82F6"/>
                     <Button Content="Out ]" Command="{Binding MarkOutCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,4,0" ToolTip="Mark Out point at current playhead position" Foreground="#3B82F6"/>
-                    <Button Content="✂️ Trim" Command="{Binding TrimToRangeCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,4,0" ToolTip="Trim video to the selected In/Out range" Foreground="#F59E0B"
+                    <Button Content="✂️ Trim Range" Command="{Binding TrimToRangeCommand}" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="0,0,4,0" ToolTip="Trim video to the selected In/Out range" Foreground="#F59E0B"
                             Visibility="{Binding HasRange, Converter={StaticResource BoolToVisibility}}"/>
                     <Button Content="✕" Command="{Binding ClearRangeCommand}" Style="{StaticResource SecondaryButton}" Padding="6,4" Margin="0,0,4,0" ToolTip="Clear range selection" FontSize="10"
                             Visibility="{Binding HasRange, Converter={StaticResource BoolToVisibility}}"/>
@@ -946,7 +1178,6 @@
             </DockPanel>
         </Border>
 
-        <!-- ═══════════════ TIME RULER ═══════════════ -->
         <Border Grid.Row="3" Background="#0D1117" BorderBrush="#1A1F2B" BorderThickness="0,1,0,0" Height="28" Margin="0,0,0,0">
             <DockPanel Margin="16,0">
                 <!-- Fixed label area -->
@@ -1145,7 +1376,24 @@
                                                         <!-- Base content -->
                                                         <Border Padding="4,4" CornerRadius="0,0,4,4">
                                                             <Grid>
-                                                                <Image Source="{Binding ImagePath}" Stretch="UniformToFill" HorizontalAlignment="Left" Width="50" Opacity="0.6"/>
+                                                                <Grid MinWidth="20" MinHeight="40" Background="#1AFFFFFF">
+                                                                    <TextBlock Text="🖼️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Opacity="0.5">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding ImagePath}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding ImagePath}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <Image Source="{Binding ImagePath}" Stretch="UniformToFill" Opacity="0.6" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                                </Grid>
                                                                 <TextBlock Text="{Binding Prompt}" FontSize="9" Foreground="#CBD5E1" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="54,0,0,0" VerticalAlignment="Center"/>
                                                             </Grid>
                                                         </Border>

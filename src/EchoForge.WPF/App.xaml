@@ -22,6 +22,7 @@
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
             <converters:DurationToWidthConverter x:Key="DurationToWidth"/>
             <converters:DurationAndZoomMultiConverter x:Key="DurationAndZoomMulti"/>
+            <converters:EqualityConverter x:Key="EqualityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

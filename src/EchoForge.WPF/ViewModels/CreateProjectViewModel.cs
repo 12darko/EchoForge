@@ -14,6 +14,9 @@ public partial class CreateProjectViewModel : ObservableObject
     public event Action? ProjectCreated;
 
     [ObservableProperty]
+    private int _currentStepIndex = 0;
+
+    [ObservableProperty]
     private string _title = string.Empty;
 
     [ObservableProperty]
@@ -46,7 +49,9 @@ public partial class CreateProjectViewModel : ObservableObject
     [ObservableProperty]
     private bool _extractAutoShorts;
 
-    // --- Pollinations Image Settings ---
+    [ObservableProperty]
+    private string _imageProvider = "pollinations";
+
     [ObservableProperty]
     private string _imageModel = "flux";
 
@@ -57,7 +62,18 @@ public partial class CreateProjectViewModel : ObservableObject
     private string _imageStyle = string.Empty;
 
     [ObservableProperty]
+    private string _selectedImageQuality = "Standard";
+    
+    public List<string> ImageQualityOptions { get; } = new() { "Standard", "High", "Ultra" };
+
+    [ObservableProperty]
     private string _customInstructions = string.Empty;
+
+    [ObservableProperty]
+    private DateTime? _scheduledPublishDate;
+
+    [ObservableProperty]
+    private string _scheduledPublishTime = "18:00";
 
     [ObservableProperty]
     private bool _isYouTubeSelected = true;
@@ -109,13 +125,47 @@ public partial class CreateProjectViewModel : ObservableObject
 
     public List<string> PrivacyOptions { get; } = new() { "private", "unlisted", "public" };
 
-    public List<ImageModelOption> ImageModelOptions { get; } = new()
+    [ObservableProperty]
+    private List<ImageModelOption> _imageModelOptions = new();
+
+    public List<ImageProviderOption> ImageProviderOptions { get; } = new()
     {
-        new("flux", "⚡ Flux Schnell", "Hızlı, iyi kalite"),
-        new("turbo", "🎨 Turbo", "Yüksek kalite, yavaş"),
-        new("flux-realism", "📸 Flux Realism", "Gerçekçi görseller"),
-        new("gemini-2.5-flash", "🌟 Gemini 2.5 Flash", "Google'ın hızlı yapay zekası")
+        new("comfyui", "🖥️ Local (ComfyUI)", "PC'de Çalışır / Native HD"),
+        new("pollinations", "Pollinations.ai", "Ücretsiz / Anahtar İstemez"),
+        new("huggingface", "Hugging Face", "HF Anahtarı Gerekli"),
+        new("gemini", "Gemini API", "Gemini Anahtarı Gerekli")
     };
+
+    partial void OnImageProviderChanged(string value)
+    {
+        UpdateImageModelOptions(value);
+    }
+
+    private void UpdateImageModelOptions(string provider)
+    {
+        var list = new List<ImageModelOption>();
+        
+        if (provider == "gemini")
+        {
+            list.Add(new("gemini-2.5-flash", "🌟 Gemini", "Google Gemini Model"));
+            ImageModel = "gemini-2.5-flash";
+        }
+        else if (provider == "comfyui")
+        {
+            list.Add(new("local", "🖥️ SDXL (Native HD)", "1920x1080 / 4K lokal üretim"));
+            ImageModel = "local";
+        }
+        else
+        {
+            // Both Pollinations and HuggingFace share these mostly
+            list.Add(new("flux", "⚡ Flux Schnell", "Hızlı, iyi kalite"));
+            list.Add(new("turbo", "🎨 SD Turbo", "Hızlı Üretim"));
+            list.Add(new("flux-realism", "📸 Realism", "Gerçekçi görseller"));
+            ImageModel = "flux";
+        }
+        
+        ImageModelOptions = list;
+    }
 
     public List<int> UniqueImageCountOptions { get; } = new() { 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20 };
 
@@ -131,6 +181,23 @@ public partial class CreateProjectViewModel : ObservableObject
     {
         _apiClient = apiClient;
         _orchestrator = orchestrator;
+        
+        // Initialize defaults so combos are never null
+        SelectedVisualEffect = VisualEffectOptions[0];
+        SelectedImageDuration = ImageDurationOptions[0];
+        UpdateImageModelOptions(ImageProvider);
+    }
+
+    [RelayCommand]
+    private void NextStep()
+    {
+        if (CurrentStepIndex < 3) CurrentStepIndex++;
+    }
+
+    [RelayCommand]
+    private void PreviousStep()
+    {
+        if (CurrentStepIndex > 0) CurrentStepIndex--;
     }
 
     [RelayCommand]
@@ -212,9 +279,26 @@ public partial class CreateProjectViewModel : ObservableObject
 
             var visualEffectValue = SelectedVisualEffect?.Value;
 
+            int? customWidth = null;
+            int? customHeight = null;
+            if (SelectedFormat == FormatType.Vertical_9x16)
+            {
+                if (SelectedImageQuality == "High") { customWidth = 1024; customHeight = 1792; }
+                else if (SelectedImageQuality == "Ultra") { customWidth = 1080; customHeight = 1920; }
+                else { customWidth = 768; customHeight = 1344; }
+            }
+            else // Horizontal
+            {
+                if (SelectedImageQuality == "High") { customWidth = 1792; customHeight = 1024; }
+                else if (SelectedImageQuality == "Ultra") { customWidth = 1920; customHeight = 1080; }
+                else { customWidth = 1344; customHeight = 768; }
+            }
+
+            string finalImageModel = $"{ImageProvider}:{ImageModel}";
+
             var result = await _apiClient.CreateProjectAsync(
                 Title, SelectedTemplate.Id, SelectedFormat, AudioFilePath, ExtractAutoShorts, transitionValue, PrivacyStatus,
-                ImageModel, UniqueImageCount, SelectedImageDuration?.Value, ImageStyle, CustomInstructions, platforms, SelectedChannelId, visualEffectValue);
+                finalImageModel, UniqueImageCount, SelectedImageDuration?.Value, ImageStyle, CustomInstructions, platforms, SelectedChannelId, visualEffectValue, customWidth, customHeight);
 
             if (result != null)
             {
@@ -274,6 +358,21 @@ public class ImageModelOption
         Description = description;
     }
 
+    public override string ToString() => $"{Label} — {Description}";
+}
+
+public class ImageProviderOption
+{
+    public string Value { get; }
+    public string Label { get; }
+    public string Description { get; }
+
+    public ImageProviderOption(string value, string label, string description)
+    {
+        Value = value;
+        Label = label;
+        Description = description;
+    }
     public override string ToString() => $"{Label} — {Description}";
 }
 

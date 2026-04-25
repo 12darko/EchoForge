@@ -35,7 +35,7 @@ public class StabilityImageService : IImageGenerationService
     }
 
     public async Task<List<string>> GenerateImagesAsync(string basePrompt, int count, int width, int height,
-        string? model = null, int? maxUniqueImages = null, CancellationToken cancellationToken = default)
+        string? model = null, int? maxUniqueImages = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Generating {Count} images with prompt: {Prompt}", count, basePrompt);
         
@@ -55,7 +55,7 @@ public class StabilityImageService : IImageGenerationService
                     var prompt = $"{basePrompt}, {variation}, scene {currentIndex + 1} of {count}";
                     var seed = _random.Next(1, 999999999);
 
-                    var imagePath = await GenerateSingleImageAsync(prompt, width, height, seed, cancellationToken);
+                    var imagePath = await GenerateSingleImageAsync(prompt, width, height, seed, model, progressCallback, cancellationToken);
                     _logger.LogInformation("Generated image {Index}/{Total}: {Path}", currentIndex + 1, count, imagePath);
                     return imagePath;
                 }
@@ -70,7 +70,8 @@ public class StabilityImageService : IImageGenerationService
         return results.ToList();
     }
 
-    public async Task<string> GenerateSingleImageAsync(string prompt, int width, int height, int? seed = null, CancellationToken cancellationToken = default)
+    public async Task<string> GenerateSingleImageAsync(string prompt, int width, int height, int? seed = null,
+        string? model = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         var actualSeed = seed ?? _random.Next(1, 999999999);
 

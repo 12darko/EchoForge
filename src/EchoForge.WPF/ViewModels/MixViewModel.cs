@@ -52,6 +52,46 @@ public partial class MixViewModel : ObservableObject
     [ObservableProperty]
     private int _mixRenderProgress;
 
+    [ObservableProperty]
+    private string _customBackgroundImagePath = "";
+
+    public event Action<string>? RequestOpenFileDialog;
+    public event Action<MixTrackItem>? RequestTrackImageDialog;
+
+    [RelayCommand]
+    private void SelectBackgroundImage()
+    {
+        RequestOpenFileDialog?.Invoke("Image Files (*.jpg;*.jpeg;*.png;*.gif)|*.jpg;*.jpeg;*.png;*.gif|All files (*.*)|*.*");
+    }
+
+    [RelayCommand]
+    private void ClearBackgroundImage()
+    {
+        CustomBackgroundImagePath = "";
+    }
+
+    [RelayCommand]
+    private void ChangeTrackImage(MixTrackItem? track)
+    {
+        if (track == null) return;
+        RequestTrackImageDialog?.Invoke(track);
+    }
+
+    [RelayCommand]
+    private void ClearTrackImage(MixTrackItem? track)
+    {
+        if (track == null) return;
+        track.CustomImagePath = "";
+        track.ThumbnailPath = track.OriginalThumbnailPath;
+    }
+
+    [RelayCommand]
+    private void RemoveTrackEffect(MixTrackItem? track)
+    {
+        if (track == null) return;
+        track.SelectedEffect = "none";
+    }
+
     public MixViewModel(Services.ApiClient apiClient)
     {
         _apiClient = apiClient;
@@ -135,6 +175,7 @@ public partial class MixViewModel : ObservableObject
             VideoPath = track.VideoPath,
             AudioPath = track.AudioPath,
             ThumbnailPath = track.ThumbnailPath,
+            OriginalThumbnailPath = track.ThumbnailPath,
             FileSize = track.FileSize,
             FileExists = track.FileExists
         });
@@ -207,6 +248,7 @@ public partial class MixViewModel : ObservableObject
                 VideoPath = track.VideoPath,
                 AudioPath = track.AudioPath,
                 ThumbnailPath = track.ThumbnailPath,
+                OriginalThumbnailPath = track.ThumbnailPath,
                 FileSize = track.FileSize,
                 FileExists = track.FileExists
             });
@@ -324,7 +366,16 @@ public partial class MixViewModel : ObservableObject
 
             // Simple concat (no crossfade for performance). Crossfade would require complex filter_complex.
             string args;
-            if (CrossfadeDuration > 0 && MixQueue.Count <= 10)
+            if (!string.IsNullOrEmpty(CustomBackgroundImagePath) && System.IO.File.Exists(CustomBackgroundImagePath))
+            {
+                // Custom static image or looping GIF over concatenated audio tracks
+                bool isGif = CustomBackgroundImagePath.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+                string loopArg = isGif ? "-ignore_loop 0" : "-loop 1";
+                
+                // Map the image stream to video and the concat stream to audio
+                args = $"{loopArg} -i \"{CustomBackgroundImagePath}\" -f concat -safe 0 -i \"{concatFile}\" -map 0:v -map 1:a -c:v libx264 -crf 18 -preset fast -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -y \"{OutputMixPath}\"";
+            }
+            else if (CrossfadeDuration > 0 && MixQueue.Count <= 10)
             {
                 // For small mixes, use crossfade filter
                 args = BuildCrossfadeArgs(concatFile);
@@ -390,9 +441,24 @@ public partial class MixTrackItem : ObservableObject
     public double Duration { get; set; }
     public string VideoPath { get; set; } = "";
     public string AudioPath { get; set; } = "";
-    public string ThumbnailPath { get; set; } = "";
+    
+    [ObservableProperty]
+    private string _thumbnailPath = "";
+    
+    public string OriginalThumbnailPath { get; set; } = "";
     public string FileSize { get; set; } = "";
     public bool FileExists { get; set; }
+
+    [ObservableProperty]
+    private string _customImagePath = "";
+
+    [ObservableProperty]
+    private string _selectedEffect = "none";
+
+    public static List<string> EffectOptions { get; } = new()
+    {
+        "none", "bw", "sepia", "vhs", "cinematic", "dreamy", "vintage", "vivid"
+    };
 
     public string DurationDisplay
     {
@@ -401,6 +467,14 @@ public partial class MixTrackItem : ObservableObject
             int mins = (int)(Duration / 60);
             int secs = (int)(Duration % 60);
             return $"{mins}:{secs:D2}";
+        }
+    }
+
+    partial void OnCustomImagePathChanged(string value)
+    {
+        if (!string.IsNullOrEmpty(value) && System.IO.File.Exists(value))
+        {
+            ThumbnailPath = value;
         }
     }
 }

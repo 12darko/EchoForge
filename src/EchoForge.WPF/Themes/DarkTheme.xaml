@@ -569,5 +569,104 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!-- ═══ Modern Dark Slider ═══ -->
+    <Style TargetType="Slider">
+        <Setter Property="Minimum" Value="0"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Grid VerticalAlignment="Center">
+                        <!-- Track background -->
+                        <Border x:Name="TrackBackground" Height="4" CornerRadius="2" Background="#1E293B" VerticalAlignment="Center"/>
+                        <!-- Filled range -->
+                        <Border x:Name="FilledTrack" Height="4" CornerRadius="2" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#8B5CF6" Offset="0"/>
+                                    <GradientStop Color="#A855F7" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="Slider.DecreaseLarge" Background="Transparent" BorderThickness="0" Height="4">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="#8B5CF6" CornerRadius="2" Height="4"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Width="16" Height="16" Cursor="Hand">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Grid>
+                                                <Ellipse x:Name="ThumbOuter" Width="16" Height="16" Fill="#A855F7" Stroke="#0B0E14" StrokeThickness="2"/>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ThumbOuter" Property="Fill" Value="#C084FC"/>
+                                                    <Setter TargetName="ThumbOuter" Property="Width" Value="18"/>
+                                                    <Setter TargetName="ThumbOuter" Property="Height" Value="18"/>
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="ThumbOuter" Property="Fill" Value="#D8B4FE"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="Slider.IncreaseLarge" Background="Transparent" BorderThickness="0" Height="4">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Border Background="#1E293B" CornerRadius="2" Height="4"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══ Modern Dark CheckBox ═══ -->
+    <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="#E2E8F0"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                        <Border x:Name="CheckBorder" Width="18" Height="18" CornerRadius="4"
+                                Background="#1E293B" BorderBrush="#475569" BorderThickness="1.5"
+                                VerticalAlignment="Center" Margin="0,0,8,0">
+                            <TextBlock x:Name="CheckMark" Text="✓" FontSize="12" FontWeight="Bold"
+                                       Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="Collapsed"/>
+                        </Border>
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckBorder" Property="Background" Value="#8B5CF6"/>
+                            <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#A855F7"/>
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#A855F7"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
 </ResourceDictionary>

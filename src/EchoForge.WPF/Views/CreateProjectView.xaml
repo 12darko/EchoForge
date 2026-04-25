@@ -6,16 +6,32 @@
 
     <UserControl.Resources>
         <converters:RadioBoolConverter x:Key="RadioBoolConverter"/>
+
+        <!-- Bubble Style for Active/Inactive Wizard Steps -->
+        <Style x:Key="WizardBubbleStyle" TargetType="Border">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Background" Value="#1FFFFFFF"/>
+        </Style>
+        <Style x:Key="WizardTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#64748B"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
     </UserControl.Resources>
 
     <DockPanel>
-        <!-- Header + Progress Steps -->
-        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,32">
-            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Title]}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Subtitle]}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,20">
+            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Title]}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Subtitle]}" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" HorizontalAlignment="Center"/>
 
             <!-- Wizard Progress Steps -->
-            <Border Margin="0,24,0,0" Padding="0">
+            <Border Margin="0,32,0,0" Padding="0" MaxWidth="600" HorizontalAlignment="Center">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -25,207 +41,400 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Connector Lines -->
-                    <Border Grid.Column="0" Grid.ColumnSpan="4" Height="2" Background="#15FFFFFF" VerticalAlignment="Center" Margin="60,0"/>
+                    <Border Grid.Column="0" Grid.ColumnSpan="4" Height="2" Background="#15FFFFFF" VerticalAlignment="Top" Margin="60,17,60,0"/>
 
-                    <!-- Step 1 -->
-                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
-                        <Border Width="36" Height="36" CornerRadius="18" Background="#8B5CF6" HorizontalAlignment="Center">
+                    <!-- Step 0 (Temel) -->
+                    <StackPanel Grid.Column="0">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource WizardBubbleStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="0">
+                                            <Setter Property="Background" Value="#8B5CF6"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <TextBlock Text="1" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step1]}" FontSize="11" Foreground="#8B5CF6" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step1]}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource WizardTextStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="0">
+                                            <Setter Property="Foreground" Value="#8B5CF6"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
 
-                    <!-- Step 2 -->
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                        <Border Width="36" Height="36" CornerRadius="18" Background="#3B82F6" HorizontalAlignment="Center">
+                    <!-- Step 1 (AI) -->
+                    <StackPanel Grid.Column="1">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource WizardBubbleStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="1">
+                                            <Setter Property="Background" Value="#3B82F6"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <TextBlock Text="2" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step2]}" FontSize="11" Foreground="#3B82F6" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step2]}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource WizardTextStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="1">
+                                            <Setter Property="Foreground" Value="#3B82F6"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
 
-                    <!-- Step 3 -->
-                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
-                        <Border Width="36" Height="36" CornerRadius="18" Background="#10B981" HorizontalAlignment="Center">
+                    <!-- Step 2 (Visuals) -->
+                    <StackPanel Grid.Column="2">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource WizardBubbleStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="2">
+                                            <Setter Property="Background" Value="#10B981"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <TextBlock Text="3" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step3]}" FontSize="11" Foreground="#10B981" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step3]}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource WizardTextStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="2">
+                                            <Setter Property="Foreground" Value="#10B981"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
 
-                    <!-- Step 4 -->
-                    <StackPanel Grid.Column="3" HorizontalAlignment="Center">
-                        <Border Width="36" Height="36" CornerRadius="18" Background="#F59E0B" HorizontalAlignment="Center">
+                    <!-- Step 3 (Yayın) -->
+                    <StackPanel Grid.Column="3">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource WizardBubbleStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="3">
+                                            <Setter Property="Background" Value="#F59E0B"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <TextBlock Text="4" FontSize="16" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step4]}" FontSize="11" Foreground="#F59E0B" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                        <TextBlock Text="{Binding Source={x:Static loc:TranslationManager.Instance}, Path=Strings[Create_Step4]}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource WizardTextStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="3">
+                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                     </StackPanel>
+
                 </Grid>
             </Border>
         </StackPanel>
 
         <!-- Main Content -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,16,0">
-            <Grid MaxWidth="1100" HorizontalAlignment="Left">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="24"/>
-                    <ColumnDefinition Width="1.5*"/>
-                </Grid.ColumnDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,8,0,0">
+            <!-- Center align to make it look clean like a form wizard -->
+            <Grid MaxWidth="520" HorizontalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <!-- LEFT COLUMN: Core Settings & AI -->
-                <StackPanel Grid.Column="0">
-                    
-                    <!-- Step 1: Basics Card -->
-                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <Border Width="28" Height="28" CornerRadius="14" Background="#8B5CF6" Margin="0,0,12,0">
-                                    <TextBlock Text="1" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <TextBlock Text="Project Basics" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                            </StackPanel>
+                <TabControl Grid.Row="0" SelectedIndex="{Binding CurrentStepIndex}" Background="Transparent" BorderThickness="0" Padding="0" VerticalAlignment="Top">
+                    <TabControl.ItemContainerStyle>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Visibility" Value="Collapsed"/> <!-- Hides default headers -->
+                        </Style>
+                    </TabControl.ItemContainerStyle>
 
-                            <TextBlock Text="Project Title" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource ModernTextBox}" Margin="0,0,0,20"/>
-
-                            <TextBlock Text="Audio File (.mp3, .wav)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <DockPanel Margin="0,0,0,0">
-                                <Button DockPanel.Dock="Right" Content="📂 Browse" Command="{Binding BrowseAudioCommand}"
-                                        Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="8,0,0,0"/>
-                                <TextBox Text="{Binding AudioFilePath}" Style="{StaticResource ModernTextBox}" IsReadOnly="True" Background="#05FFFFFF"/>
-                            </DockPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Step 2: AI Image Setup Card -->
-                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <Border Width="28" Height="28" CornerRadius="14" Background="#3B82F6" Margin="0,0,12,0">
-                                    <TextBlock Text="2" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <TextBlock Text="AI Image Generation" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                            </StackPanel>
-
-                            <Grid Margin="0,0,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="16"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="AI Model" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                                    <ComboBox ItemsSource="{Binding ImageModelOptions}" SelectedValuePath="Value" SelectedValue="{Binding ImageModel}" Style="{StaticResource ModernComboBox}"/>
+                    <!-- STEP 0: Basics -->
+                    <TabItem>
+                        <Border Style="{StaticResource GlassCard}" Padding="32" Margin="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="#1A8B5CF6" Margin="0,0,14,0">
+                                        <TextBlock Text="1" FontSize="14" FontWeight="Bold" Foreground="#8B5CF6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="Proje Temelleri" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Unique Images" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                                    <ComboBox ItemsSource="{Binding UniqueImageCountOptions}" SelectedItem="{Binding UniqueImageCount}" Style="{StaticResource ModernComboBox}"/>
-                                </StackPanel>
-                            </Grid>
 
-                            <TextBlock Text="Image Duration / Pacing" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <ComboBox ItemsSource="{Binding ImageDurationOptions}" SelectedItem="{Binding SelectedImageDuration}" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
+                                <TextBlock Text="Proje Başlığı" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBox}" Margin="0,0,0,24" MinHeight="42" FontSize="14" VerticalContentAlignment="Center"/>
 
-                            <TextBlock Text="🎨 Art Style" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                            
-                            <WrapPanel Margin="0,0,0,8">
-                                <Button Content="Anime" Tag="anime" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#A855F7" BorderBrush="#33A855F7"/>
-                                <Button Content="Cyberpunk" Tag="cyberpunk" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#3B82F6" BorderBrush="#333B82F6"/>
-                                <Button Content="Realistic" Tag="realistic photograph" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#10B981" BorderBrush="#3310B981"/>
-                                <Button Content="Watercolor" Tag="watercolor painting" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#F59E0B" BorderBrush="#33F59E0B"/>
-                                <Button Content="Pixel Art" Tag="pixel art" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8"/>
-                                <Button Content="Oil Painting" Tag="oil painting" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="14,8" Margin="0,0,8,8" Foreground="#F43F5E" BorderBrush="#33F43F5E"/>
-                            </WrapPanel>
-                            
-                            <TextBox Text="{Binding ImageStyle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
-                <!-- RIGHT COLUMN: Visuals, Target, Actions -->
-                <StackPanel Grid.Column="2">
-                    
-                    <!-- Step 3: Visuals & Template -->
-                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <Border Width="28" Height="28" CornerRadius="14" Background="#10B981" Margin="0,0,12,0">
-                                    <TextBlock Text="3" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <TextBlock Text="Visuals &amp; Template" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Müzik Dosyası (.mp3, .wav)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                <DockPanel Margin="0,0,0,10">
+                                    <Button DockPanel.Dock="Right" Content="📂 Gözat" Command="{Binding BrowseAudioCommand}"
+                                            Style="{StaticResource SecondaryButton}" Padding="20,0" Margin="12,0,0,0" MinHeight="42"/>
+                                    <TextBox Text="{Binding AudioFilePath}" Style="{StaticResource ModernTextBox}" IsReadOnly="True" Background="#05FFFFFF" MinHeight="42" FontSize="13" VerticalContentAlignment="Center"/>
+                                </DockPanel>
                             </StackPanel>
+                        </Border>
+                    </TabItem>
 
-                            <TextBlock Text="Video Format" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <Border Background="#0AFFFFFF" CornerRadius="10" Padding="6" Margin="0,0,0,20">
+                    <!-- STEP 1: AI Settings -->
+                    <TabItem>
+                        <Border Style="{StaticResource GlassCard}" Padding="32" Margin="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="#1A3B82F6" Margin="0,0,14,0">
+                                        <TextBlock Text="2" FontSize="14" FontWeight="Bold" Foreground="#3B82F6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="Yapay Zeka Ayarları" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <Grid Margin="0,0,0,24">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="30*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="30*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="20*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="20*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="AI Sağlayıcı" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <ComboBox ItemsSource="{Binding ImageProviderOptions}" SelectedValuePath="Value" SelectedValue="{Binding ImageProvider}" Style="{StaticResource ModernComboBox}" Height="40"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="AI Model" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <ComboBox ItemsSource="{Binding ImageModelOptions}" SelectedValuePath="Value" SelectedValue="{Binding ImageModel}" Style="{StaticResource ModernComboBox}" Height="40"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="4">
+                                        <TextBlock Text="Kalite" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <ComboBox ItemsSource="{Binding ImageQualityOptions}" SelectedItem="{Binding SelectedImageQuality}" Style="{StaticResource ModernComboBox}" Height="40"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="6">
+                                        <TextBlock Text="Görsel" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <ComboBox ItemsSource="{Binding UniqueImageCountOptions}" SelectedItem="{Binding UniqueImageCount}" Style="{StaticResource ModernComboBox}" Height="40"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="Sahne Akışı (Görsel Süresi)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                <ComboBox ItemsSource="{Binding ImageDurationOptions}" SelectedItem="{Binding SelectedImageDuration}" Style="{StaticResource ModernComboBox}" Margin="0,0,0,24" Height="40"/>
+
+                                <TextBlock Text="🎨 Sanat Tarzı (Art Style)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                <WrapPanel Margin="0,0,0,12">
+                                    <Button Content="Anime" Tag="anime" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="0,0,10,10" Foreground="#A855F7" BorderBrush="#33A855F7"/>
+                                    <Button Content="Cyberpunk" Tag="cyberpunk" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="0,0,10,10" Foreground="#3B82F6" BorderBrush="#333B82F6"/>
+                                    <Button Content="Realistic" Tag="realistic photograph" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="0,0,10,10" Foreground="#10B981" BorderBrush="#3310B981"/>
+                                    <Button Content="Watercolor" Tag="watercolor painting" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="0,0,10,10" Foreground="#F59E0B" BorderBrush="#33F59E0B"/>
+                                    <Button Content="Pixel Art" Tag="pixel art" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="0,0,10,10"/>
+                                    <Button Content="Oil Painting" Tag="oil painting" Click="StyleButton_Click" Style="{StaticResource SecondaryButton}" Padding="16,10" Margin="0,0,10,10" Foreground="#F43F5E" BorderBrush="#33F43F5E"/>
+                                </WrapPanel>
+                                
+                                <TextBox Text="{Binding ImageStyle, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" ToolTip="Özel Prompt Eki (örn: neon lights, dark fantasy)" MinHeight="40" VerticalContentAlignment="Center" FontSize="13"/>
+                            </StackPanel>
+                        </Border>
+                    </TabItem>
+
+                    <!-- STEP 2: Visuals & Layout -->
+                    <TabItem>
+                        <Border Style="{StaticResource GlassCard}" Padding="32" Margin="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="#1A10B981" Margin="0,0,14,0">
+                                        <TextBlock Text="3" FontSize="14" FontWeight="Bold" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="Görsellik ve Şablonlar" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <TextBlock Text="Video Formatı" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                <Border Background="#0AFFFFFF" CornerRadius="10" Padding="8" Margin="0,0,0,24" BorderBrush="#1AFFFFFF" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <RadioButton Grid.Column="0" Content="📱 Dikey / Shorts (9:16)" GroupName="UploadType" Foreground="{StaticResource TextPrimaryBrush}" Margin="12,8"
+                                                     IsChecked="{Binding UploadType, Converter={StaticResource RadioBoolConverter}, ConverterParameter=Short}"/>
+                                        <RadioButton Grid.Column="1" Content="📺 Yatay / Standart (16:9)" GroupName="UploadType" Foreground="{StaticResource TextPrimaryBrush}" Margin="12,8"
+                                                     IsChecked="{Binding UploadType, Converter={StaticResource RadioBoolConverter}, ConverterParameter=Video}"/>
+                                    </Grid>
+                                </Border>
+
+                                <TextBlock Text="Oluşturma Şablonu" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                <ComboBox ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" DisplayMemberPath="Name" Style="{StaticResource ModernComboBox}" Margin="0,0,0,24" Height="40"/>
+
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <RadioButton Grid.Column="0" Content="📱 Shorts (9:16)" GroupName="UploadType" Foreground="{StaticResource TextPrimaryBrush}" Margin="8"
-                                                 IsChecked="{Binding UploadType, Converter={StaticResource RadioBoolConverter}, ConverterParameter=Short}"/>
-                                    <RadioButton Grid.Column="1" Content="📺 Video (16:9)" GroupName="UploadType" Foreground="{StaticResource TextPrimaryBrush}" Margin="8"
-                                                 IsChecked="{Binding UploadType, Converter={StaticResource RadioBoolConverter}, ConverterParameter=Video}"/>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Sahne Geçiş Animasyonu" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <ComboBox ItemsSource="{Binding TransitionOptions}" SelectedItem="{Binding SelectedTransition}" Style="{StaticResource ModernComboBox}" Height="40"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="✨ Görüntü Efekti (VFX)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <ComboBox ItemsSource="{Binding VisualEffectOptions}" SelectedItem="{Binding SelectedVisualEffect}" DisplayMemberPath="Label" Style="{StaticResource ModernComboBox}" Height="40"/>
+                                    </StackPanel>
                                 </Grid>
-                            </Border>
-
-                            <TextBlock Text="Visual Prompt Template" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <ComboBox ItemsSource="{Binding Templates}" SelectedItem="{Binding SelectedTemplate}" DisplayMemberPath="Name" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
-
-                            <TextBlock Text="Scene Transition" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <ComboBox ItemsSource="{Binding TransitionOptions}" SelectedItem="{Binding SelectedTransition}" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
-
-                            <TextBlock Text="✨ Visual Effect (VFX)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <ComboBox ItemsSource="{Binding VisualEffectOptions}" SelectedItem="{Binding SelectedVisualEffect}" DisplayMemberPath="Label" Style="{StaticResource ModernComboBox}"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Step 4: Publishing & SEO -->
-                    <Border Style="{StaticResource GlassCard}" Margin="0,0,0,24" Padding="24">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <Border Width="28" Height="28" CornerRadius="14" Background="#F59E0B" Margin="0,0,12,0">
-                                    <TextBlock Text="4" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <TextBlock Text="Publishing &amp; SEO" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                             </StackPanel>
+                        </Border>
+                    </TabItem>
 
-                            <TextBlock Text="Target YouTube Channel" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <ComboBox ItemsSource="{Binding AvailableChannels}" SelectedValue="{Binding SelectedChannelId}" SelectedValuePath="Id" DisplayMemberPath="ChannelName" Style="{StaticResource ModernComboBox}" Margin="0,0,0,20"/>
-
-                            <Grid Margin="0,0,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="16"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Privacy" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                                    <ComboBox ItemsSource="{Binding PrivacyOptions}" SelectedItem="{Binding PrivacyStatus}" Style="{StaticResource ModernComboBox}"/>
+                    <!-- STEP 3: SEO -->
+                    <TabItem>
+                        <Border Style="{StaticResource GlassCard}" Padding="32" Margin="4">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="#1AF59E0B" Margin="0,0,14,0">
+                                        <TextBlock Text="4" FontSize="14" FontWeight="Bold" Foreground="#F59E0B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="Yayın ve SEO Ayarları" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Auto-Shorts" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                                    <CheckBox Content="Extract Best 60s" IsChecked="{Binding ExtractAutoShorts}" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,8,0,0"/>
-                                </StackPanel>
-                            </Grid>
 
-                            <TextBlock Text="Custom SEO Instructions" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,6"/>
-                            <TextBox Text="{Binding CustomInstructions, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-                        </StackPanel>
-                    </Border>
+                                <TextBlock Text="Hedef YouTube Kanalı" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                <ComboBox ItemsSource="{Binding AvailableChannels}" SelectedValue="{Binding SelectedChannelId}" SelectedValuePath="Id" DisplayMemberPath="ChannelName" Style="{StaticResource ModernComboBox}" Margin="0,0,0,24" Height="40"/>
 
-                    <!-- Final Action -->
-                    <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource AccentOrangeBrush}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,16" Visibility="{Binding StatusText, Converter={StaticResource StringToVisibility}}"/>
+                                <Grid Margin="0,0,0,24">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Yükleme Gizliliği" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <ComboBox ItemsSource="{Binding PrivacyOptions}" SelectedItem="{Binding PrivacyStatus}" Style="{StaticResource ModernComboBox}" Height="40"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Auto-Shorts Kırpma" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                        <CheckBox Content="En iyi 60 saniyeyi çıkart" IsChecked="{Binding ExtractAutoShorts}" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,10,0,0"/>
+                                    </StackPanel>
+                                </Grid>
 
-                    <Button Content="🚀 Start AI Generation Pipeline"
-                            Command="{Binding CreateProjectCommand}"
-                            IsEnabled="{Binding IsCreating, Converter={StaticResource InverseBool}}"
-                            Style="{StaticResource PrimaryButton}"
-                            Height="56" FontSize="16"/>
+                                <TextBlock Text="Özel SEO ve Başlık Talimatları" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" Margin="0,0,0,8"/>
+                                <TextBox Text="{Binding CustomInstructions, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" Height="80" TextWrapping="Wrap" AcceptsReturn="True" ToolTip="Yapay zekanın yazacağı açıklama için özel notlar ekle"/>
 
-                </StackPanel>
+                                <!-- Scheduled Publish -->
+                                <TextBlock Text="📅 İleri Tarihe Zamanla (İsteğe Bağlı)" Foreground="{StaticResource TextSecondaryBrush}" FontSize="14" FontWeight="SemiBold" Margin="0,20,0,6"/>
+                                <TextBlock Text="Videonun YouTube'da ne zaman yayınlanacağını planlayın." FontSize="12" Foreground="#64748B" Margin="0,0,0,10"/>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="16"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+                                    <DatePicker SelectedDate="{Binding ScheduledPublishDate, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0" 
+                                                MinHeight="42" FontSize="13" ToolTip="Yayın tarihini seçin"
+                                                Background="#1E293B" Foreground="White" BorderBrush="#334155" BorderThickness="1">
+                                        <DatePicker.Resources>
+                                            <Style TargetType="DatePickerTextBox">
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="Background" Value="#1E293B"/>
+                                                <Setter Property="FontSize" Value="13"/>
+                                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                <Setter Property="Control.Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate>
+                                                            <TextBox x:Name="PART_TextBox" 
+                                                                     Text="{Binding Path=SelectedDate, RelativeSource={RelativeSource AncestorType=DatePicker}, StringFormat='dd/MM/yyyy', TargetNullValue='Tarih seçin...'}"
+                                                                     Foreground="White" Background="#1E293B" BorderThickness="0"
+                                                                     FontSize="13" VerticalContentAlignment="Center" Padding="8,6" IsReadOnly="True"/>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </DatePicker.Resources>
+                                    </DatePicker>
+                                    <TextBox Text="{Binding ScheduledPublishTime, UpdateSourceTrigger=PropertyChanged}" Grid.Column="2" 
+                                             Style="{StaticResource ModernTextBox}" MinHeight="42" FontSize="14" FontWeight="SemiBold"
+                                             ToolTip="Saat formatı: 18:00" TextAlignment="Center" VerticalContentAlignment="Center"/>
+                                </Grid>
+
+                                <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource AccentOrangeBrush}" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,16,0,0" Visibility="{Binding StatusText, Converter={StaticResource StringToVisibility}}"/>
+                            </StackPanel>
+                        </Border>
+                    </TabItem>
+                </TabControl>
+
+                <!-- Navigation Footer (Sticky) -->
+                <Border Grid.Row="1" Margin="4,24,4,30" Padding="20,16" Background="#0C101A" CornerRadius="12" BorderBrush="#1E293B" BorderThickness="1">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Left" Content="← Geri" Command="{Binding PreviousStepCommand}"
+                                Padding="24,12" FontSize="14" FontWeight="SemiBold">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentStepIndex}" Value="0">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!-- Dynamically show Next or Create based on step -->
+                        <Grid DockPanel.Dock="Right" HorizontalAlignment="Right">
+                            <Button Content="İleri (Next) →" Command="{Binding NextStepCommand}"
+                                    Padding="32,12" FontSize="14" FontWeight="Bold">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentStepIndex}" Value="3">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Content="🚀 İşlemi Başlat (Render)"
+                                    Command="{Binding CreateProjectCommand}"
+                                    IsEnabled="{Binding IsCreating, Converter={StaticResource InverseBool}}"
+                                    Padding="32,12" FontSize="15" FontWeight="Bold">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentStepIndex}" Value="3">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                        
+                    </DockPanel>
+                </Border>
 
             </Grid>
         </ScrollViewer>

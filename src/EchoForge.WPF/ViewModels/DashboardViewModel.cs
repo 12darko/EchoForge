@@ -210,29 +210,30 @@ public partial class DashboardViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task RetryProject()
+    private async Task RetryProject(ProjectDto? project = null)
     {
-        if (SelectedProject == null) return;
+        var targetProject = project ?? SelectedProject;
+        if (targetProject == null) return;
 
         var allowedStatuses = new[] { ProjectStatus.Failed, ProjectStatus.ComposingVideo, 
                                       ProjectStatus.GeneratingImages, ProjectStatus.GeneratingSEO };
-        if (!allowedStatuses.Contains(SelectedProject.Status))
+        if (!allowedStatuses.Contains(targetProject.Status))
         {
             EchoForge.WPF.Views.EchoMessageBox.Show("This project cannot be retried in its current state.", "Info", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Info);
             return;
         }
 
         var result = EchoForge.WPF.Views.EchoMessageBox.Show(
-            $"Retry pipeline for '{SelectedProject.Title}'?\nThis will restart the entire process.",
+            $"Retry pipeline for '{targetProject.Title}'?\nThis will restart the entire process with the selected AI model.",
             "Confirm Retry", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Question);
 
         if (result == System.Windows.MessageBoxResult.OK)
         {
-            await _apiClient.UpdateProjectStatusAsync(SelectedProject.Id, ProjectStatus.Created, "");
+            await _apiClient.UpdateProjectStatusAsync(targetProject.Id, ProjectStatus.Created, "");
             
             _ = Task.Run(async () =>
             {
-                await _orchestrator.StartPipelineAsync(SelectedProject.Id, System.Threading.CancellationToken.None);
+                await _orchestrator.StartPipelineAsync(targetProject.Id, System.Threading.CancellationToken.None);
             });
 
             EchoForge.WPF.Views.EchoMessageBox.Show("Pipeline restarted locally!", "Success", EchoForge.WPF.Views.EchoMessageBox.EchoMessageType.Success);

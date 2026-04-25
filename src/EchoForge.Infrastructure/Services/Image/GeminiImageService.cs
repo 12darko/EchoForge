@@ -22,7 +22,7 @@ public class GeminiImageService : IImageGenerationService
     }
 
     public async Task<List<string>> GenerateImagesAsync(string basePrompt, int count, int width, int height,
-        string? model = null, int? maxUniqueImages = null, CancellationToken cancellationToken = default)
+        string? model = null, int? maxUniqueImages = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         var apiKey = await _appSettingsService.GetSettingAsync("Gemini:ApiKey");
         if (string.IsNullOrEmpty(apiKey))
@@ -42,7 +42,7 @@ public class GeminiImageService : IImageGenerationService
         {
             // Alter prompt slightly to ensure varied images if Gemini caches or generates identical outputs
             string variedPrompt = $"{basePrompt} - variation {i + 1}";
-            tasks.Add(GenerateSingleImageInternalAsync(variedPrompt, width, height, apiKey, cancellationToken));
+            tasks.Add(GenerateSingleImageInternalAsync(variedPrompt, width, height, apiKey, progressCallback, cancellationToken));
             await Task.Delay(500, cancellationToken); // Slight delay to respect rate limits
         }
 
@@ -58,7 +58,7 @@ public class GeminiImageService : IImageGenerationService
     }
 
     public async Task<string> GenerateSingleImageAsync(string prompt, int width, int height, int? seed = null,
-        string? model = null, CancellationToken cancellationToken = default)
+        string? model = null, Action<int, string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
         var apiKey = await _appSettingsService.GetSettingAsync("Gemini:ApiKey");
         if (string.IsNullOrEmpty(apiKey))
@@ -66,26 +66,35 @@ public class GeminiImageService : IImageGenerationService
             throw new Exception("Gemini API Key is missing. Please add your token via Settings.");
         }
 
-        return await GenerateSingleImageInternalAsync(prompt, width, height, apiKey, cancellationToken);
+        return await GenerateSingleImageInternalAsync(prompt, width, height, apiKey, progressCallback, cancellationToken);
     }
 
-    private async Task<string> GenerateSingleImageInternalAsync(string prompt, int width, int height, string apiKey, CancellationToken cancellationToken)
+    private async Task<string> GenerateSingleImageInternalAsync(string prompt, int width, int height, string apiKey, Action<int, string>? progressCallback, CancellationToken cancellationToken)
     {
-        string endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
+        // Use Imagen 3 for Image Generation via Generative Language API
+        string endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key={apiKey}";
         
+        string aspectRatio = "1:1";
+        if (width > height + 200) aspectRatio = "16:9";
+        else if (height > width + 200) aspectRatio = "9:16";
+        else if (width > height + 100) aspectRatio = "4:3";
+        else if (height > width + 100) aspectRatio = "3:4";
+
         var requestBody = new
         {
-            contents = new[]
+            instances = new[]
             {
-                new { parts = new[] { new { text = $"Generate an image: {prompt}" } } }
+                new { prompt = $"{prompt}. Cinematic composition, highly detailed, stunning." }
             },
-            generationConfig = new
+            parameters = new
             {
-                temperature = 0.7
+                sampleCount = 1,
+                aspectRatio = aspectRatio,
+                outputOptions = new { mimeType = "image/jpeg" }
             }
         };
 
-        var json = JsonSerializer.Serialize(requestBody);
+        var json = System.Text.Json.JsonSerializer.Serialize(requestBody);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
@@ -93,41 +102,36 @@ public class GeminiImageService : IImageGenerationService
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError("Gemini API returned {StatusCode}: {Error}", response.StatusCode, responseContent);
-            throw new Exception($"Gemini image generation failed: {response.StatusCode} - {responseContent}");
+            _logger.LogError("Gemini Imagen API returned {StatusCode}: {Error}", response.StatusCode, responseContent.Length > 300 ? responseContent[..300] : responseContent);
+            throw new Exception($"Gemini image generation failed: {response.StatusCode} - {(responseContent.Length > 200 ? responseContent[..200] : responseContent)}");
         }
 
-        // Parse Gemini response
+        // Parse Imagen 3 response
         using var document = JsonDocument.Parse(responseContent);
         var root = document.RootElement;
         
-        // Search for inlineData base64 image in the response parts
-        var candidates = root.GetProperty("candidates");
-        if (candidates.GetArrayLength() > 0)
+        var predictions = root.GetProperty("predictions");
+        if (predictions.GetArrayLength() > 0)
         {
-            var parts = candidates[0].GetProperty("content").GetProperty("parts");
-            foreach (var part in parts.EnumerateArray())
+            // predictions[0] has 'bytesBase64Encoded' and 'mimeType'
+            var prediction = predictions[0];
+            if (prediction.TryGetProperty("bytesBase64Encoded", out var dataElement))
             {
-                if (part.TryGetProperty("inlineData", out var inlineData))
+                string b64 = dataElement.GetString() ?? "";
+                string mimeType = prediction.TryGetProperty("mimeType", out var mimeEl) ? mimeEl.GetString() ?? "image/jpeg" : "image/jpeg";
+                
+                if (!string.IsNullOrEmpty(b64))
                 {
-                    string mimeType = inlineData.GetProperty("mimeType").GetString() ?? "image/jpeg";
-                    string b64 = inlineData.GetProperty("data").GetString() ?? "";
-                    
-                    if (!string.IsNullOrEmpty(b64))
-                    {
-                        var bytes = Convert.FromBase64String(b64);
-                        var ext = mimeType.Split('/').LastOrDefault() ?? "jpeg";
-                        var fileName = $"gemini_{Guid.NewGuid():N}.{ext}";
-                        var outputPath = Path.Combine(_cacheDir, fileName);
-                        await File.WriteAllBytesAsync(outputPath, bytes, cancellationToken);
-                        return outputPath;
-                    }
+                    var bytes = Convert.FromBase64String(b64);
+                    var ext = mimeType.Split('/').LastOrDefault() ?? "jpeg";
+                    var fileName = $"gemini_{Guid.NewGuid():N}.{ext}";
+                    var outputPath = Path.Combine(_cacheDir, fileName);
+                    await File.WriteAllBytesAsync(outputPath, bytes, cancellationToken);
+                    return outputPath;
                 }
             }
         }
         
-        // Fallback for cases where Gemini API structure might be different or no image was generated
-        _logger.LogError("No inlineData image found in Gemini response: {Response}", responseContent);
-        throw new Exception("Gemini 2.5 Flash API returned success but no image inlineData was found in the response parts.");
+        throw new Exception("Gemini Imagen API succeeded but returned no image data.");
     }
 }

@@ -32,6 +32,7 @@ public partial class MainViewModel : ObservableObject
     private SettingsViewModel? _settingsVm;
     private ChannelsViewModel? _channelsVm;
     private EditorViewModel? _editorVm;
+    private StandaloneEditorViewModel? _standaloneEditorVm;
     private YouTubeVideosViewModel? _youtubeVideosVm;
     private UsersViewModel? _usersVm;
     private LoginViewModel? _loginVm;
@@ -122,10 +123,19 @@ public partial class MainViewModel : ObservableObject
 
     private void NavigateToEditor(ProjectDto project)
     {
-        CurrentPage = "Editor";
-        // Recreate editor VM every time to ensure fresh state
-        _editorVm = new EditorViewModel(project, _apiClient, _orchestrator, () => NavigateToDashboard());
-        CurrentView = _editorVm;
+        CurrentPage = "StandaloneEditor";
+        // Use the new StandaloneEditorViewModel with project data
+        _standaloneEditorVm = new StandaloneEditorViewModel(project, _apiClient, _orchestrator, () => NavigateToDashboard());
+        CurrentView = _standaloneEditorVm;
+    }
+
+    [RelayCommand]
+    private void NavigateToStandaloneEditor()
+    {
+        CurrentPage = "StandaloneEditor";
+        // Always create fresh instance so user can load a new video
+        _standaloneEditorVm = new StandaloneEditorViewModel();
+        CurrentView = _standaloneEditorVm;
     }
 
     [RelayCommand]
@@ -211,6 +221,11 @@ public partial class MainViewModel : ObservableObject
                 TutorialTitle = "Interactive Timeline Editor";
                 TutorialText = "Perfect your creation before uploading.\n\n• Left click a scene block to preview and edit its Transition/Zoom effects.\n• Drag the edges of a scene block to extend or shrink its duration.\n• Use the Playhead to preview the video flow.\n• Hit 'Render Video' when your masterpiece is ready!";
                 TutorialIcon = "🎞️";
+                break;
+            case "StandaloneEditor":
+                TutorialTitle = "Standalone Video Editor";
+                TutorialText = "A full-featured nonlinear video editor.\n\n• IMPORT MEDIA: Drag & drop your video files into the left panel.\n• ADD EFFECTS: Use the right panel to tweak colors, add VHS filters, or blur.\n• TIMELINE: Coming soon — full multi-track layout.";
+                TutorialIcon = "🎬";
                 break;
             case "Channels":
                 TutorialTitle = "Connected Channels";

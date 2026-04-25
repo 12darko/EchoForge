@@ -22,5 +22,7 @@ public interface IVideoComposerService
         string? outroVideoPath = null,
         Action<int>? progressCallback = null,
         CancellationToken cancellationToken = default,
-        List<TimelineItemDto>? timelineItems = null);
+        List<TimelineItemDto>? timelineItems = null,
+        double audioFadeInDuration = 0,
+        double audioFadeOutDuration = 0);
 }
