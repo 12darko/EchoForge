@@ -90,7 +90,24 @@ builder.Services.AddScoped<IYouTubeUploadService, YouTubeUploadService>();
 // ========================
 // API Configuration
 // ========================
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            foreach (var keyModelStatePair in context.ModelState)
+            {
+                var key = keyModelStatePair.Key;
+                var errors = keyModelStatePair.Value.Errors;
+                if (errors.Count > 0)
+                {
+                    logger.LogWarning("Model Validation Error for property '{Property}': {Errors}", key, string.Join(", ", errors.Select(e => e.ErrorMessage)));
+                }
+            }
+            return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(new Microsoft.AspNetCore.Mvc.ValidationProblemDetails(context.ModelState));
+        };
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
